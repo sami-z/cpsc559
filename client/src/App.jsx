@@ -1,9 +1,11 @@
 import './App.css';
-
+import Navbar from "./components/Navbar/Navbar";
+import Files from "./components/Files/Files"
 function App() {
   return (
     <div className="App">
-      <h1>GOOGLE DRIVE :)</h1>
+      <Navbar/>
+      <Files/>
     </div>
   );
 }
