@@ -14,13 +14,13 @@ const Navbar = () => {
   return (
     <div className='header'>
       <div className="header__logo">
-        <img src={DFSLogo} alt="Google Drive" />
-        <span>Drive</span>
+        <img src={DFSLogo} alt="DFS" />
+        <span>Distributed File System</span>
       </div>
       <div className="header__searchContainer">
         <div className="header__searchBar">
           <SearchIcon />
-          <input type="text" placeholder='Search in Drive' />
+          <input type="text" placeholder='Search in Distributed File System' />
           <ExpandMoreIcon />
         </div>
       </div>
