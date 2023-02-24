@@ -12,6 +12,11 @@
 # production
 /build
 
+/server/target
+/server/.idea
+
+.idea
+
 # misc
 .DS_Store
 .env.local
