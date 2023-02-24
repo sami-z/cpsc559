@@ -4,8 +4,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -14,7 +12,7 @@ import java.util.Properties;
 
 public class Consumer {
 
-    private static final Logger log = LoggerFactory.getLogger(Consumer.class.getSimpleName());
+//    private static final Logger log = LoggerFactory.getLogger(Consumer.class.getSimpleName());
     private KafkaConsumer<String, String> consumer;
     private final Properties properties;
 
@@ -38,7 +36,7 @@ public class Consumer {
         // adding the shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                log.info("Detected a shutdown. Exit by calling consumer.wakeup()");
+                System.out.println("Detected a shutdown. Exit by calling consumer.wakeup()");
                 consumer.wakeup();
 
                 // join the main thread to allow the execution of the code in the main thread
@@ -65,17 +63,17 @@ public class Consumer {
                         consumer.poll(Duration.ofMillis(1000));
 
                 for (ConsumerRecord<String, String> record: records) {
-                    log.info("Key: " + record.key() + ", Value: " + record.value());
-                    log.info("Partition: " + record.partition() + ", Offset: " + record.offset());
+                    System.out.println("Key: " + record.key() + ", Value: " + record.value());
+                    System.out.println("Partition: " + record.partition() + ", Offset: " + record.offset());
                 }
             }
         } catch (WakeupException e) {
-            log.info("Consumer is starting to shut down");
+            System.out.println("Consumer is starting to shut down");
         } catch (Exception e) {
-            log.error("Unexpected exception in the consumer", e);
+            System.out.println("Unexpected exception in the consumer");
         } finally {
             consumer.close(); // close the consumer, this will also commit offsets
-            log.info("The consumer is now gracefully shut down");
+            System.out.println("The consumer is now gracefully shut down");
         }
     }
 }
