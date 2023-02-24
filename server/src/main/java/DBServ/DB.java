@@ -9,19 +9,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-
+import com.google.gson.*;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.json.JsonWriterSettings;
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.*;
+import com.mongodb.client.result.UpdateResult;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.json.JsonWriterSettings;
+
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Updates.*;
 public class DB {
 	private final static String URI = "mongodb+srv://cpsc559:cpsc559@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority";
 	public MongoClient mongoClient;
@@ -83,13 +96,23 @@ public class DB {
         }
         
 	}
+	public void editSharedWith(String filename){
+		Bson filter = eq("filename", filename);
+		Bson updateOperation = set("shared", Arrays.asList("ragya","sami","testingUser"));
+		UpdateResult updateResult = this.filesCollection.updateOne(filter, updateOperation);
+
+		System.out.println(this.filesCollection.find(filter).first().toJson());
+		System.out.println(updateResult);
+		//this.filesCollection.findOneAndUpdate({"filename":filename},"shared", Arrays.asList("ragya","sami"));
+	}
     public static void main( String[] args ) throws IOException, ParseException {
         	DB myDB = new DB();
         	ArrayList<JSONObject> dbFiles = myDB.findFiles("manbir");
         	System.out.println(dbFiles.get(0).get("filename"));
         	String filePath = "C:\\Users\\rgmit\\OneDrive\\Desktop\\merge.txt";
-        	
-        	//myDB.uploadFile(filePath);
-        	myDB.saveFileFromDB("merge.txt", "C:\\Users\\rgmit\\OneDrive\\Desktop\\ragMerge.txt");
+			myDB.editSharedWith("merge.txt");
+
+			//myDB.uploadFile(filePath);
+        	//myDB.saveFileFromDB("merge.txt", "C:\\Users\\rgmit\\OneDrive\\Desktop\\ragMerge.txt");
      }
 }
