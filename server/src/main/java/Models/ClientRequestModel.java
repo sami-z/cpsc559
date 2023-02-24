@@ -1,3 +1,5 @@
+package Models;
+
 public class ClientRequestModel {
     public String requestType;
     public String userName;
