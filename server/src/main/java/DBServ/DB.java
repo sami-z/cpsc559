@@ -90,6 +90,6 @@ public class DB {
         	String filePath = "C:\\Users\\rgmit\\OneDrive\\Desktop\\merge.txt";
         	
         	//myDB.uploadFile(filePath);
-        	myDB.saveFileFromDB("merge.txt", "C:\\Users\\rgmit\\OneDrive\\Desktop\\ragMerge.txt");
+        	myDB.saveFileFromDB("samiSmart.jpg", "C:\\Users\\samiz\\Documents\\FNCE 463\\TA\\samijpg.jpg");
      }
 }
