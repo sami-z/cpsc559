@@ -1,29 +1,16 @@
-package main.java;
-
 import static com.mongodb.client.model.Filters.eq;
 
-import java.awt.List;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
-import org.bson.types.Binary;
 import org.bson.types.ObjectId;
-import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -39,20 +26,15 @@ public class DB {
 	public MongoDatabase database;
 	public MongoCollection<Document> filesCollection;
 	
-	DB() throws IOException{
+	DB() {
 		this.mongoClient = MongoClients.create(URI);
         this.database = mongoClient.getDatabase("cpsc559_db");
         this.filesCollection = this.database.getCollection("files_data");
-	
 	}
 	public void uploadFile(String filePath,String ownerName) throws IOException {
 		
 		byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath));
     	String encodedString = Base64.getEncoder().encodeToString(fileContent);
-        
-        //adding image file code
-        byte[] bytes = Files.readAllBytes(Paths.get(filePath));
-        String[] sharedList = {"ragya","sami"};
         Document entry = new Document("_id", new ObjectId())
         	   .append("filename", "placeHolder.txt")
         	   .append("bytes", encodedString)
@@ -60,11 +42,10 @@ public class DB {
         	   .append("created", "14/033/2023")
                .append("shared", Arrays.asList("ragya","sami"));
         filesCollection.insertOne(entry);
-        
         System.out.println("Uploaded "+ filePath + " as " + ownerName);
 	}
 	public ArrayList<JSONObject> findFiles(String ownerName) throws ParseException {
-		ArrayList<JSONObject> ret = new ArrayList<JSONObject>();
+		ArrayList<JSONObject> ret = new ArrayList<>();
 		
 		FindIterable<Document> doc = this.filesCollection.find(eq("owner",ownerName));
 		if (doc != null) {
@@ -88,7 +69,7 @@ public class DB {
 	    	System.out.println("bytes: "+ json.get("bytes") + " end");
 	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary((String) json.get("bytes"));
 	    	ByteArrayOutputStream out = new ByteArrayOutputStream();
-	        ObjectOutputStream os = new ObjectOutputStream(out);
+	        //ObjectOutputStream os = new ObjectOutputStream(out);
 	        //os.writeObject(json.get("selectedFile"));
 	        FileOutputStream fos = new FileOutputStream(dest);
 	        fos.write(fileBytes);
@@ -100,8 +81,7 @@ public class DB {
         }
         
 	}
-    public static void main( String[] args ) throws IOException, ParseException, JSONException {
-        // Replace the placeholder with your MongoDB deployment's connection string 
+    public static void main( String[] args ) throws IOException, ParseException {
         	DB myDB = new DB();
         	ArrayList<JSONObject> dbFiles = myDB.findFiles("manbir");
         	System.out.println(dbFiles.get(0).get("filename"));
@@ -109,9 +89,5 @@ public class DB {
         	
         	//myDB.uploadFile(filePath);
         	myDB.saveFileFromDB("merge.txt", "C:\\Users\\rgmit\\OneDrive\\Desktop\\ragMerge.txt");
-            
-            
-         
-            
      }
 }
