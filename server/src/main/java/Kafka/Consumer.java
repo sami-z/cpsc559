@@ -29,7 +29,17 @@ public class Consumer {
         properties.setProperty("auto.offset.reset", "earliest");
     }
 
+    private void setPartition() {
+        // subscribe to a topic
+        String topic = "test1";
+        int numPartitions = 1;
+
+        List<TopicPartition> partitions = Collections.singletonList(new TopicPartition(topic, numPartitions));
+        consumer.assign(partitions);
+    }
+
     public void getMessages() {
+        setProperties();
         consumer = new KafkaConsumer<>(properties);
 
         // get a reference to the main thread
@@ -51,19 +61,15 @@ public class Consumer {
         });
 
         try {
-            // subscribe to a topic
-            String topic = "test1";
-            int partition = 1;
-//            consumer.subscribe(Arrays.asList(topic));
-
-            List<TopicPartition> partitions = Collections.singletonList(new TopicPartition(topic, partition));
-            consumer.assign(partitions);
+            setPartition();
 
             // poll for data
             while (true) {
                 ConsumerRecords<String, String> records =
                         consumer.poll(Duration.ofMillis(1000));
 
+                // Currently doesn't return the ConsumerRecords
+                // TODO: this method needs to return ConsumerRecords which will be utilized by the servers
                 for (ConsumerRecord<String, String> record: records) {
                     System.out.println("Key: " + record.key() + ", Value: " + record.value());
                     System.out.println("Partition: " + record.partition() + ", Offset: " + record.offset());
