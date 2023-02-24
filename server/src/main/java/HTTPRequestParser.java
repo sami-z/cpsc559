@@ -13,13 +13,13 @@ import java.util.Hashtable;
  * @author izelaya
  *
  */
-public class HttpRequestParser {
+public class HTTPRequestParser {
 
     private String _requestLine;
     private Hashtable<String, String> _requestHeaders;
     private StringBuffer _messagetBody;
 
-    public HttpRequestParser() {
+    public HTTPRequestParser() {
         _requestHeaders = new Hashtable<String, String>();
         _messagetBody = new StringBuffer();
     }
@@ -106,6 +106,4 @@ public class HttpRequestParser {
         return _requestHeaders.get(headerName);
     }
 
-    public class HttpFormatException extends Exception {
-    }
 }

@@ -29,11 +29,12 @@ public class MultiThreadedServer implements Runnable{
         this.isRunning = true;
         this.openServerSocket();
 
-        while(!this.isRunning){
+        while(this.isRunning){
             Socket clientSocket = null;
             try {
                 clientSocket = this.serverSocket.accept();
             } catch (IOException e) {
+                e.printStackTrace();
                 if(this.isRunning) {
                     System.out.println("Server Stopped.") ;
                     return;
