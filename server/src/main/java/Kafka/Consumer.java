@@ -70,11 +70,7 @@ public class Consumer {
                 }
             }
         } catch (WakeupException e) {
-<<<<<<< Updated upstream:server/src/main/java/Consumer.java
             System.out.println("Consumer is starting to shut down");
-=======
-            log.info("Kafka.Consumer is starting to shut down");
->>>>>>> Stashed changes:server/src/main/java/Kafka/Consumer.java
         } catch (Exception e) {
             System.out.println("Unexpected exception in the consumer");
         } finally {
