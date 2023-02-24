@@ -12,13 +12,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-public class Consumer {
+public class RequestQueueConsumer {
 
 //    private static final Logger log = LoggerFactory.getLogger(Consumer.class.getSimpleName());
     private KafkaConsumer<String, String> consumer;
     private final Properties properties;
 
-    public Consumer() {
+    public RequestQueueConsumer() {
         properties = new Properties();
     }
 
