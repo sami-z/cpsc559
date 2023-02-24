@@ -1,6 +1,17 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 const Files = () => {
+    const Files = () => {
+        const [files, setFiles] = useState([])
+
+        useEffect(())
+
+
+
+    }
+
+
+
     return (
         <div className="fileView">
             <div className='fileView_row'>
@@ -16,9 +27,6 @@ const Files = () => {
                     <p>Last Modified</p>
                     <p>File Size</p>
                 </div>
-
-
-
         </div>
 
     )

@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
-import main.java.DB;
+import DBServ.DB;
 import org.json.simple.parser.ParseException;
 
 
