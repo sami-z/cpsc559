@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
+import main.java.DB;
+import org.json.simple.parser.ParseException;
+
 
 public class HandlerThread implements Runnable {
 
     private String HTTPString;
     private Socket clientSocket;
+    private DB db;
 
     public HandlerThread(Socket clientSocket, String string){
         this.clientSocket = clientSocket;
@@ -55,13 +59,20 @@ public class HandlerThread implements Runnable {
         }
         // Check type of request
         if(request.requestType.toUpperCase().equals("READ")){ // locking
-            // read data
+            try {
+                db.findFiles(request.userName);
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            }
             // Send to response queue
         }
         else if(request.requestType.toUpperCase().equals("WRITE")){ // locking
-            // write data
+            try {
+                db.uploadFile(request.fileName, request.userName);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             // Send to response queue
         }
-
     }
 }
