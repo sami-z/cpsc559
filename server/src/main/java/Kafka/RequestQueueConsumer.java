@@ -38,9 +38,13 @@ public class RequestQueueConsumer {
         consumer.assign(partitions);
     }
 
+    private void createConsumerInstance() {
+        consumer = new KafkaConsumer<>(properties);
+    }
+
     public void getMessages() {
         setProperties();
-        consumer = new KafkaConsumer<>(properties);
+        createConsumerInstance();
 
         // get a reference to the main thread
         final Thread mainThread = Thread.currentThread();
