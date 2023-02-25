@@ -1,11 +1,9 @@
 package ExecutionCore;
 
-import Kafka.RequestQueueConsumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-        import java.net.Socket;
 
 public class MultiThreadedServer implements Runnable{
     int serverPort = 8080;
