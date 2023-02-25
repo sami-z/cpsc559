@@ -44,6 +44,7 @@ public class MultiThreadedServer implements Runnable{
                         new HandlerThread(currMessage.value())).start();
             }
         }
+        consumer.closeConsumer();
         System.out.println("Server Stopped.") ;
 
         System.out.println("Closing server");
