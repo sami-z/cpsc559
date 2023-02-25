@@ -42,7 +42,7 @@ public class RequestQueueConsumer {
         consumer = new KafkaConsumer<>(properties);
     }
 
-    public void getMessages() {
+    public ConsumerRecord<String,String> getMessages() {
         setProperties();
         createConsumerInstance();
 
@@ -67,18 +67,15 @@ public class RequestQueueConsumer {
         try {
             setPartition();
 
-            // poll for data
-            while (true) {
+            // poll for da
                 ConsumerRecords<String, String> records =
                         consumer.poll(Duration.ofMillis(1000));
 
-                // Currently doesn't return the ConsumerRecords
-                // TODO: this method needs to return ConsumerRecords which will be utilized by the servers
                 for (ConsumerRecord<String, String> record: records) {
-                    System.out.println("Key: " + record.key() + ", Value: " + record.value());
-                    System.out.println("Partition: " + record.partition() + ", Offset: " + record.offset());
+                    return record;
                 }
-            }
+
+                return null;
         } catch (WakeupException e) {
             System.out.println("Consumer is starting to shut down");
         } catch (Exception e) {
@@ -86,6 +83,7 @@ public class RequestQueueConsumer {
         } finally {
             consumer.close(); // close the consumer, this will also commit offsets
             System.out.println("The consumer is now gracefully shut down");
+            return null;
         }
     }
 }

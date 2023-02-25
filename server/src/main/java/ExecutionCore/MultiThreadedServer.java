@@ -1,5 +1,8 @@
 package ExecutionCore;
 
+import Kafka.RequestQueueConsumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+
 import java.io.IOException;
 import java.net.ServerSocket;
         import java.net.Socket;
@@ -30,24 +33,16 @@ public class MultiThreadedServer implements Runnable{
     public void run() {
         this.isRunning = true;
         this.openServerSocket();
+        RequestQueueConsumer consumer = new RequestQueueConsumer();
 
         while(this.isRunning){
-            Socket clientSocket = null;
-            try {
-                clientSocket = this.serverSocket.accept();
-            } catch (IOException e) {
-                e.printStackTrace();
-                if(this.isRunning) {
-                    System.out.println("Server Stopped.") ;
-                    return;
-                }
-                throw new RuntimeException(
-                        "Error accepting client connection", e);
+            ConsumerRecord<String, String> currMessage;
+            currMessage = consumer.getMessages();
+
+            if(currMessage != null) {
+                new Thread(
+                        new HandlerThread(currMessage.value())).start();
             }
-            new Thread(
-                    new HandlerThread(
-                            clientSocket, "Multithreaded Server")
-            ).start();
         }
         System.out.println("Server Stopped.") ;
 
