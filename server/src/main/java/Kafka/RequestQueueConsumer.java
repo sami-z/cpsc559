@@ -27,8 +27,8 @@ public class RequestQueueConsumer {
 
     private void setProperties() {
         properties.setProperty("bootstrap.servers", "127.0.0.1:9092");
-        properties.setProperty("key.serializer", StringDeserializer.class.getName());
-        properties.setProperty("value.serializer", StringDeserializer.class.getName());
+        properties.setProperty("key.deserializer", StringDeserializer.class.getName());
+        properties.setProperty("value.deserializer", StringDeserializer.class.getName());
         properties.setProperty("auto.offset.reset", "earliest");
         properties.setProperty("max.poll.records", "1");
     }
