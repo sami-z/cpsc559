@@ -3,8 +3,8 @@ package Kafka;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.time.Duration;
@@ -20,19 +20,23 @@ public class RequestQueueConsumer {
 
     public RequestQueueConsumer() {
         properties = new Properties();
+        setProperties();
+        createConsumerInstance();
+        setPartition();
     }
 
     private void setProperties() {
         properties.setProperty("bootstrap.servers", "127.0.0.1:9092");
-        properties.setProperty("key.deserializer", StringDeserializer.class.getName());
-        properties.setProperty("value.deserializer", StringDeserializer.class.getName());
+        properties.setProperty("key.serializer", StringDeserializer.class.getName());
+        properties.setProperty("value.serializer", StringDeserializer.class.getName());
         properties.setProperty("auto.offset.reset", "earliest");
+        properties.setProperty("max.poll.records", "1");
     }
 
     private void setPartition() {
         // subscribe to a topic
         String topic = "test1";
-        int numPartitions = 1;
+        int numPartitions = 0;
 
         List<TopicPartition> partitions = Collections.singletonList(new TopicPartition(topic, numPartitions));
         consumer.assign(partitions);
@@ -42,50 +46,26 @@ public class RequestQueueConsumer {
         consumer = new KafkaConsumer<>(properties);
     }
 
-    public void getMessages() {
-        setProperties();
-        createConsumerInstance();
+    public void closeConsumer() {
+        consumer.close();
+    }
 
-        // get a reference to the main thread
-        final Thread mainThread = Thread.currentThread();
-
-        // adding the shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                System.out.println("Detected a shutdown. Exit by calling consumer.wakeup()");
-                consumer.wakeup();
-
-                // join the main thread to allow the execution of the code in the main thread
-                try {
-                    mainThread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
+    public ConsumerRecord<String,String> getMessages() {
         try {
-            setPartition();
+            // poll for da
+            ConsumerRecords<String, String> records =
+                    consumer.poll(Duration.ofMillis(1000));
 
-            // poll for data
-            while (true) {
-                ConsumerRecords<String, String> records =
-                        consumer.poll(Duration.ofMillis(1000));
-
-                // Currently doesn't return the ConsumerRecords
-                // TODO: this method needs to return ConsumerRecords which will be utilized by the servers
-                for (ConsumerRecord<String, String> record: records) {
-                    System.out.println("Key: " + record.key() + ", Value: " + record.value());
-                    System.out.println("Partition: " + record.partition() + ", Offset: " + record.offset());
-                }
+            for (ConsumerRecord<String, String> record : records) {
+                return record;
             }
-        } catch (WakeupException e) {
-            System.out.println("Consumer is starting to shut down");
+
+            return null;
         } catch (Exception e) {
             System.out.println("Unexpected exception in the consumer");
+            e.printStackTrace();
         } finally {
-            consumer.close(); // close the consumer, this will also commit offsets
-            System.out.println("The consumer is now gracefully shut down");
+            return null;
         }
     }
 }
