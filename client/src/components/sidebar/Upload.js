@@ -1,6 +1,8 @@
 import React, {useState} from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import '../../components/sidebar/Upload.css'
+import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
+
 
 import { makeStyles } from '@mui/styles';
 import Modal from '@mui/material/Modal';
@@ -12,6 +14,10 @@ function getModalStyle() {
         transform: `translate(-50%, -50%)`,
     };
 }
+
+function createWebSocket() {
+    return new WebSocket(WEBSOCKET_URL);
+  }
 
 const useStyles = makeStyles({
     root: {
@@ -25,18 +31,39 @@ const useStyles = makeStyles({
     },
   });
 
-function sendText(socket) {
-    socket.send("If you are reading this then it's too late - Drake");
-}
-
-const Upload = (props) => {
-    const { socket } = props;
+function Upload(props) {
     const classes = useStyles();
 
     const [modalStyle] = useState(getModalStyle);
     const [open, setOpen] = useState(false);
     const [fileData, setFileData] = useState(null);
     const [uploading, setUploading] = useState(false);
+
+    const handleSend = () => {
+        const newWebSocket = createWebSocket();
+
+        newWebSocket.addEventListener('open', () => {
+            console.log('WebSocket connection established!');
+
+            console.log(newWebSocket);
+
+            if ( newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
+                newWebSocket.send("{\"name\":\"John\", \"age\":30}");
+            }
+    
+            else{
+                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
+            }
+
+            newWebSocket.close()
+            console.log(newWebSocket);
+
+            // Send the file then close
+            // handleFileUpload();
+            // handleClose();
+        });
+
+    };
 
     const handleOpen = () => {
         setOpen(true);
@@ -92,7 +119,7 @@ const Upload = (props) => {
                         ) : (
                                 <>
                                     <input type="file" onChange={handleChange} />
-                                    <button onClick={sendText(socket)}>Upload to DFS</button>
+                                    <button onClick={handleSend}>Upload to DFS</button>
                                     {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
                                     {/* {fileData && <p>{fileData}</p>} */}
                                 </>
