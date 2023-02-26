@@ -24,7 +24,7 @@ public class RequestQueueServer implements Runnable{
 
     private void acceptClientSocket() {
         try {
-            Socket clientSocket = requestQueueServerSocket.accept();
+            clientSocket = requestQueueServerSocket.accept();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

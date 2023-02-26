@@ -10,8 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 public class RequestQueueHandler implements Runnable{
-    private Socket clientSocket;
-    private RequestQueue requestQueue;
+    private final Socket clientSocket;
+    private final RequestQueue requestQueue;
 
     public RequestQueueHandler(Socket clientSocket, RequestQueue requestQueue) {
         this.clientSocket = clientSocket;
