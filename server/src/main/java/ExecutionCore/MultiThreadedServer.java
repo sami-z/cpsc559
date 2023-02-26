@@ -31,18 +31,10 @@ public class MultiThreadedServer implements Runnable{
     public void run() {
         this.isRunning = true;
         this.openServerSocket();
-        RequestQueueConsumer consumer = new RequestQueueConsumer();
 
         while(this.isRunning){
-            ConsumerRecord<String, String> currMessage;
-            currMessage = consumer.getMessages();
 
-            if(currMessage != null) {
-                new Thread(
-                        new HandlerThread(currMessage.value())).start();
-            }
         }
-        consumer.closeConsumer();
         System.out.println("Server Stopped.") ;
 
         System.out.println("Closing server");

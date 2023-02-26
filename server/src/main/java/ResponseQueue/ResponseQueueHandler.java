@@ -3,10 +3,8 @@ package ResponseQueue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -33,22 +31,14 @@ public class ResponseQueueHandler implements Runnable{
             e.printStackTrace();
         }
 
-
-        String type = node.get("operationType").asText();
         String uName = node.get("userName").asText();
 
-        if(type.toLowerCase(Locale.ROOT).equals("push")){
-            rq.push(uName,node);
-        }else{
-            JsonNode response = rq.pop(uName);
-            try {
-                DataOutputStream dout = new DataOutputStream(clientSocket.getOutputStream());
-                dout.write(response.asText().getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        rq.push(uName,node);
 
-
+        try {
+            clientSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }

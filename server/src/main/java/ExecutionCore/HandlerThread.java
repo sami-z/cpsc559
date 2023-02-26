@@ -17,7 +17,6 @@ public class HandlerThread implements Runnable {
     private String messageString;
     private Socket clientSocket;
     private DB db;
-    private ResponseQueueProducer producer;
 
     public HandlerThread(String message){
         this.messageString = message;
@@ -43,10 +42,6 @@ public class HandlerThread implements Runnable {
                 throw new RuntimeException(e);
             }
 
-            for (JSONObject jsonObject : files) {
-                String serializedJson = jsonObject.toString();
-                producer.sendMessages(request.userName, serializedJson);
-            }
         }
         else if(request.requestType.toUpperCase().equals("WRITE")){ // locking
             try {
@@ -54,7 +49,6 @@ public class HandlerThread implements Runnable {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            producer.sendMessages(request.userName,"SUCCESS");
         }
     }
 }

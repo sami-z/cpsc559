@@ -11,9 +11,9 @@ public class ResponseQueueServer implements Runnable{
     private ServerSocket serverSocket;
     private ResponseQueue rq;
 
-    public ResponseQueueServer(int port){
+    public ResponseQueueServer(int port, ResponseQueue rq){
         this.port = port;
-        this.rq = new ResponseQueue();
+        this.rq = rq;
     }
 
 
