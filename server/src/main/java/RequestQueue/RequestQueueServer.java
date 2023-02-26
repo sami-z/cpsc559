@@ -8,7 +8,7 @@ public class RequestQueueServer implements Runnable{
     private boolean isRunning;
     private ServerSocket requestQueueServerSocket = null;
     private Socket clientSocket = null;
-    private RequestQueue requestQueue;
+    private final RequestQueue requestQueue;
 
     public RequestQueueServer(int portNumber) {
         this.requestQueueServerPort = portNumber;
@@ -33,13 +33,19 @@ public class RequestQueueServer implements Runnable{
 
     @Override
     public void run() {
+        this.isRunning = true;
         this.openRequestQueueServerSocket();
-        this.acceptClientSocket();
 
         while (isRunning) {
+            this.acceptClientSocket();
             new Thread( new RequestQueueHandler(clientSocket, requestQueue)).start();
         }
 
-        System.out.println("RequestQueue is closing");
+        try {
+            requestQueueServerSocket.close();
+            System.out.println("RequestQueue is closing");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
