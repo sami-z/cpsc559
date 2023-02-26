@@ -10,9 +10,9 @@ public class RequestQueueServer implements Runnable{
     private Socket clientSocket = null;
     private final RequestQueue requestQueue;
 
-    public RequestQueueServer(int portNumber) {
+    public RequestQueueServer(int portNumber, RequestQueue requestQueue) {
         this.requestQueueServerPort = portNumber;
-        this.requestQueue = new RequestQueue();
+        this.requestQueue = requestQueue;
     }
 
     private void openRequestQueueServerSocket() {
