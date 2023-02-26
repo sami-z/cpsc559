@@ -33,15 +33,16 @@ public class RequestQueueHandler implements Runnable{
     @Override
     public void run() {
         try {
-            while(true) {
+            while (true) {
                 waitForPing();
                 JsonNode response = requestQueue.consumeMessage();
                 DataOutputStream dout = new DataOutputStream(clientSocket.getOutputStream());
 
-                if(response != null)
+                if(response != null) {
                     dout.write(response.asText().getBytes(StandardCharsets.UTF_8));
-                else
+                } else {
                     dout.write(NetworkConstants.EMPTY_QUEUE.getBytes(StandardCharsets.UTF_8));
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
