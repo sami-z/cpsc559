@@ -12,6 +12,7 @@ public class RequestQueueServer implements Runnable{
 
     public RequestQueueServer(int portNumber) {
         this.requestQueueServerPort = portNumber;
+        this.requestQueue = new RequestQueue();
     }
 
     private void openRequestQueueServerSocket() {
