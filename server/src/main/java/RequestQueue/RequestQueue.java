@@ -14,9 +14,7 @@ public class RequestQueue {
     }
 
     public synchronized void produceMessage(JsonNode message) {
-        if (message != null && message.isEmpty()){
-            requestQueue.add(message);
-        }
+        requestQueue.add(message);
     }
 
     public synchronized JsonNode consumeMessage() {

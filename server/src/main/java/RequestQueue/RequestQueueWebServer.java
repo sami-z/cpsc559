@@ -36,7 +36,7 @@ public class RequestQueueWebServer extends WebSocketServer{
     public void onMessage(WebSocket webSocket, String s) {
         try {
             JsonNode request = mapper.readTree(s);
-            if (request != null) {
+            if (request != null && request.isEmpty()) {
                 requestQueue.produceMessage(request);
             }
             webSocket.close();
