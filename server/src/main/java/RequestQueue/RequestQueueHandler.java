@@ -18,6 +18,14 @@ public class RequestQueueHandler implements Runnable{
         this.requestQueue = requestQueue;
     }
 
+    private void closeClientSocket(Socket clientSocket) {
+        try {
+            clientSocket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void run() {
         ObjectMapper mapper = new ObjectMapper();
@@ -32,24 +40,20 @@ public class RequestQueueHandler implements Runnable{
         String requestType = null;
         if (message != null) {
             requestType = message.get("operationType").asText();
-        }
 
-        if (requestType != null && requestType.toLowerCase(Locale.ROOT).equals("push")) {
-            requestQueue.produceMessage(message);
-        } else {
-            JsonNode response = requestQueue.consumeMessage();
-            try {
-                DataOutputStream dout = new DataOutputStream(clientSocket.getOutputStream());
-                dout.write(response.asText().getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (requestType != null && requestType.toLowerCase(Locale.ROOT).equals("push")) {
+                requestQueue.produceMessage(message);
+            } else {
+                JsonNode response = requestQueue.consumeMessage();
+                try {
+                    DataOutputStream dout = new DataOutputStream(clientSocket.getOutputStream());
+                    dout.write(response.asText().getBytes(StandardCharsets.UTF_8));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
-
-        try {
-            clientSocket.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } else {
+            closeClientSocket(clientSocket);
         }
     }
 }
