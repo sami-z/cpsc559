@@ -1,7 +1,6 @@
 package RequestQueue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -27,16 +26,13 @@ public class RequestQueueHandler implements Runnable{
 
     @Override
     public void run() {
-        ObjectMapper mapper = new ObjectMapper();
-
-        JsonNode response = requestQueue.consumeMessage();
         try {
+            JsonNode response = requestQueue.consumeMessage();
             DataOutputStream dout = new DataOutputStream(clientSocket.getOutputStream());
             dout.write(response.asText().getBytes(StandardCharsets.UTF_8));
+            closeClientSocket(clientSocket);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        closeClientSocket(clientSocket);
     }
 }
