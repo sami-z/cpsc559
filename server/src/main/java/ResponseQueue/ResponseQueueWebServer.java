@@ -34,6 +34,7 @@ public class ResponseQueueWebServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
+        System.out.println(s);
         try {
             JsonNode currRequest = mapper.readTree(s);
             String uName = currRequest.get("userName").asText();

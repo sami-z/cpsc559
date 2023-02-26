@@ -10,7 +10,7 @@ public final class NetworkConstants {
 
     public static final String RESPONSE_QUEUE_IP = "";
     public static int  RESPONSE_QUEUE_SOCKET_PORT = 80;
-    public static int  RESPONSE_QUEUE_SERVER_PORT = 80;
+    public static int  RESPONSE_QUEUE_SERVER_PORT = 90;
 
     public static int PING_VALUE = 0;
 
