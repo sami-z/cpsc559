@@ -25,7 +25,12 @@ const useStyles = makeStyles({
     },
   });
 
-const Upload = () => {
+function sendText(socket) {
+    socket.send("If you are reading this then it's too late - Drake");
+}
+
+const Upload = (props) => {
+    const { socket } = props;
     const classes = useStyles();
 
     const [modalStyle] = useState(getModalStyle);
@@ -87,7 +92,8 @@ const Upload = () => {
                         ) : (
                                 <>
                                     <input type="file" onChange={handleChange} />
-                                    <button onClick={handleFileUpload}>Upload to DFS</button>
+                                    <button onClick={sendText(socket)}>Upload to DFS</button>
+                                    {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
                                     {/* {fileData && <p>{fileData}</p>} */}
                                 </>
                             )

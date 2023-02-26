@@ -2,14 +2,17 @@ package RequestQueue;
 
 import java.io.IOException;
 import java.net.*;
-import java.sql.SQLOutput;
 
-public class RequestQueueServer {
+public class RequestQueueServer implements Runnable{
     private final int requestQueueServerPort;
-    ServerSocket requestQueueServerSocket = null;
+    private boolean isRunning;
+    private ServerSocket requestQueueServerSocket = null;
+    private Socket clientSocket = null;
+    private final RequestQueue requestQueue;
 
     public RequestQueueServer(int portNumber) {
         this.requestQueueServerPort = portNumber;
+        this.requestQueue = new RequestQueue();
     }
 
     private void openRequestQueueServerSocket() {
@@ -22,18 +25,27 @@ public class RequestQueueServer {
 
     private void acceptClientSocket() {
         try {
-            Socket clientSocket = requestQueueServerSocket.accept();
+            clientSocket = requestQueueServerSocket.accept();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void runServer() {
+    @Override
+    public void run() {
+        this.isRunning = true;
         this.openRequestQueueServerSocket();
-        this.acceptClientSocket();
 
-        while (true) {
-            // RequestQueue instance and do a bunch of stuff here
+        while (isRunning) {
+            this.acceptClientSocket();
+            new Thread( new RequestQueueHandler(clientSocket, requestQueue)).start();
+        }
+
+        try {
+            requestQueueServerSocket.close();
+            System.out.println("RequestQueue is closing");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
