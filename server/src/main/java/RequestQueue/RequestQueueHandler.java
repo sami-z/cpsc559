@@ -45,5 +45,11 @@ public class RequestQueueHandler implements Runnable{
                 e.printStackTrace();
             }
         }
+
+        try {
+            clientSocket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
