@@ -6,7 +6,7 @@ import ResponseQueue.ResponseQueueServer;
 public class ServerMain {
 
     public static void main(String[] args) {
-        MultiThreadedServer server = new MultiThreadedServer(80);
+        MultiThreadedServer server = new MultiThreadedServer();
         Thread t1 = new Thread(server);
         t1.start();
         System.out.println("Server is running");

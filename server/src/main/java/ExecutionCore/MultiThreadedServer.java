@@ -1,5 +1,6 @@
 package ExecutionCore;
 
+import DBServ.DB;
 import Util.NetworkConstants;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
@@ -25,6 +26,8 @@ public class MultiThreadedServer implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        DB db = new DB();
 
         while(this.isRunning){
             try {

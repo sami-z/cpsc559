@@ -41,7 +41,7 @@ public class DB {
 	public MongoDatabase database;
 	public MongoCollection<Document> filesCollection;
 	
-	DB() {
+	public DB() {
 		this.mongoClient = MongoClients.create(URI);
         this.database = mongoClient.getDatabase("cpsc559_db");
         this.filesCollection = this.database.getCollection("files_data");

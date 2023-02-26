@@ -4,7 +4,10 @@ import Models.ClientRequestModel;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import DBServ.DB;
@@ -14,11 +17,28 @@ import org.json.simple.parser.ParseException;
 
 public class ExecutionCoreHandler {
 
-    public static void processEvent(Socket clientSocket, DB db) {
+    public static String readString(Socket clientSocket) throws IOException {
+        int bufferSize = 1024;
+        char[] buffer = new char[bufferSize];
+        StringBuilder out = new StringBuilder();
+        Reader in = new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8);
+        for (int numRead; (numRead = in.read(buffer, 0, buffer.length)) > 0; ) {
+            out.append(buffer, 0, numRead);
+        }
+
+        return out.toString();
+
+    }
+
+    public static void processEvent(Socket clientSocket, DB db) throws IOException {
         // Parse HTML
 
+
+
+        String rqMessage = ExecutionCoreHandler.readString(clientSocket);
+
         Gson g = new Gson();
-        ClientRequestModel request = g.fromJson(messageString, ClientRequestModel.class);
+        ClientRequestModel request = g.fromJson(rqMessage, ClientRequestModel.class);
 
         // If contains file save file
         if(!request.bytes.isEmpty()) {
