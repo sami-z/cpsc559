@@ -18,10 +18,7 @@ public class RequestQueue {
     }
 
     public synchronized JsonNode consumeMessage() {
-        if(requestQueue.size()>0) {
-            return requestQueue.poll();
-        }
-        return null;
+        return requestQueue.poll();
     }
 
 }
