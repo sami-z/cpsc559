@@ -12,17 +12,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 
-public class HandlerThread implements Runnable {
+public class ExecutionCoreHandler {
 
-    private String messageString;
-    private Socket clientSocket;
-    private DB db;
-
-    public HandlerThread(String message){
-        this.messageString = message;
-    }
-
-    public void run() {
+    public static void processEvent(Socket clientSocket, DB db) {
         // Parse HTML
 
         Gson g = new Gson();
@@ -50,5 +42,8 @@ public class HandlerThread implements Runnable {
                 throw new RuntimeException(e);
             }
         }
+
+
+
     }
 }
