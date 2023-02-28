@@ -61,14 +61,19 @@ public class ExecutionCoreHandler {
         }
 
         // If contains file save file
-        if(!request.bytes.isEmpty()) {
-//            Path tempFile = Files.createTempFile(null, null);
-//            Files.write(tempFile, request.bytes.getBytes(StandardCharsets.UTF_8));
-        }
+
+
+//        if(!request.bytes.isEmpty()) {
+////            Path tempFile = Files.createTempFile(null, null);
+////            Files.write(tempFile, request.bytes.getBytes(StandardCharsets.UTF_8));
+//        }
 
         ArrayList<JSONObject> files = null;
+
+        if (request == null) return;
+
         // Check type of request
-        if(request.requestType.toUpperCase().equals("READ")){ // locking
+        if(request.requestType.equalsIgnoreCase("READ")){ // locking
             try {
                 files = db.findFiles(request.userName);
             } catch (ParseException e) {
@@ -76,7 +81,7 @@ public class ExecutionCoreHandler {
             }
 
         }
-        else if(request.requestType.toUpperCase().equals("WRITE")){ // locking
+        else if(request.requestType.equalsIgnoreCase("WRITE")){ // locking
             try {
                 db.uploadFile(request.fileName, request.userName);
             } catch (IOException e) {

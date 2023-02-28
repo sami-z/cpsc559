@@ -22,7 +22,7 @@ function App() {
       console.log('WebSocket connection established!');
 
       console.log(newWebSocket);
-      newWebSocket.send("{\"userName\":\"John\"}");
+      newWebSocket.send("{\"userName\":\"manbir\"}");
       console.log(newWebSocket);
 
       // Send the file then close

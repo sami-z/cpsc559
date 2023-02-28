@@ -48,8 +48,15 @@ function Upload(props) {
             console.log(newWebSocket);
 
             if ( newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
-                newWebSocket.send("{\"name\":\"John\", \"age\":30}");
+                newWebSocket.send("{\"requestType\":\"READ\", \"userName\":\"manbir\", \"fileName\": \"merge.txt\"}");
             }
+
+
+            //  String requestType;
+            // public String userName;
+            // public String fileName;
+            // public String fileType;
+            // public String bytes;
     
             else{
                 console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
