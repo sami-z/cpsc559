@@ -28,6 +28,8 @@ public class ResponseQueueHandler implements Runnable{
             e.printStackTrace();
         }
 
+        System.out.println(node.toPrettyString());
+
         String uName = node.get("userName").asText();
 
         rq.push(uName,node);

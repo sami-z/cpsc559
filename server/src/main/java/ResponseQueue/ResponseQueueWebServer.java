@@ -34,12 +34,13 @@ public class ResponseQueueWebServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
+        System.out.println(s);
         try {
             JsonNode currRequest = mapper.readTree(s);
             String uName = currRequest.get("userName").asText();
             JsonNode currNode = rq.pop(uName);
 
-            webSocket.send(currNode.asText().getBytes(StandardCharsets.UTF_8));
+            webSocket.send(currNode.toPrettyString().getBytes(StandardCharsets.UTF_8));
             webSocket.close();
 
         } catch (JsonProcessingException e) {

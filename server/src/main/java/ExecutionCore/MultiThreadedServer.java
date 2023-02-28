@@ -22,7 +22,7 @@ public class MultiThreadedServer implements Runnable{
         this.isRunning = true;
         Socket rqSocket = null;
         try {
-            rqSocket = new Socket(NetworkConstants.REQUEST_QUEUE_IP,NetworkConstants.REQUEST_QUEUE_SOCKET_PORT);
+            rqSocket = new Socket(NetworkConstants.REQUEST_QUEUE_IP,NetworkConstants.REQUEST_SERVER_SOCKET_PORT);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -33,14 +33,14 @@ public class MultiThreadedServer implements Runnable{
             try {
                 OutputStream output = rqSocket.getOutputStream();
                 output.write(NetworkConstants.PING_VALUE);
-
+                System.out.println("aaa");
                 ExecutionCoreHandler.processEvent(rqSocket,db);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        rqSocket.close();
+        //rqSocket.close();
         System.out.println("Server Stopped.") ;
         System.out.println("Closing server");
     }

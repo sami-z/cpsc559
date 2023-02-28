@@ -37,6 +37,7 @@ public class RequestQueueServer implements Runnable{
         this.openRequestQueueServerSocket();
 
         while (isRunning) {
+
             this.acceptClientSocket();
             new Thread( new RequestQueueHandler(clientSocket, requestQueue)).start();
         }

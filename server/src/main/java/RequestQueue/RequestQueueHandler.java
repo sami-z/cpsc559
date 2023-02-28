@@ -2,6 +2,7 @@ package RequestQueue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -26,8 +27,12 @@ public class RequestQueueHandler implements Runnable{
         }
     }
 
-    private void waitForPing(){
+    private void waitForPing() throws IOException {
+        DataInputStream In = new DataInputStream(clientSocket.getInputStream());
+        while(In.available() == 0);
 
+        byte[] b = new byte[In.available()];
+        In.read(b);
     }
 
     @Override
@@ -39,9 +44,11 @@ public class RequestQueueHandler implements Runnable{
                 DataOutputStream dout = new DataOutputStream(clientSocket.getOutputStream());
 
                 if(response != null)
-                    dout.write(response.asText().getBytes(StandardCharsets.UTF_8));
+                    dout.write(response.toPrettyString().getBytes(StandardCharsets.UTF_8));
                 else
                     dout.write(NetworkConstants.EMPTY_QUEUE.getBytes(StandardCharsets.UTF_8));
+
+                System.out.println("RESPONSE SENT");
             }
         } catch (IOException e) {
             e.printStackTrace();
