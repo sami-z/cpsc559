@@ -40,7 +40,11 @@ public class MultiThreadedServer implements Runnable{
             }
         }
 
-        //rqSocket.close();
+        try {
+            rqSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.out.println("Server Stopped.") ;
         System.out.println("Closing server");
     }
