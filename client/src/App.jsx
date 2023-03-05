@@ -1,7 +1,7 @@
 import './App.css';
 import Navbar from "./components/Navbar/Navbar";
 import Files from "./components/Files/Files"
-import Sidebar from "./components/sidebar"
+import Sidebar from "./components/Sidebar"
 import { useState, useEffect } from 'react';
 import { RESPONSE_QUEUE_SERVER_PORT } from './components/WebSocket/WebSocket';
 
@@ -11,7 +11,7 @@ function createWebSocket() {
 
 function App() {
   
-  const MINUTE_MS = 2000;
+  const MINUTE_MS = 10000;
   const newWebSocket = createWebSocket();
   
   useEffect(() => {
@@ -37,8 +37,12 @@ function App() {
   return (
     <div className="App">
       <Navbar/>
-      <Sidebar/>
-      <Files/>
+
+      <div className="app_main">
+        <Sidebar/>
+        <Files/>
+      </div>
+    
     </div>
   );
 }

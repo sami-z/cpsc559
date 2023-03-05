@@ -1,6 +1,6 @@
 import React, {useState} from 'react'
 import AddIcon from '@mui/icons-material/Add'
-import '../../components/sidebar/Upload.css'
+import './Upload.css'
 import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
 
 

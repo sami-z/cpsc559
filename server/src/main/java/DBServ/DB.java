@@ -24,6 +24,8 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 public class DB {
 	private final static String URI = "mongodb+srv://cpsc559:cpsc559@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority";
 	public MongoClient mongoClient;
@@ -36,14 +38,20 @@ public class DB {
         this.filesCollection = this.database.getCollection("files_data");
 	}
 	public void uploadFile(String filePath,String ownerName) throws IOException {
-		
+		String[] pathItems= filePath.split("\\\\");
+
+		LocalDate currentDate = LocalDate.now();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+		String formattedDate = currentDate.format(formatter);
+
 		byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath));
     	String encodedString = Base64.getEncoder().encodeToString(fileContent);
+
         Document entry = new Document("_id", new ObjectId())
-        	   .append("filename", "fileName.txt")
+        	   .append("filename", pathItems[pathItems.length-1])
         	   .append("bytes", encodedString)
         	   .append("owner", ownerName)
-        	   .append("created", "14/04/2023")
+        	   .append("created", formattedDate)
                .append("shared", Arrays.asList("ragya","sami"));
         filesCollection.insertOne(entry);
         System.out.println("Uploaded "+ filePath + " as " + ownerName);
