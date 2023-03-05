@@ -102,33 +102,4 @@ public class DB {
 		System.out.println(updateResult);
 		//this.filesCollection.findOneAndUpdate({"filename":filename},"shared", Arrays.asList("ragya","sami"));
 	}
-    public static void main( String[] args ) throws IOException, ParseException {
-        	DB myDB = new DB();
-
-			//Example Upload File to DB code
-			/*myDB.uploadFile("C:\\Users\\rgmit\\OneDrive\\Desktop\\sami.png","manbir");*/
-
-			//Example Code for FINDING an entry
-			/*ArrayList<JSONObject> dbFiles = myDB.findFiles("manbir");
-        	System.out.println(dbFiles.get(0).get("filename"));*/
-
-			//Example Code for UPLOAD to DB
-        	/*String filePath = "C:\\Users\\rgmit\\OneDrive\\Desktop\\merge.txt";
-			myDB.uploadFile(filePath);
-			myDB.saveFileFromDB("merge.txt", "C:\\Users\\rgmit\\OneDrive\\Desktop\\ragMerge.txt");*/
-
-			//Example Code for EDITING an entry
-			/*myDB.editSharedWith("merge.txt");*/
-
-			//Copy Collections Sample Code
-			MongoCollection<Document> replica1 = myDB.database.getCollection("replica1");
-			MongoCollection<Document> replica12 = myDB.database.getCollection("replica12");
-			replica1.drop();
-			replica12.drop();
-			for(Document d: myDB.filesCollection.find())
-			{
-				replica1.insertOne(d);
-				replica12.insertOne(d);
-			}
-     }
 }

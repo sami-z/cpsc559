@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 @Repository("requestQueue")
-public class RequestQueueMain implements RequestQueue{
+public class RequestQueueImpl implements RequestQueue{
     private static final Queue<JsonNode> requestQueue = new LinkedList<>();;
 
     @Override
