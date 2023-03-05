@@ -8,8 +8,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 import MainServer.ReplicaManager.DB;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 
 
 public class ExecutionCoreHandler {
@@ -66,14 +64,10 @@ public class ExecutionCoreHandler {
 
         if (request == null) return;
 
-        ArrayList<JSONObject> files = null;
+        ArrayList<JsonNode> files = null;
         // Check type of request
         if(request.get("requestType").asText().equalsIgnoreCase("READ")){ // locking
-            try {
-                files = db.findFiles(request.get("userName").asText());
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
+            files = db.findFiles(request.get("userName").asText());
 
         }
         else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){ // locking

@@ -1,4 +1,4 @@
-package ResponseQueue;
+package ResponseQueue.Server;
 
 import ResponseQueue.Service.ResponseQueueHandler;
 import Util.NetworkConstants;

@@ -1,6 +1,5 @@
-package RequestQueue;
+package RequestQueue.Server;
 
-import RequestQueue.DataAccessObject.RequestQueue;
 import RequestQueue.Service.RequestQueueHandler;
 import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
