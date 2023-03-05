@@ -1,3 +1,12 @@
+.sidebar{
+    width:15%;
+    height:18vh;
+    margin-right: 5px;
+}
+
+br{
+    background-color: rgb(197,197,197);
+}
 .upload {
     display: flex;
     align-items: center;
@@ -38,3 +47,4 @@
   .side-button-container {
     width: 50px;
   }
+  

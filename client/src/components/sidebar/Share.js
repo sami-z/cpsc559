@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
-import './Upload.css'
+import './styles.css'
 import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import Modal from '@mui/material/Modal';
 import { makeStyles } from '@mui/styles';
@@ -32,63 +32,63 @@ function ShareButton() {
     const [modalStyle] = useState(getModalStyle);
     const [sharing, setUploading] = useState(false);
 
-  const handleNameChange = (event) => {
-    setName(event.target.value);
-  };
+    const handleNameChange = (event) => {
+        setName(event.target.value);
+    };
 
-  const handleClose = () => {
-    setOpen(false);
-};
-
-
-const handleOpen = () => {
-    setOpen(true);
-};
+    const handleClose = () => {
+        setOpen(false);
+    };
 
 
-function createWebSocket() {
-    return new WebSocket(WEBSOCKET_URL);
-}
+    const handleOpen = () => {
+        setOpen(true);
+    };
 
-  const handleSharePermission = () => {
-    const newWebSocket = createWebSocket();
-    // Send a JSON payload through the WebSocket connection to share the permission with the specified user
-    const payload = { userName: "manbir", fileName: "samiSmart.jpg", shareWith: name };
 
-    newWebSocket.addEventListener('open', () => {
-        console.log('WebSocket connection established!');
+    function createWebSocket() {
+        return new WebSocket(WEBSOCKET_URL);
+    }
 
-        console.log(newWebSocket);
+    const handleSharePermission = () => {
+        const newWebSocket = createWebSocket();
+        // Send a JSON payload through the WebSocket connection to share the permission with the specified user
+        const payload = { userName: "manbir", fileName: "samiSmart.jpg", shareWith: name };
 
-        if ( newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
-            newWebSocket.send(JSON.stringify(payload));
-            alert('Permission shared successfully!');
-        }
+        newWebSocket.addEventListener('open', () => {
+            console.log('WebSocket connection established!');
 
-        else{
-            console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-        }
+            console.log(newWebSocket);
 
-        newWebSocket.close()
-        console.log(newWebSocket);
+            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
+                newWebSocket.send(JSON.stringify(payload));
+                alert('Permission shared successfully!');
+            }
 
-        // Send the file then close
-        // handleFileUpload();
-        // handleClose();
-    });
+            else {
+                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
+            }
 
-    console.log(JSON.stringify(payload))
+            newWebSocket.close()
+            console.log(newWebSocket);
 
-  };
+            // Send the file then close
+            // handleFileUpload();
+            // handleClose();
+        });
 
-  return (
-    <div className='upload'>
-        <div className='upload__container' onClick={handleOpen}>
-            <ScreenShareIcon/>
-            <p className='side-button-container'>Share</p>
-        </div>
+        console.log(JSON.stringify(payload))
 
-        <Modal
+    };
+
+    return (
+        <div className='upload'>
+            <div className='upload__container' onClick={handleOpen}>
+                <ScreenShareIcon />
+                <p className='side-button-container'>Share</p>
+            </div>
+
+            <Modal
                 open={open}
                 onClose={handleClose}
                 aria-labelledby="simple-modal-title"
@@ -104,18 +104,18 @@ function createWebSocket() {
                         sharing ? (
                             <p>Sharing...</p>
                         ) : (
-                                <>
-                                    <input type="text" placeholder="Enter username" value={name} onChange={handleNameChange} />
-                                    <button onClick={handleSharePermission}>Share File</button>
-                                    {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
-                                    {/* {fileData && <p>{fileData}</p>} */}
-                                </>
-                            )
+                            <>
+                                <input type="text" placeholder="Enter username" value={name} onChange={handleNameChange} />
+                                <button onClick={handleSharePermission}>Share File</button>
+                                {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
+                                {/* {fileData && <p>{fileData}</p>} */}
+                            </>
+                        )
                     }
                 </div>
             </Modal>
-    </div>
-  );
+        </div>
+    );
 }
 
 export default ShareButton;

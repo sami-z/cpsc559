@@ -36,10 +36,11 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar/>
-      <Sidebar/>
-      <Files/>
-    
+      <div className='app_main'>
+        <Navbar/>
+        <Sidebar/>
+        <Files/>
+      </div>
     </div>
   );
 }
