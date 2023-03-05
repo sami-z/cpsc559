@@ -55,11 +55,12 @@ function Upload() {
         setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
         const payload = { requestType: "WRITE", userName: "manbir", fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null };
-
+        
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
 
             console.log(newWebSocket);
+
 
             if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
                 newWebSocket.send(JSON.stringify(payload));

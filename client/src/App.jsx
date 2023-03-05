@@ -34,13 +34,15 @@ function App() {
     return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
   }, [])
 
+  const [searchTerm, setSearchTerm] = useState('');
+
   return (
     <div className="App">
       <div className='app_main'>
-        <Navbar/>
+        <Navbar setSearchTerm={setSearchTerm}/>
         <div className='main_content'>
           <Sidebar/>
-          <Files/>
+          <Files searchTerm={searchTerm}/>
           
         </div>
       </div>
