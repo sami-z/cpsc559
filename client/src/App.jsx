@@ -38,7 +38,7 @@ function App() {
     <div className="App">
       <Navbar/>
 
-      <div className="app_main">
+      <div>
         <Sidebar/>
         <Files/>
       </div>

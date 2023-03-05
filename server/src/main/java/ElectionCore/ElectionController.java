@@ -19,7 +19,7 @@ public class ElectionController{
 
     @PostMapping("/leader")
     public String leader(ElectionState es) {
-
+        return null;
     }
 
     @PostMapping("/election")

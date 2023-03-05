@@ -12,6 +12,7 @@ function getModalStyle() {
         top: `50%`,
         left: `50%`,
         transform: `translate(-50%, -50%)`,
+        
     };
 }
 
@@ -31,16 +32,18 @@ const useStyles = makeStyles({
     },
   });
 
-function Upload(props) {
+function Upload() {
     const classes = useStyles();
 
+
+    const [uploadStatus, setUploadStatus] = useState('idle'); // 'idle', 'uploading', 'uploaded'
     const [modalStyle] = useState(getModalStyle);
     const [open, setOpen] = useState(false);
     const [fileData, setFileData] = useState(null);
     const [fileBytes, setFileBytes] = useState(null);
     const [uploading, setUploading] = useState(false);
 
-    const handleSend = () => {
+    const handleSend = async () => {
         
     // public String requestType;
     // public String userName;
@@ -49,7 +52,7 @@ function Upload(props) {
     // public String bytes;
     // public String shareWith;
 
-
+        setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
         const payload = { requestType: "WRITE", userName: "manbir", fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null};
 
@@ -67,18 +70,21 @@ function Upload(props) {
                 console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
             }
 
-            setOpen(false)
-            setFileData(null)
-            setFileBytes(null)
+            setTimeout(() => {
+                setUploadStatus('uploaded');
+                setOpen(false);
+                setFileData(null);
+                setFileBytes(null);
+                setUploadStatus('idle');
+              }, 2500); // add a 2.5 second delay
+        
+    
+              newWebSocket.close();
 
-            newWebSocket.close()
-            console.log(newWebSocket);
-
-            // Send the file then close
-            // handleFileUpload();
-            // handleClose();
         });
 
+
+        
     };
 
     const handleOpen = () => {
@@ -90,6 +96,7 @@ function Upload(props) {
     };
 
     const handleChange = (e) => {
+        // setUploadStatus('uploading');
         if (e.target.files[0]) {
             const file = e.target.files[0];
             const reader = new FileReader();
@@ -110,7 +117,7 @@ function Upload(props) {
     <div className='upload'>
         <div className='upload__container' onClick={handleOpen}>
             <AddIcon/>
-            <p>Upload</p>
+            <p className='side-button-container'>Upload</p>
         </div>
 
         <Modal
@@ -126,17 +133,22 @@ function Upload(props) {
                         <p>Select file(s) to upload:</p>
                     </center>
                     {
-                        uploading ? (
-                            <p>Uploading...</p>
+                        uploadStatus === 'uploading' ? (
+                            <div>
+                                <center>
+                                    <p>Uploading...</p>
+                                    <div className="loading-spinner"></div>    
+                                </center>
+
+                            </div>
+
                         ) : (
                                 <>
                                     <input type="file" onChange={handleChange} />
                                     <button onClick={handleSend}>Upload to DFS</button>
-                                    {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
-                                    {/* {fileData && <p>{fileData}</p>} */}
                                 </>
                             )
-                    }
+                    }    
                 </div>
             </Modal>
     </div>

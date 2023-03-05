@@ -1,12 +1,50 @@
 import React, { useState } from 'react';
 import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
+import './Upload.css'
+import ScreenShareIcon from '@mui/icons-material/ScreenShare';
+import Modal from '@mui/material/Modal';
+import { makeStyles } from '@mui/styles';
 
-function ShareButton({ socket }) {
-  const [name, setName] = useState('');
+function getModalStyle() {
+    return {
+        top: `50%`,
+        left: `50%`,
+        transform: `translate(-50%, -50%)`,
+    };
+}
+
+const useStyles = makeStyles({
+    root: {
+        position: 'absolute',
+        background: 'white',
+        border: '2px solid #000',
+        borderRadius: 3,
+        color: 'black',
+        height: 48,
+        padding: '0 30px',
+    },
+});
+
+function ShareButton() {
+    const classes = useStyles();
+    const [name, setName] = useState('');
+    const [open, setOpen] = useState(false);
+    const [modalStyle] = useState(getModalStyle);
+    const [sharing, setUploading] = useState(false);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
   };
+
+  const handleClose = () => {
+    setOpen(false);
+};
+
+
+const handleOpen = () => {
+    setOpen(true);
+};
+
 
 function createWebSocket() {
     return new WebSocket(WEBSOCKET_URL);
@@ -44,9 +82,38 @@ function createWebSocket() {
   };
 
   return (
-    <div>
-      <input type="text" placeholder="Enter name" value={name} onChange={handleNameChange} />
-      <button onClick={handleSharePermission}>Share Permission</button>
+    <div className='upload'>
+        <div className='upload__container' onClick={handleOpen}>
+            <ScreenShareIcon/>
+            <p className='side-button-container'>Share</p>
+        </div>
+
+        <Modal
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="simple-modal-title"
+                aria-describedby="simple-modal-description"
+            >
+
+                {/* // {classes.paper} */}
+                <div style={modalStyle} className={classes.root}>
+                    <center>
+                        <p>Enter user(s) to share with:</p>
+                    </center>
+                    {
+                        sharing ? (
+                            <p>Sharing...</p>
+                        ) : (
+                                <>
+                                    <input type="text" placeholder="Enter username" value={name} onChange={handleNameChange} />
+                                    <button onClick={handleSharePermission}>Share File</button>
+                                    {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
+                                    {/* {fileData && <p>{fileData}</p>} */}
+                                </>
+                            )
+                    }
+                </div>
+            </Modal>
     </div>
   );
 }

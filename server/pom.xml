@@ -78,7 +78,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>DBServ.ServerMain</mainClass>
+                    <mainClass>RequestQueue.RequestQueueServerMain</mainClass>
                 </configuration>
 			</plugin>
 		</plugins>

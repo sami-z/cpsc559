@@ -18,3 +18,23 @@
 .upload__container>p{
     margin-left: 14px;
 }
+
+
+.loading-spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #3182ce;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .side-button-container {
+    width: 50px;
+  }
