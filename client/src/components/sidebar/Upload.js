@@ -95,25 +95,16 @@ function Upload(props) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 setFileData(file);
-                const base64Data = btoa(String.fromCharCode(...new Uint8Array(e.target.result)));
+                const base64Data = e.target.result.split(",")[1]; 
                 setFileBytes(base64Data);
                 console.log("File to upload", file);
-                console.log("File bytes", fileBytes);
+                console.log("File bytes", base64Data);
             };
 
-            reader.readAsArrayBuffer(file);
+            reader.readAsDataURL(file);
         }
     }
 
-    // const handleFileUpload = (event) => {
-    //     setUploading(true);
-    //     const file = event.target.files[0];
-    //     const reader = new FileReader();
-    //     reader.onload = (e) => {
-    //       setFileData(e.target.result);
-    //     };
-    //     reader.readAsText(file);
-    //   };
 
   return (
     <div className='upload'>
