@@ -24,6 +24,12 @@
             <version>2.10.1</version>
         </dependency>
 
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>4.9.0</version>
+		</dependency>
+
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
@@ -73,7 +79,8 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>DBServ.ServerMain</mainClass>
+<!--                    <mainClass>DBServ.ServerMain</mainClass>-->
+                    <mainClass>RequestQueue.RequestQueueServerMain</mainClass>
                 </configuration>
 			</plugin>
 		</plugins>
