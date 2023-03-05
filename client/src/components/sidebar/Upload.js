@@ -37,10 +37,21 @@ function Upload(props) {
     const [modalStyle] = useState(getModalStyle);
     const [open, setOpen] = useState(false);
     const [fileData, setFileData] = useState(null);
+    const [fileBytes, setFileBytes] = useState(null);
     const [uploading, setUploading] = useState(false);
 
     const handleSend = () => {
+        
+    // public String requestType;
+    // public String userName;
+    // public String fileName;
+    // public String fileType;
+    // public String bytes;
+    // public String shareWith;
+
+
         const newWebSocket = createWebSocket();
+        const payload = { requestType: "WRITE", userName: "manbir", fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null};
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -48,19 +59,17 @@ function Upload(props) {
             console.log(newWebSocket);
 
             if ( newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
-                newWebSocket.send("{\"requestType\":\"READ\", \"userName\":\"manbir\", \"fileName\": \"merge.txt\"}");
+                newWebSocket.send(JSON.stringify(payload));
             }
 
-
-            //  String requestType;
-            // public String userName;
-            // public String fileName;
-            // public String fileType;
-            // public String bytes;
     
             else{
                 console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
             }
+
+            setOpen(false)
+            setFileData(null)
+            setFileBytes(null)
 
             newWebSocket.close()
             console.log(newWebSocket);
@@ -85,21 +94,26 @@ function Upload(props) {
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.onload = (e) => {
-                setFileData(e.target.result);
+                setFileData(file);
+                const base64Data = btoa(String.fromCharCode(...new Uint8Array(e.target.result)));
+                setFileBytes(base64Data);
+                console.log("File to upload", file);
+                console.log("File bytes", fileBytes);
             };
-            reader.readAsText(file);
+
+            reader.readAsArrayBuffer(file);
         }
     }
 
-    const handleFileUpload = (event) => {
-        setUploading(true);
-        const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setFileData(e.target.result);
-        };
-        reader.readAsText(file);
-      };
+    // const handleFileUpload = (event) => {
+    //     setUploading(true);
+    //     const file = event.target.files[0];
+    //     const reader = new FileReader();
+    //     reader.onload = (e) => {
+    //       setFileData(e.target.result);
+    //     };
+    //     reader.readAsText(file);
+    //   };
 
   return (
     <div className='upload'>
