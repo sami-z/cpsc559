@@ -2,7 +2,6 @@ package ExecutionCore;
 
 import DBServ.DB;
 import Util.NetworkConstants;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,7 +28,7 @@ public class MultiThreadedServer implements Runnable{
 
         DB db = new DB();
 
-        new Thread(new ElectionHandler()).start();
+        //new Thread(new ElectionController()).start();
 
         while(this.isRunning){
             try {
