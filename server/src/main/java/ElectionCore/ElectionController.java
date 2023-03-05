@@ -2,13 +2,8 @@ package ElectionCore;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication
 @RestController
@@ -18,13 +13,15 @@ public class ElectionController{
     private ElectionState state;
 
     @PostMapping("/leader")
-    public String leader(ElectionState es) {
-
+    public void leader(@RequestBody ElectionState es) {
+        state.leaderIP = es.leaderIP;
+        state.isRunning = es.isRunning;
     }
 
     @PostMapping("/election")
-    public String election(@RequestParam(value = "name", defaultValue = "World") String name) {
-        return String.format("Hello %s!", name);
+    @ResponseStatus(value = HttpStatus.OK)
+    public void election(@RequestBody ElectionState es) throws InterruptedException {
+
     }
 
 

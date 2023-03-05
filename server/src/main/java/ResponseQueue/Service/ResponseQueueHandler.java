@@ -12,10 +12,9 @@ import java.net.Socket;
 @Service
 public class ResponseQueueHandler{
     private ResponseQueue responseQueue;
-    private ObjectMapper mapper;
 
     @Autowired
-    public ResponseQueueHandler(Socket cs, @Qualifier("responseQueue") ResponseQueue responseQueue){
+    public ResponseQueueHandler(@Qualifier("responseQueue") ResponseQueue responseQueue){
         this.responseQueue = responseQueue;
     }
 
