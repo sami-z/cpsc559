@@ -38,8 +38,11 @@ function App() {
     <div className="App">
       <div className='app_main'>
         <Navbar/>
-        <Sidebar/>
-        <Files/>
+        <div className='main_content'>
+          <Sidebar/>
+          <Files/>
+          
+        </div>
       </div>
     </div>
   );

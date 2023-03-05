@@ -4,21 +4,9 @@ import Share from './Share'
 import './styles.css'
 const Sidebar = () => {
   return (
-    <div className='sidebarItem'>
+    <div className='sidebar'>
       <Upload />
-
       <Share />
-
-
-
-
-
-      <div className='sidebar_container'>
-
-
-        <hr />
-
-      </div>
     </div>
   )
 }
