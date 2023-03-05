@@ -12,8 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import DBServ.DB;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -71,14 +69,10 @@ public class ExecutionCoreHandler {
 
         if (request == null) return;
 
-        ArrayList<JSONObject> files = null;
+        ArrayList<JsonNode> files = null;
         // Check type of request
         if(request.get("requestType").asText().equalsIgnoreCase("READ")){ // locking
-            try {
-                files = db.findFiles(request.get("userName").asText());
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
+            files = db.findFiles(request.get("userName").asText());
 
         }
         else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){ // locking

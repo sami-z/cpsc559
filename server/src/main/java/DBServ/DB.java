@@ -9,12 +9,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.bson.conversions.Bson;
 
 import static com.mongodb.client.model.Updates.*;
@@ -31,6 +32,7 @@ public class DB {
 	public MongoClient mongoClient;
 	public MongoDatabase database;
 	public MongoCollection<Document> filesCollection;
+	private ObjectMapper mapper;
 	
 	public DB() {
 		this.mongoClient = MongoClients.create(URI);
@@ -56,15 +58,14 @@ public class DB {
         filesCollection.insertOne(entry);
         System.out.println("Uploaded "+ filePath + " as " + ownerName);
 	}
-	public ArrayList<JSONObject> findFiles(String ownerName) throws ParseException {
-		ArrayList<JSONObject> ret = new ArrayList<>();
+	public ArrayList<JsonNode> findFiles(String ownerName) throws JsonProcessingException {
+		ArrayList<JsonNode> ret = new ArrayList<>();
 		
 		FindIterable<Document> doc = this.filesCollection.find(eq("owner",ownerName));
 		if (doc != null) {
 			System.out.println("Found files for " + ownerName + "!");
 			for(Document d: doc) {
-	        	JSONParser tempParser = new JSONParser();
-	        	JSONObject tempJson = (JSONObject) tempParser.parse(d.toJson());
+				JsonNode tempJson = (JsonNode) mapper.readTree(d.toJson());
 	        	ret.add(tempJson);
 	        	System.out.println(">" + tempJson.get("filename"));
 	        }
@@ -73,13 +74,12 @@ public class DB {
         }
 		return ret;
 	}
-	public void saveFileFromDB(String filename, String dest) throws ParseException, IOException {
+	public void saveFileFromDB(String filename, String dest) throws IOException {
 		Document doc = this.filesCollection.find(eq("filename", filename)).first();
 		if (doc != null) {
-			JSONParser parser = new JSONParser();
-	    	JSONObject json = (JSONObject) parser.parse(doc.toJson());
+	    	JsonNode json = (JsonNode) mapper.readTree(doc.toJson());
 	    	System.out.println("bytes: "+ json.get("bytes") + " end");
-	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary((String) json.get("bytes"));
+	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(mapper.writeValueAsString(json.get("bytes")));
 	    	ByteArrayOutputStream out = new ByteArrayOutputStream();
 	        //ObjectOutputStream os = new ObjectOutputStream(out);
 	        //os.writeObject(json.get("selectedFile"));
