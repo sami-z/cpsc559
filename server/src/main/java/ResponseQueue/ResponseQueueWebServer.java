@@ -16,6 +16,8 @@ public class ResponseQueueWebServer extends WebSocketServer {
     private ResponseQueue rq;
     private ObjectMapper mapper;
 
+    private String noUpdate = "";
+
     public ResponseQueueWebServer(int port, ResponseQueue rq) throws UnknownHostException {
         super(new InetSocketAddress(port));
         this.rq = rq;
@@ -38,9 +40,14 @@ public class ResponseQueueWebServer extends WebSocketServer {
         try {
             JsonNode currRequest = mapper.readTree(s);
             String uName = currRequest.get("userName").asText();
+
             JsonNode currNode = rq.pop(uName);
 
-            webSocket.send(currNode.toPrettyString().getBytes(StandardCharsets.UTF_8));
+            if(currNode == null)
+                webSocket.send(noUpdate.getBytes(StandardCharsets.UTF_8));
+            else
+                webSocket.send(currNode.toPrettyString().getBytes(StandardCharsets.UTF_8));
+
             webSocket.close();
 
         } catch (JsonProcessingException e) {
