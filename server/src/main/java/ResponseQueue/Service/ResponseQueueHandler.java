@@ -7,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.net.Socket;
-import java.util.LinkedList;
 
 @Service
 public class ResponseQueueHandler{
@@ -17,7 +15,7 @@ public class ResponseQueueHandler{
     private ObjectMapper mapper;
 
     @Autowired
-    public ResponseQueueHandler(@Qualifier("responseQueue") ResponseQueue responseQueue){
+    public ResponseQueueHandler(Socket cs, @Qualifier("responseQueue") ResponseQueue responseQueue){
         this.responseQueue = responseQueue;
     }
 
