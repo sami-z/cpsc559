@@ -1,11 +1,12 @@
 import React from 'react'
-import InsertDriveFileIcon from '@material-ui/icons/InsertDriveFile';
-
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import './styles.css'
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const FileItem = ({ id, caption, timestamp, fileUrl, size }) => {
-    const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
-
+    console.log("In FileItem.js, ", caption, timestamp, fileUrl, size)
+    //const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
+    const fileDate = "09/03/2023"
     const getReadableFileSizeString = (fileSizeInBytes) => {
         let i = -1;
         const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];

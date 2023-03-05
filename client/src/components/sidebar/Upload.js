@@ -1,6 +1,6 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import AddIcon from '@mui/icons-material/Add'
-import './Upload.css'
+import './styles.css'
 import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
 
 
@@ -12,13 +12,13 @@ function getModalStyle() {
         top: `50%`,
         left: `50%`,
         transform: `translate(-50%, -50%)`,
-        
+
     };
 }
 
 function createWebSocket() {
     return new WebSocket(WEBSOCKET_URL);
-  }
+}
 
 const useStyles = makeStyles({
     root: {
@@ -30,7 +30,7 @@ const useStyles = makeStyles({
         height: 48,
         padding: '0 30px',
     },
-  });
+});
 
 function Upload() {
     const classes = useStyles();
@@ -44,29 +44,29 @@ function Upload() {
     const [uploading, setUploading] = useState(false);
 
     const handleSend = async () => {
-        
-    // public String requestType;
-    // public String userName;
-    // public String fileName;
-    // public String fileType;
-    // public String bytes;
-    // public String shareWith;
+
+        // public String requestType;
+        // public String userName;
+        // public String fileName;
+        // public String fileType;
+        // public String bytes;
+        // public String shareWith;
 
         setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
-        const payload = { requestType: "WRITE", userName: "manbir", fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null};
+        const payload = { requestType: "WRITE", userName: "manbir", fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
 
             console.log(newWebSocket);
 
-            if ( newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
+            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
                 newWebSocket.send(JSON.stringify(payload));
             }
 
-    
-            else{
+
+            else {
                 console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
             }
 
@@ -76,15 +76,15 @@ function Upload() {
                 setFileData(null);
                 setFileBytes(null);
                 setUploadStatus('idle');
-              }, 2500); // add a 2.5 second delay
-        
-    
-              newWebSocket.close();
+            }, 2500); // add a 2.5 second delay
+
+
+            newWebSocket.close();
 
         });
 
 
-        
+
     };
 
     const handleOpen = () => {
@@ -102,7 +102,7 @@ function Upload() {
             const reader = new FileReader();
             reader.onload = (e) => {
                 setFileData(file);
-                const base64Data = e.target.result.split(",")[1]; 
+                const base64Data = e.target.result.split(",")[1];
                 setFileBytes(base64Data);
                 console.log("File to upload", file);
                 console.log("File bytes", base64Data);
@@ -113,14 +113,14 @@ function Upload() {
     }
 
 
-  return (
-    <div className='upload'>
-        <div className='upload__container' onClick={handleOpen}>
-            <AddIcon/>
-            <p className='side-button-container'>Upload</p>
-        </div>
+    return (
+        <div className='upload'>
+            <div className='upload__container' onClick={handleOpen}>
+                <AddIcon />
+                <p className='side-button-container'>Upload</p>
+            </div>
 
-        <Modal
+            <Modal
                 open={open}
                 onClose={handleClose}
                 aria-labelledby="simple-modal-title"
@@ -137,22 +137,22 @@ function Upload() {
                             <div>
                                 <center>
                                     <p>Uploading...</p>
-                                    <div className="loading-spinner"></div>    
+                                    <div className="loading-spinner"></div>
                                 </center>
 
                             </div>
 
                         ) : (
-                                <>
-                                    <input type="file" onChange={handleChange} />
-                                    <button onClick={handleSend}>Upload to DFS</button>
-                                </>
-                            )
-                    }    
+                            <>
+                                <input type="file" onChange={handleChange} />
+                                <button onClick={handleSend}>Upload to DFS</button>
+                            </>
+                        )
+                    }
                 </div>
             </Modal>
-    </div>
-  )
+        </div>
+    )
 }
 
 export default Upload
