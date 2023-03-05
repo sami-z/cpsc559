@@ -1,24 +1,24 @@
 package RequestQueue;
 
+import RequestQueue.DataAccessObject.RequestQueue;
+import RequestQueue.Service.RequestQueueHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jdk.nashorn.internal.ir.RuntimeNode;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 public class RequestQueueWebServer extends WebSocketServer{
-    private RequestQueue requestQueue;
+    private RequestQueueHandler requestQueueHandler;
     private ObjectMapper mapper;
 
-    public RequestQueueWebServer(int portNumber, RequestQueue requestQueue) throws UnknownHostException {
+    public RequestQueueWebServer(int portNumber, RequestQueueHandler requestQueueHandler) throws UnknownHostException {
         super(new InetSocketAddress(portNumber));
-        this.requestQueue = requestQueue;
+        this.requestQueueHandler = requestQueueHandler;
         this.mapper = new ObjectMapper();
     }
 
@@ -38,7 +38,7 @@ public class RequestQueueWebServer extends WebSocketServer{
         try {
             JsonNode request = mapper.readTree(s);
             if (request != null && !request.isEmpty()) {
-                requestQueue.produceMessage(request);
+                requestQueueHandler.produceRequest(request);
             }
             webSocket.close();
         } catch (JsonProcessingException e) {
