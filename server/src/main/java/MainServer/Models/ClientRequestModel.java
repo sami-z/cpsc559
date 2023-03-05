@@ -1,4 +1,4 @@
-package Models;
+package MainServer.Models;
 
 public class ClientRequestModel {
     public String requestType;

@@ -1,6 +1,6 @@
-package DBServ;
+package MainServer.ExecutionCore;
 
-import ElectionCore.ElectionController;
+import MainServer.ElectionCore.ElectionController;
 import org.springframework.boot.SpringApplication;
 
 import java.net.InetAddress;
