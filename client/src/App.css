@@ -1,6 +1,8 @@
+
 .app_main{
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .main_content {
