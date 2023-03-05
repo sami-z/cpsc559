@@ -1,8 +1,6 @@
 package DBServ;
 
 import ExecutionCore.ElectionController;
-import ExecutionCore.MultiThreadedServer;
-import ResponseQueue.ResponseQueueServer;
 import org.springframework.boot.SpringApplication;
 
 public class ServerMain {

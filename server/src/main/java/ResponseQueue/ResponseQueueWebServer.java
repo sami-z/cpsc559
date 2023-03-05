@@ -1,5 +1,7 @@
 package ResponseQueue;
 
+import ResponseQueue.DataAccessObject.ResponseQueue;
+import ResponseQueue.Service.ResponseQueueHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,14 +15,14 @@ import java.nio.charset.StandardCharsets;
 
 public class ResponseQueueWebServer extends WebSocketServer {
 
-    private ResponseQueue rq;
+    private ResponseQueueHandler responseQueueHandler;
     private ObjectMapper mapper;
 
     private String noUpdate = "";
 
-    public ResponseQueueWebServer(int port, ResponseQueue rq) throws UnknownHostException {
+    public ResponseQueueWebServer(int port, ResponseQueueHandler responseQueueHandler) throws UnknownHostException {
         super(new InetSocketAddress(port));
-        this.rq = rq;
+        this.responseQueueHandler = responseQueueHandler;
         this.mapper = new ObjectMapper();
     }
 
@@ -41,7 +43,7 @@ public class ResponseQueueWebServer extends WebSocketServer {
             JsonNode currRequest = mapper.readTree(s);
             String uName = currRequest.get("userName").asText();
 
-            JsonNode currNode = rq.pop(uName);
+            JsonNode currNode = responseQueueHandler.pop(uName);
 
             if(currNode == null)
                 webSocket.send(noUpdate.getBytes(StandardCharsets.UTF_8));
