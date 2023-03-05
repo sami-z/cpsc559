@@ -9,18 +9,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import com.google.gson.*;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.json.JsonWriterSettings;
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
+
 import static com.mongodb.client.model.Updates.*;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.client.FindIterable;
@@ -28,13 +24,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-import org.bson.json.JsonWriterSettings;
-
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.*;
 public class DB {
 	private final static String URI = "mongodb+srv://cpsc559:cpsc559@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority";
 	public MongoClient mongoClient;
@@ -51,10 +40,10 @@ public class DB {
 		byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath));
     	String encodedString = Base64.getEncoder().encodeToString(fileContent);
         Document entry = new Document("_id", new ObjectId())
-        	   .append("filename", "placeHolder.txt")
+        	   .append("filename", "fileName.txt")
         	   .append("bytes", encodedString)
         	   .append("owner", ownerName)
-        	   .append("created", "14/033/2023")
+        	   .append("created", "14/04/2023")
                .append("shared", Arrays.asList("ragya","sami"));
         filesCollection.insertOne(entry);
         System.out.println("Uploaded "+ filePath + " as " + ownerName);
@@ -107,12 +96,31 @@ public class DB {
 	}
     public static void main( String[] args ) throws IOException, ParseException {
         	DB myDB = new DB();
-        	ArrayList<JSONObject> dbFiles = myDB.findFiles("manbir");
-        	System.out.println(dbFiles.get(0).get("filename"));
-        	String filePath = "C:\\Users\\rgmit\\OneDrive\\Desktop\\merge.txt";
-			myDB.editSharedWith("merge.txt");
 
-			//myDB.uploadFile(filePath);
-        	//myDB.saveFileFromDB("merge.txt", "C:\\Users\\rgmit\\OneDrive\\Desktop\\ragMerge.txt");
+			//Example Upload File to DB code
+			/*myDB.uploadFile("C:\\Users\\rgmit\\OneDrive\\Desktop\\sami.png","manbir");*/
+
+			//Example Code for FINDING an entry
+			/*ArrayList<JSONObject> dbFiles = myDB.findFiles("manbir");
+        	System.out.println(dbFiles.get(0).get("filename"));*/
+
+			//Example Code for UPLOAD to DB
+        	/*String filePath = "C:\\Users\\rgmit\\OneDrive\\Desktop\\merge.txt";
+			myDB.uploadFile(filePath);
+			myDB.saveFileFromDB("merge.txt", "C:\\Users\\rgmit\\OneDrive\\Desktop\\ragMerge.txt");*/
+
+			//Example Code for EDITING an entry
+			/*myDB.editSharedWith("merge.txt");*/
+
+			//Copy Collections Sample Code
+			MongoCollection<Document> replica1 = myDB.database.getCollection("replica1");
+			MongoCollection<Document> replica12 = myDB.database.getCollection("replica12");
+			replica1.drop();
+			replica12.drop();
+			for(Document d: myDB.filesCollection.find())
+			{
+				replica1.insertOne(d);
+				replica12.insertOne(d);
+			}
      }
 }
