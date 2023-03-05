@@ -1,7 +1,7 @@
-package ResponseQueue;
+package RequestQueue.Server;
 
-import ResponseQueue.DataAccessObject.ResponseQueue;
-import ResponseQueue.Service.ResponseQueueHandler;
+import RequestQueue.DataAccessObject.RequestQueue;
+import RequestQueue.Service.RequestQueueHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,18 +11,14 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 
-public class ResponseQueueWebServer extends WebSocketServer {
-
-    private ResponseQueueHandler responseQueueHandler;
+public class RequestQueueWebServer extends WebSocketServer{
+    private RequestQueueHandler requestQueueHandler;
     private ObjectMapper mapper;
 
-    private String noUpdate = "";
-
-    public ResponseQueueWebServer(int port, ResponseQueueHandler responseQueueHandler) throws UnknownHostException {
-        super(new InetSocketAddress(port));
-        this.responseQueueHandler = responseQueueHandler;
+    public RequestQueueWebServer(int portNumber, RequestQueueHandler requestQueueHandler) throws UnknownHostException {
+        super(new InetSocketAddress(portNumber));
+        this.requestQueueHandler = requestQueueHandler;
         this.mapper = new ObjectMapper();
     }
 
@@ -40,20 +36,13 @@ public class ResponseQueueWebServer extends WebSocketServer {
     public void onMessage(WebSocket webSocket, String s) {
         System.out.println(s);
         try {
-            JsonNode currRequest = mapper.readTree(s);
-            String uName = currRequest.get("userName").asText();
-
-            JsonNode currNode = responseQueueHandler.pop(uName);
-
-            if(currNode == null)
-                webSocket.send(noUpdate.getBytes(StandardCharsets.UTF_8));
-            else
-                webSocket.send(currNode.toPrettyString().getBytes(StandardCharsets.UTF_8));
-
+            JsonNode request = mapper.readTree(s);
+            if (request != null && !request.isEmpty()) {
+                requestQueueHandler.produceRequest(request);
+            }
             webSocket.close();
-
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -64,7 +53,7 @@ public class ResponseQueueWebServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        System.out.println("Server started!");
+        System.out.println("Request queue web server started");
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
     }

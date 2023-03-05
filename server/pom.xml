@@ -66,7 +66,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>ResponseQueue.ResponseQueueServerMain</mainClass>
+                    <mainClass>ResponseQueue.Server.ResponseQueueServerMain</mainClass>
                 </configuration>
 			</plugin>
 		</plugins>
