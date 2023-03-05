@@ -6,7 +6,7 @@ const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep
 const FileItem = ({ id, caption, timestamp, fileUrl, size }) => {
     console.log("In FileItem.js, ", caption, timestamp, fileUrl, size)
     //const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
-    const fileDate = "Sami Day"
+    const fileDate = "09/03/2023"
     const getReadableFileSizeString = (fileSizeInBytes) => {
         let i = -1;
         const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];

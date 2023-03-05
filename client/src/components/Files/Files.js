@@ -7,13 +7,13 @@ const Files = () => {
     // HARDCODED files Array 
     let files = [
         {
-            caption: "rag",
+            caption: "ragSmart.jpg",
             timestamp: "1234",
             fileUrl: "rag.com",
             size: "12314"
         },
         {
-            caption: "sam",
+            caption: "pdf.file",
             timestamp: "234",
             fileUrl: "sam.com",
             size: "123"
