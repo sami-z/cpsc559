@@ -29,6 +29,8 @@ public class MultiThreadedServer implements Runnable{
 
         DB db = new DB();
 
+        new Thread(new ElectionHandler()).start();
+
         while(this.isRunning){
             try {
                 OutputStream output = rqSocket.getOutputStream();
