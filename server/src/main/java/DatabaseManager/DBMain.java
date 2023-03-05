@@ -1,17 +1,17 @@
-package MainServer.ExecutionCore;
+package DatabaseManager;
 
 import MainServer.ElectionCore.ElectionController;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class ServerMain {
+@SpringBootApplication
+public class DBMain {
 
     public static void main(String[] args) throws UnknownHostException {
-        InetAddress IP=InetAddress.getLocalHost();
-
-        SpringApplication.run(ElectionController.class,args);
+        SpringApplication.run(DatabaseController.class,args);
 
     }
 }

@@ -7,7 +7,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import MainServer.ReplicaManager.DB;
+import DatabaseManager.DB;
 
 
 public class ExecutionCoreHandler {

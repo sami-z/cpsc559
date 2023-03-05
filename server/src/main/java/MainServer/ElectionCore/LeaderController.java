@@ -1,4 +1,4 @@
-package MainServer.ReplicaManager;
+package MainServer.ElectionCore;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +12,6 @@ import java.util.Queue;
 @RestController
 public class LeaderController {
 
-    @Autowired
     private HashMap<String, Queue<String>> csQ;
     private HashSet<String> mutex;
 

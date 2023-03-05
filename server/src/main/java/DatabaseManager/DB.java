@@ -1,4 +1,4 @@
-package MainServer.ReplicaManager;
+package DatabaseManager;
 
 import static com.mongodb.client.model.Filters.eq;
 

@@ -1,6 +1,6 @@
 package MainServer.ExecutionCore;
 
-import MainServer.ReplicaManager.DB;
+import DatabaseManager.DB;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.client.RestTemplate;
 

@@ -1,5 +1,7 @@
 package Util;
 
+import java.util.List;
+
 public final class NetworkConstants {
 
     public static final String EMPTY_QUEUE = "EmptyQueue";
@@ -13,5 +15,7 @@ public final class NetworkConstants {
     public static int  RESPONSE_QUEUE_SERVER_PORT = 9090;
 
     public static int PING_VALUE = 0;
+    public static final List<String> SERVER_IPS = null;
+
 
 }
