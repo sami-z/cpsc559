@@ -20,4 +20,8 @@ public final class NetworkConstants {
     public static String getResponseQueueURI(){
         return String.format("http://localhost:%s/api/response",RESPONSE_QUEUE_PORT);
     }
+
+    public static String getDBManagerURI(){
+        return String.format("http://localhost:%s/dbmanager/upload",DATABASE_MANAGER_PORT);
+    }
 }

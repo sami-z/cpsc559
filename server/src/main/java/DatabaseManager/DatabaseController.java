@@ -3,12 +3,14 @@ package DatabaseManager;
 import MainServer.Models.ClientRequestModel;
 import Util.DB;
 import org.bson.Document;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
+@SpringBootApplication
 @RestController
 public class DatabaseController {
 
