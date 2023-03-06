@@ -18,7 +18,7 @@ public final class NetworkConstants {
     }
 
     public static String getResponseQueueURI(){
-        return String.format("http://localhost:%s/api/response",RESPONSE_QUEUE_PORT);
+        return String.format("http://localhost:%s/api/response/post",RESPONSE_QUEUE_PORT);
     }
 
     public static String getDBManagerURI(){
