@@ -17,6 +17,5 @@ public class DatabaseController {
         DB db = new DB();
         db.uploadFile(requestModel);
         new Thread(new ReplicationRunner()).start();
-
     }
 }

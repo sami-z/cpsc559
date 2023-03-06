@@ -1,8 +1,12 @@
 package MainServer.ExecutionCore;
 
+import MainServer.Models.ClientRequestModel;
 import Util.DB;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
@@ -13,12 +17,36 @@ public class ExecutionCoreHandler {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public void obtainLock(String filename){
+    public static void obtainLock(String filename){
         return;
     }
 
-    public void releaseLock(String filename){
+    public static void releaseLock(String filename){
         return;
+    }
+
+    public static void sendWrite(JsonNode rq){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String uri = "http://localhost:8080/dbmanager/upload";
+
+        HttpEntity<String> request =
+                new HttpEntity<String>(rq.toString(), headers);
+
+        restTemplate.postForEntity(uri,request,String.class);
+    }
+
+    public static void sendToResponseQueue(JsonNode rq){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String uri = "http://localhost:8080/api/response";
+
+        HttpEntity<String> request =
+                new HttpEntity<String>(rq.toString(), headers);
+
+        restTemplate.postForEntity(uri,request,String.class);
     }
 
     public static void processEvent(JsonNode request) throws IOException {
@@ -43,11 +71,11 @@ public class ExecutionCoreHandler {
 
             // TODO obtain lock
 
-            RestTemplate restTemplate = new RestTemplate();
-            String uri = "http://localhost:8080/api/request";
-            JsonNode request = restTemplate.getForObject(uri, JsonNode.class);
+            sendWrite(request);
 
             // TODO release lock
+
+            sendToResponseQueue(request);
         }
 
 
