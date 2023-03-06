@@ -1,6 +1,5 @@
 package RequestQueue.Server;
 
-import RequestQueue.DataAccessObject.RequestQueue;
 import RequestQueue.Service.RequestQueueHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

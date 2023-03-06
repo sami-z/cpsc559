@@ -5,20 +5,25 @@ import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 
 import java.net.UnknownHostException;
+import java.util.Collections;
 
 @SpringBootApplication
+@ComponentScan({ "RequestQueue"})
 public class RequestQueueServerMain {
     public static void main(String[] args) throws UnknownHostException {
-        ApplicationContext context = SpringApplication.run(RequestQueueServerMain.class, args);
+
+        SpringApplication app = new SpringApplication(RequestQueueServerMain.class);
+        System.out.println("REQUEST QUEUE IS RUNNING");
+
+        app.setDefaultProperties(Collections
+                .singletonMap("server.port", Integer.toString(NetworkConstants.REQUEST_QUEUE_PORT)));
+
+        ApplicationContext context = app.run(args);
         RequestQueueHandler requestQueueMicroService = context.getBean(RequestQueueHandler.class);
-//        RequestQueue requestQueue = new RequestQueue();
-//
-//        RequestQueueServer requestQueueServer = new RequestQueueServer(NetworkConstants.REQUEST_SERVER_SOCKET_PORT, requestQueue);
-//        Thread requestQueueServerThread = new Thread(requestQueueServer);
-//        requestQueueServerThread.start();
-//        System.out.println("Request queue server is running...");
+
 //
         RequestQueueWebServer requestQueueWebServer = new RequestQueueWebServer(NetworkConstants.REQUEST_QUEUE_SOCKET_PORT, requestQueueMicroService);
         Thread requestQueueWebServerThread = new Thread(requestQueueWebServer);

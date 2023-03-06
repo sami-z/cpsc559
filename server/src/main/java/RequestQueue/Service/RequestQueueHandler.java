@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 public class RequestQueueHandler{
     private final RequestQueue requestQueue;
 
-    @Autowired
     public RequestQueueHandler(@Qualifier("requestQueue") RequestQueue requestQueue) {
         this.requestQueue = requestQueue;
     }

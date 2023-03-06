@@ -62,12 +62,13 @@
 
 	<build>
 		<plugins>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>MainServer.ExecutionCore.ServerMain</mainClass>
-                </configuration>
+				<configuration>
+					<mainClass>RequestQueue.Server.RequestQueueServerMain</mainClass>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

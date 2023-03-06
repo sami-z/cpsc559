@@ -2,6 +2,7 @@ package MainServer.ExecutionCore;
 
 import MainServer.Models.ClientRequestModel;
 import Util.DB;
+import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpEntity;
@@ -41,7 +42,7 @@ public class ExecutionCoreHandler {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String uri = "http://localhost:8080/api/response";
+        String uri = NetworkConstants.getResponseQueueURI();
 
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);

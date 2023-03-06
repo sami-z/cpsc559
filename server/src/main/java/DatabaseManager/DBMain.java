@@ -1,17 +1,19 @@
 package DatabaseManager;
 
-import MainServer.ElectionCore.ElectionController;
+import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 
-@SpringBootApplication
 public class DBMain {
 
     public static void main(String[] args) throws UnknownHostException {
-        SpringApplication.run(DatabaseController.class,args);
-
+        SpringApplication app = new SpringApplication(DatabaseController.class);
+        System.out.println("DATABASE MANAGER IS RUNNING");
+        app.setDefaultProperties(Collections
+                .singletonMap("server.port", Integer.toString(NetworkConstants.DATABASE_MANAGER_PORT)));
+        app.run(args);
     }
 }

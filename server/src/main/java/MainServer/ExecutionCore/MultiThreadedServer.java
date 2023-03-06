@@ -1,6 +1,7 @@
 package MainServer.ExecutionCore;
 
 import Util.DB;
+import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,13 +23,13 @@ public class MultiThreadedServer implements Runnable{
 
         while(this.isRunning){
             RestTemplate restTemplate = new RestTemplate();
-            String fetchRequestURI = "http://localhost:8080/api/request/fetch";
+            String fetchRequestURI = NetworkConstants.getRequestQueueURI();
             JsonNode request = restTemplate.getForObject(fetchRequestURI, JsonNode.class);
-
             // change this to correct check to see if nothing was in queue
             if (request == null) continue;
 
             try {
+                System.out.println(request.toPrettyString());
                 ExecutionCoreHandler.processEvent(request);
             } catch (IOException e) {
                 throw new RuntimeException(e);
