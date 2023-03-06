@@ -13,7 +13,7 @@ public class DatabaseController {
 
 
     @PostMapping("/dbmanager/upload")
-    public void election(@RequestBody ClientRequestModel requestModel) throws InterruptedException, IOException {
+    public void uploadToDatabase(@RequestBody ClientRequestModel requestModel) throws InterruptedException, IOException {
         DB db = new DB();
         db.uploadFile(requestModel);
         new Thread(new ReplicationRunner()).start();

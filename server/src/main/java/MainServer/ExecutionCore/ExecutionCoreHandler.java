@@ -41,7 +41,7 @@ public class ExecutionCoreHandler {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String uri = "http://localhost:8080/api/response";
+        String uri = "http://localhost:8080/api/response/post";
 
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);

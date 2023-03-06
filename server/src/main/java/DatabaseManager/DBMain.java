@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
 public class DBMain {
 
     public static void main(String[] args) throws UnknownHostException {
-        SpringApplication.run(DatabaseController.class,args);
+        SpringApplication.run(DatabaseController.class, args);
 
     }
 }
