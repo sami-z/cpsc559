@@ -1,5 +1,6 @@
 .fileView{
     width: 100%;
+    margin-right: 175px;
 }
 
 .fileView_row{
@@ -24,6 +25,7 @@
 
 .fileView_title_right{
     display: flex;
+    margin-right: 100px;
 }
 .fileItem{
     height: 55px;
@@ -50,6 +52,12 @@
 
 .fileItem--left{
     flex: 1;
+}
+
+.fileItem--right{
+    display: flex;
+    justify-content: center;
+    margin-right: 100px;
 }
 
 .fileCard {
@@ -81,3 +89,13 @@
     overflow: hidden;
     white-space: nowrap;
 }
+
+.fileCard:hover {
+    background-color: #ccc;
+    cursor: pointer;
+  }
+
+.fileItem:hover{
+     background-color: #ccc;
+}
+
