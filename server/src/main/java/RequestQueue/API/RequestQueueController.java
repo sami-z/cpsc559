@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("api/request")
+@RequestMapping("/api/request")
 @RestController
 public class RequestQueueController {
     private final RequestQueueHandler requestQueueHandler;
@@ -17,7 +17,7 @@ public class RequestQueueController {
         this.requestQueueHandler = requestQueueHandler;
     }
 
-    @GetMapping
+    @GetMapping("/fetch")
     public JsonNode getRequest() {
         return requestQueueHandler.fetchRequest();
     }

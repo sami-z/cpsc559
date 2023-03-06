@@ -22,8 +22,8 @@ public class MultiThreadedServer implements Runnable{
 
         while(this.isRunning){
             RestTemplate restTemplate = new RestTemplate();
-            String uri = "http://localhost:8080/api/request";
-            JsonNode request = restTemplate.getForObject(uri, JsonNode.class);
+            String fetchRequestURI = "http://localhost:8080/api/request/fetch";
+            JsonNode request = restTemplate.getForObject(fetchRequestURI, JsonNode.class);
 
             // change this to correct check to see if nothing was in queue
             if (request == null) continue;
