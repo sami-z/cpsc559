@@ -30,6 +30,8 @@ public class DB {
 	public MongoClient mongoClient;
 	public MongoDatabase database;
 	public MongoCollection<Document> filesCollection;
+	private MongoCollection<Document> filesCollectionReplica1;
+	private MongoCollection<Document> filesCollectionReplica2;
 	private ObjectMapper mapper;
 	
 	public DB() {
@@ -38,20 +40,36 @@ public class DB {
         this.filesCollection = this.database.getCollection("files_data");
 	}
 
-	public void uploadFile(ClientRequestModel model) throws IOException {
+	public DB(Boolean isReplicating) {
+		if (isReplicating) {
+			this.mongoClient = MongoClients.create(URI);
+			MongoDatabase replicatedDatabase1 = mongoClient.getDatabase("cpsc559_db_replica1");
+			MongoDatabase replicatedDatabase2 = mongoClient.getDatabase("cpsc559_db_replica2");
+			this.filesCollectionReplica1 = replicatedDatabase1.getCollection("files_data");
+			this.filesCollectionReplica2 = replicatedDatabase2.getCollection("files_data");
+		}
+	}
+
+	public Document uploadFile(ClientRequestModel model) throws IOException {
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		String formattedDate = currentDate.format(formatter);
 
-        Document entry = new Document("_id", new ObjectId())
-        	   .append("filename", model.fileName)
-        	   .append("bytes", model.bytes)
-        	   .append("owner", model.userName)
-        	   .append("created", formattedDate)
-               .append("shared", model.shareWith);
+		Document entry = new Document("_id", new ObjectId())
+				.append("filename", model.fileName)
+				.append("bytes", model.bytes)
+				.append("owner", model.userName)
+				.append("created", formattedDate)
+				.append("shared", model.shareWith);
         filesCollection.insertOne(entry);
+
+		return entry;
 	}
 
+	public void uploadFile(Document entry) throws IOException {
+		filesCollectionReplica1.insertOne(entry);
+		filesCollectionReplica2.insertOne(entry);
+	}
 
 	public ArrayList<JsonNode> findFiles(String ownerName) throws JsonProcessingException {
 		ArrayList<JsonNode> ret = new ArrayList<>();
