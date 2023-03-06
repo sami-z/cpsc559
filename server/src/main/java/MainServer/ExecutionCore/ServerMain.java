@@ -13,5 +13,8 @@ public class ServerMain {
 
         SpringApplication.run(ElectionController.class,args);
 
+        new Thread(new MultiThreadedServer()).start();
+
+
     }
 }

@@ -1,19 +1,17 @@
-package DatabaseManager;
+package Util;
 
 import static com.mongodb.client.model.Filters.eq;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 
+import MainServer.Models.ClientRequestModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
@@ -39,25 +37,22 @@ public class DB {
         this.database = mongoClient.getDatabase("cpsc559_db");
         this.filesCollection = this.database.getCollection("files_data");
 	}
-	public void uploadFile(String filePath,String ownerName) throws IOException {
-		String[] pathItems= filePath.split("\\\\");
 
+	public void uploadFile(ClientRequestModel model) throws IOException {
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		String formattedDate = currentDate.format(formatter);
 
-		byte[] fileContent = FileUtils.readFileToByteArray(new File(filePath));
-    	String encodedString = Base64.getEncoder().encodeToString(fileContent);
-
         Document entry = new Document("_id", new ObjectId())
-        	   .append("filename", pathItems[pathItems.length-1])
-        	   .append("bytes", encodedString)
-        	   .append("owner", ownerName)
+        	   .append("filename", model.fileName)
+        	   .append("bytes", model.bytes)
+        	   .append("owner", model.userName)
         	   .append("created", formattedDate)
-               .append("shared", Arrays.asList("ragya","sami"));
+               .append("shared", model.shareWith);
         filesCollection.insertOne(entry);
-        System.out.println("Uploaded "+ filePath + " as " + ownerName);
 	}
+
+
 	public ArrayList<JsonNode> findFiles(String ownerName) throws JsonProcessingException {
 		ArrayList<JsonNode> ret = new ArrayList<>();
 		

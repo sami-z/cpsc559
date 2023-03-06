@@ -1,39 +1,27 @@
 package MainServer.ExecutionCore;
 
+import Util.DB;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
-import java.net.Socket;
 import java.util.ArrayList;
-
-import DatabaseManager.DB;
 
 
 public class ExecutionCoreHandler {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public static String readString(Socket clientSocket) throws IOException {
-        InputStream inputStream = clientSocket.getInputStream();
-        int availableBytes = inputStream.available();
-        byte[] buffer = new byte[availableBytes];
-        int bytesRead = 0;
-        while (bytesRead < availableBytes) {
-            int result = inputStream.read(buffer, bytesRead, availableBytes - bytesRead);
-            if (result == -1) {
-                break;
-            }
-            bytesRead += result;
-        }
-
-        System.out.println("END READING STRING");
-
-        return new String(buffer);
-
+    public void obtainLock(String filename){
+        return;
     }
 
-    public static void processEvent(JsonNode request, DB db) throws IOException {
+    public void releaseLock(String filename){
+        return;
+    }
+
+    public static void processEvent(JsonNode request) throws IOException {
         // Parse HTML
 
         try {
@@ -42,45 +30,25 @@ public class ExecutionCoreHandler {
             e.printStackTrace();
         }
 
-//
-//        Gson g = new Gson();
-//        ClientRequestModel request = g.fromJson(rqMessage, ClientRequestModel.class);
-
-//        Socket resQ = null;
-//        try {
-//            resQ = new Socket(NetworkConstants.RESPONSE_QUEUE_IP,NetworkConstants.RESPONSE_QUEUE_SERVER_PORT);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-        // If contains file save file
-
-
-//        if(!request.bytes.isEmpty()) {
-////            Path tempFile = Files.createTempFile(null, null);
-////            Files.write(tempFile, request.bytes.getBytes(StandardCharsets.UTF_8));
-//        }
-
-
         if (request == null) return;
 
         ArrayList<JsonNode> files = null;
         // Check type of request
         if(request.get("requestType").asText().equalsIgnoreCase("READ")){ // locking
+            DB db = new DB();
             files = db.findFiles(request.get("userName").asText());
 
         }
-        else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){ // locking
-            try {
-                db.uploadFile(request.get("fileName").asText(), request.get("userName").asText());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){
 
-//        DataOutputStream dout = new DataOutputStream(resQ.getOutputStream());
-//        dout.write(files.get(0).toJSONString().getBytes(StandardCharsets.UTF_8));
-//        dout.close();
+            // TODO obtain lock
+
+            RestTemplate restTemplate = new RestTemplate();
+            String uri = "http://localhost:8080/api/request";
+            JsonNode request = restTemplate.getForObject(uri, JsonNode.class);
+
+            // TODO release lock
+        }
 
 
     }
