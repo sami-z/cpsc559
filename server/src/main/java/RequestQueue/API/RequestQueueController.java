@@ -19,7 +19,6 @@ public class RequestQueueController {
 
     @GetMapping("/fetch")
     public JsonNode getRequest() {
-        System.out.println("REQUEST IS FETCHED");
         return requestQueueHandler.fetchRequest();
     }
 }
