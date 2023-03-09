@@ -12,7 +12,7 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 
 @SpringBootApplication
-@ComponentScan({"ResponseQueue"})
+@ComponentScan({ "ResponseQueue" })
 public class ResponseQueueServerMain {
     public static void main(String[] args) throws UnknownHostException {
 

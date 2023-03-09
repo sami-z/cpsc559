@@ -12,8 +12,8 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 public class RequestQueueWebServer extends WebSocketServer{
-    private RequestQueueHandler requestQueueHandler;
-    private ObjectMapper mapper;
+    private final RequestQueueHandler requestQueueHandler;
+    private final ObjectMapper mapper;
 
     public RequestQueueWebServer(int portNumber, RequestQueueHandler requestQueueHandler) throws UnknownHostException {
         super(new InetSocketAddress(portNumber));

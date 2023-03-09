@@ -11,20 +11,17 @@ import java.net.UnknownHostException;
 import java.util.Collections;
 
 @SpringBootApplication
-@ComponentScan({ "RequestQueue"})
+@ComponentScan({ "RequestQueue" })
 public class RequestQueueServerMain {
     public static void main(String[] args) throws UnknownHostException {
 
         SpringApplication app = new SpringApplication(RequestQueueServerMain.class);
-        System.out.println("REQUEST QUEUE IS RUNNING");
-
         app.setDefaultProperties(Collections
                 .singletonMap("server.port", Integer.toString(NetworkConstants.REQUEST_QUEUE_PORT)));
 
         ApplicationContext context = app.run(args);
         RequestQueueHandler requestQueueMicroService = context.getBean(RequestQueueHandler.class);
 
-//
         RequestQueueWebServer requestQueueWebServer = new RequestQueueWebServer(NetworkConstants.REQUEST_QUEUE_SOCKET_PORT, requestQueueMicroService);
         Thread requestQueueWebServerThread = new Thread(requestQueueWebServer);
         requestQueueWebServerThread.start();
