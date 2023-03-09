@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import com.mongodb.client.*;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
@@ -15,17 +16,13 @@ import org.bson.conversions.Bson;
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
 import com.mongodb.client.result.UpdateResult;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class DB {
-	private final static String URI = "mongodb+srv://cpsc559:cpsc559@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority";
-	private final int numberOfDatabases = 3;
-	private static ArrayList<MongoCollection<Document>> databases;
+	private static MongoClient mongoClient;
+	private static ArrayList<MongoDatabase> databases;
 	private ObjectMapper mapper;
 	private static int currentPrimaryIndex = -1;
 
@@ -38,15 +35,15 @@ public class DB {
 	}
 
 	private void loadLastPrimaryIndexFromFile() {
-		try (Scanner scanner = new Scanner(new File("PrimaryIndex"))) {
+		try (Scanner scanner = new Scanner(new File(DBConstants.INDEX_FILE_NAME))) {
 			setCurrentPrimaryIndex(scanner.nextInt());
 		} catch (IOException e) {
 			System.err.println("Error loading last primary index from file: " + e.getMessage());
 		}
 	}
 
-	private void saveCurrentPrimaryIndexToFile() {
-		try (FileWriter writer = new FileWriter("PrimaryIndex")) {
+	private void writeCurrentPrimaryIndexToFile() {
+		try (FileWriter writer = new FileWriter(DBConstants.INDEX_FILE_NAME)) {
 			writer.write(Integer.toString(currentPrimaryIndex));
 		} catch (IOException e) {
 			System.err.println("Error saving current primary index to file: " + e.getMessage());
@@ -54,7 +51,7 @@ public class DB {
 	}
 
 	private int readDatabaseOffsetFromFile() {
-		try (Scanner scanner = new Scanner(new File("DatabaseOffset"))) {
+		try (Scanner scanner = new Scanner(new File(DBConstants.OFFSET_FILE_NAME))) {
 			return scanner.nextInt();
 		} catch (IOException e) {
 			System.err.println("Error reading database offset from file: " + e.getMessage());
@@ -63,7 +60,7 @@ public class DB {
 	}
 
 	private void writeDatabaseOffsetToFile(int databaseOffset) {
-		try (FileWriter writer = new FileWriter("DatabaseOffset")) {
+		try (FileWriter writer = new FileWriter(DBConstants.OFFSET_FILE_NAME)) {
 			writer.write(Integer.toString(databaseOffset));
 		} catch (IOException e) {
 			System.err.println("Error writing database offset to file: " + e.getMessage());
@@ -81,22 +78,27 @@ public class DB {
 	}
 
 	private void setNextPrimaryIndex() {
-		setCurrentPrimaryIndex((getCurrentPrimaryIndex() + 1) % numberOfDatabases);
+		setCurrentPrimaryIndex((getCurrentPrimaryIndex() + 1) % DBConstants.NUMBER_OF_DATABASES);
 	}
 
-	private MongoCollection<Document> getPrimaryReplica() {
+	private MongoDatabase getPrimaryReplica() {
 		return databases.get(getCurrentPrimaryIndex());
 	}
 
+	private MongoCollection<Document> getPrimaryReplicaCollection() {
+		return getPrimaryReplica().getCollection(DBConstants.COLLECTION_NAME);
+	}
+
 	public DB() {
-		MongoClient mongoClient = MongoClients.create(URI);
-		String collectionName = "files_data";
+		if (mongoClient == null) {
+			mongoClient = MongoClients.create(DBConstants.MONGO_URI);
+		}
 
 		if (databases == null) {
-			int beginOffset = readDatabaseOffsetFromFile() - numberOfDatabases;
-			for (int i = 0; i < numberOfDatabases; i++) {
+			int beginOffset = readDatabaseOffsetFromFile() - DBConstants.NUMBER_OF_DATABASES;
+			for (int i = 0; i < DBConstants.NUMBER_OF_DATABASES; i++) {
 				beginOffset++;
-				databases.add(mongoClient.getDatabase(generateDatabaseName(beginOffset)).getCollection(collectionName));
+				databases.add(mongoClient.getDatabase(generateDatabaseName(beginOffset)));
 			}
 		}
 
@@ -113,7 +115,8 @@ public class DB {
 		}
 	}
 
-	public Document uploadFile(ClientRequestModel model) throws IOException {
+	// TODO implement handling of a case where a file with the same filename as the request already exists under the same account (using username), in which case we must overwrite
+	public Document uploadFile(ClientRequestModel model) {
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		String formattedDate = currentDate.format(formatter);
@@ -125,17 +128,20 @@ public class DB {
 				.append("created", formattedDate)
 				.append("shared", model.shareWith);
 
-		MongoCollection<Document> primaryReplica = getPrimaryReplica();
+		MongoCollection<Document> primaryReplica = getPrimaryReplicaCollection();
 
 		try {
 			primaryReplica.insertOne(entry);
 		} catch (MongoException | IllegalArgumentException e) {
-			// the primary replica failed, so we need to elect a new one and make sure it has
-			// all the same files, as well as the latest entry
+			int oldPrimaryIndex = getCurrentPrimaryIndex();
+			getPrimaryReplica().drop();
+			databases.set(oldPrimaryIndex, mongoClient.getDatabase(generateDatabaseName()));
 			setNextPrimaryIndex();
-			saveCurrentPrimaryIndexToFile();
+			writeCurrentPrimaryIndexToFile();
+			MongoCollection<Document> newPrimaryReplica = getPrimaryReplicaCollection();
+			replicateDatabase(newPrimaryReplica, databases.get(oldPrimaryIndex).getCollection(DBConstants.COLLECTION_NAME));
+			newPrimaryReplica.insertOne(entry);
 		}
-
 
 		return entry;
 	}
@@ -143,17 +149,16 @@ public class DB {
 	public void uploadFile(Document entry) throws IOException {
 		int primaryIndex = getCurrentPrimaryIndex();
 
-		for (int i = 0; i < databases.size(); i++) {
-			if (i != primaryIndex) {
-				databases.get(i).insertOne(entry);
-			}
+		for (int i = 0; i < DBConstants.NUMBER_OF_DATABASES - 1; i++) {
+			primaryIndex = (primaryIndex + 1) % DBConstants.NUMBER_OF_DATABASES;
+			databases.get(primaryIndex).getCollection(DBConstants.COLLECTION_NAME).insertOne(entry);
 		}
 	}
 
 	public ArrayList<JsonNode> findFiles(String ownerName) throws JsonProcessingException {
 		ArrayList<JsonNode> ret = new ArrayList<>();
 		
-		FindIterable<Document> doc = this.getPrimaryReplica().find(eq("owner",ownerName));
+		FindIterable<Document> doc = this.getPrimaryReplicaCollection().find(eq("owner",ownerName));
 		if (doc != null) {
 			System.out.println("Found files for " + ownerName + "!");
 			for(Document d: doc) {
@@ -169,7 +174,7 @@ public class DB {
 
 
 	public void saveFileFromDB(String filename, String dest) throws IOException {
-		Document doc = this.getPrimaryReplica().find(eq("filename", filename)).first();
+		Document doc = this.getPrimaryReplicaCollection().find(eq("filename", filename)).first();
 		if (doc != null) {
 	    	JsonNode json = (JsonNode) mapper.readTree(doc.toJson());
 	    	System.out.println("bytes: "+ json.get("bytes") + " end");
@@ -190,9 +195,9 @@ public class DB {
 	public void editSharedWith(String filename){
 		Bson filter = eq("filename", filename);
 		Bson updateOperation = set("shared", Arrays.asList("ragya","sami","testingUser"));
-		UpdateResult updateResult = this.getPrimaryReplica().updateOne(filter, updateOperation);
+		UpdateResult updateResult = this.getPrimaryReplicaCollection().updateOne(filter, updateOperation);
 
-		System.out.println(this.getPrimaryReplica().find(filter).first().toJson());
+		System.out.println(this.getPrimaryReplicaCollection().find(filter).first().toJson());
 		System.out.println(updateResult);
 		//this.filesCollection.findOneAndUpdate({"filename":filename},"shared", Arrays.asList("ragya","sami"));
 	}
