@@ -25,6 +25,6 @@ public class RequestQueueServerMain {
         RequestQueueWebServer requestQueueWebServer = new RequestQueueWebServer(NetworkConstants.REQUEST_QUEUE_SOCKET_PORT, requestQueueMicroService);
         Thread requestQueueWebServerThread = new Thread(requestQueueWebServer);
         requestQueueWebServerThread.start();
-        System.out.println("Request queue web server is running...");
+        System.out.println("Request queue web server is running... WITH A NEW UPDATE");
     }
 }

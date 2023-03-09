@@ -38,11 +38,11 @@ public class ExecutionCoreHandler {
         restTemplate.postForEntity(uri,request,String.class);
     }
 
-    public static void sendToResponseQueue(JsonNode rq){
+    public static void sendToResponseQueue(JsonNode rq, String IP){
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String uri = NetworkConstants.getResponseQueueURI();
+        String uri = NetworkConstants.getResponseQueueURI(IP);
 
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);
@@ -76,7 +76,9 @@ public class ExecutionCoreHandler {
 
             // TODO release lock
 
-            sendToResponseQueue(request);
+            for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
+                sendToResponseQueue(request, IP);
+            }
         }
 
 
