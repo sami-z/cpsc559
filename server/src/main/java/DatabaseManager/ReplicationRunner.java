@@ -15,7 +15,7 @@ public class ReplicationRunner implements Runnable{
 
     @Override
     public void run() {
-        DB db = new DB(true);
+        DB db = new DB();
         try {
             db.uploadFile(replicatedEntry);
         } catch (IOException e) {
