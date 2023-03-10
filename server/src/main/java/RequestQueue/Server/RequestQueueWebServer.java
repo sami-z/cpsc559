@@ -1,5 +1,6 @@
 package RequestQueue.Server;
 
+import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,6 +15,7 @@ import java.net.UnknownHostException;
 public class RequestQueueWebServer extends WebSocketServer{
     private final RequestQueueHandler requestQueueHandler;
     private final ObjectMapper mapper;
+
 
     public RequestQueueWebServer(int portNumber, RequestQueueHandler requestQueueHandler) throws UnknownHostException {
         super(new InetSocketAddress(portNumber));
@@ -36,10 +38,14 @@ public class RequestQueueWebServer extends WebSocketServer{
         System.out.println(s);
         try {
             JsonNode request = mapper.readTree(s);
+            webSocket.close();
+
+            if(!LeaderState.serverIP.equals(LeaderState.leaderIP)){
+                // Send to leaderIP
+            }
             if (request != null && !request.isEmpty()) {
                 requestQueueHandler.produceRequest(request);
             }
-            webSocket.close();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

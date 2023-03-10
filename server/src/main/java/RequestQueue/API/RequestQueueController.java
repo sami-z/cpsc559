@@ -1,11 +1,10 @@
 package RequestQueue.API;
 
+import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("/api/request")
 @RestController
@@ -20,6 +19,21 @@ public class RequestQueueController {
     @GetMapping("/fetch")
     public JsonNode getRequest() {
         return requestQueueHandler.fetchRequest();
+    }
+
+    @GetMapping("/ping")
+    public void ping(){
+        return;
+    }
+
+    @PostMapping("/push")
+    public void pushRequest(@RequestBody JsonNode node){
+        requestQueueHandler.produceRequest(node);
+    }
+
+    @PostMapping("/leader")
+    public void setLeader(@RequestParam String leaderIP){
+        LeaderState.leaderIP = leaderIP;
     }
 }
 

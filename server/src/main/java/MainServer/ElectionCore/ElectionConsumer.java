@@ -1,7 +1,8 @@
 package MainServer.ElectionCore;
 
+import MainServer.ElectionCore.State.ElectionState;
+import MainServer.Monitor.RequestQueueMonitor;
 import Util.NetworkConstants;
-import Util.NetworkConstants.*;
 import Util.NetworkUtil;
 
 import java.net.InetAddress;
@@ -13,7 +14,7 @@ public class ElectionConsumer {
 
     private static ElectionState es;
 
-    public static void initiatieElection() throws UnknownHostException {
+    public static void initiatieElection() throws UnknownHostException, InterruptedException {
         es.isRunning = true;
         List<InetAddress> higher = new ArrayList<>();
 
@@ -29,6 +30,13 @@ public class ElectionConsumer {
         }else{
 
         }
+
+        Thread.sleep(1000);
+
+    }
+
+    public void setLeader(){
+        new Thread(new RequestQueueMonitor()).start();
 
     }
 

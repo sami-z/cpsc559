@@ -1,5 +1,6 @@
 package RequestQueue.Server;
 
+import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
@@ -7,13 +8,27 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Collections;
 
 @SpringBootApplication
 @ComponentScan({ "RequestQueue" })
 public class RequestQueueServerMain {
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) throws IOException {
+
+        URL whatismyip = new URL("http://checkip.amazonaws.com");
+        BufferedReader in = new BufferedReader(new InputStreamReader(
+                whatismyip.openStream()));
+
+        String ip = in.readLine(); //you get the IP as a String
+        System.out.println(ip);
+
+        LeaderState.serverIP = ip;
+        LeaderState.leaderIP = "";
 
         SpringApplication app = new SpringApplication(RequestQueueServerMain.class);
         app.setDefaultProperties(Collections
@@ -25,6 +40,6 @@ public class RequestQueueServerMain {
         RequestQueueWebServer requestQueueWebServer = new RequestQueueWebServer(NetworkConstants.REQUEST_QUEUE_SOCKET_PORT, requestQueueMicroService);
         Thread requestQueueWebServerThread = new Thread(requestQueueWebServer);
         requestQueueWebServerThread.start();
-        System.out.println("Request queue web server is running... WITH A NEW UPDATE");
+        System.out.println("Request queue web server is running...");
     }
 }

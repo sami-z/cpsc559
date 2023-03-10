@@ -19,7 +19,6 @@ public class MultiThreadedServer implements Runnable{
     @Override
     public void run() {
         this.isRunning = true;
-        DB db = new DB();
 
         while(this.isRunning){
             RestTemplate restTemplate = new RestTemplate();

@@ -1,10 +1,10 @@
 package MainServer.ElectionCore;
 
+import MainServer.ElectionCore.State.ElectionState;
 import Util.NetworkUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 
 @SpringBootApplication

@@ -1,4 +1,4 @@
-package MainServer.ElectionCore;
+package MainServer.ElectionCore.State;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.springframework.stereotype.Component;
