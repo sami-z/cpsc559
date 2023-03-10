@@ -35,7 +35,7 @@ public class DB {
 	}
 
 	private void loadLastPrimaryIndexFromFile() {
-		try (Scanner scanner = new Scanner(new File(DBConstants.INDEX_FILE_NAME))) {
+		try (Scanner scanner = new Scanner(new File("Util/" + DBConstants.INDEX_FILE_NAME))) {
 			setCurrentPrimaryIndex(scanner.nextInt());
 		} catch (IOException e) {
 			System.err.println("Error loading last primary index from file: " + e.getMessage());
@@ -43,7 +43,7 @@ public class DB {
 	}
 
 	private void writeCurrentPrimaryIndexToFile() {
-		try (FileWriter writer = new FileWriter(DBConstants.INDEX_FILE_NAME)) {
+		try (FileWriter writer = new FileWriter("Util/" + DBConstants.INDEX_FILE_NAME)) {
 			writer.write(Integer.toString(currentPrimaryIndex));
 		} catch (IOException e) {
 			System.err.println("Error saving current primary index to file: " + e.getMessage());
@@ -51,7 +51,7 @@ public class DB {
 	}
 
 	private int readDatabaseOffsetFromFile() {
-		try (Scanner scanner = new Scanner(new File(DBConstants.OFFSET_FILE_NAME))) {
+		try (Scanner scanner = new Scanner(new File("Util/" + DBConstants.OFFSET_FILE_NAME))) {
 			return scanner.nextInt();
 		} catch (IOException e) {
 			System.err.println("Error reading database offset from file: " + e.getMessage());
@@ -60,7 +60,7 @@ public class DB {
 	}
 
 	private void writeDatabaseOffsetToFile(int databaseOffset) {
-		try (FileWriter writer = new FileWriter(DBConstants.OFFSET_FILE_NAME)) {
+		try (FileWriter writer = new FileWriter("Util/" + DBConstants.OFFSET_FILE_NAME)) {
 			writer.write(Integer.toString(databaseOffset));
 		} catch (IOException e) {
 			System.err.println("Error writing database offset to file: " + e.getMessage());
