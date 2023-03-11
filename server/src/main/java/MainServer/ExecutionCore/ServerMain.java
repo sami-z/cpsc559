@@ -1,6 +1,5 @@
 package MainServer.ExecutionCore;
 
-import DatabaseManager.DatabaseController;
 import MainServer.ElectionCore.ElectionConsumer;
 import MainServer.ElectionCore.ElectionController;
 import MainServer.ServerState;
@@ -10,9 +9,7 @@ import org.springframework.boot.SpringApplication;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Collections;
 
 public class ServerMain {
@@ -32,7 +29,7 @@ public class ServerMain {
                 .singletonMap("server.port", Integer.toString(NetworkConstants.MAIN_SERVER_PORT)));
         app.run(args);
 
-        ElectionConsumer.initiatieElection();
+        ElectionConsumer.initiateElection();
 
         System.out.println("MAIN SERVER IS RUNNING");
         new Thread(new MultiThreadedServer()).start();

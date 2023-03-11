@@ -16,6 +16,8 @@ public class ElectionController{
     @PostMapping("/leader/server")
     public void leader(@RequestParam String leaderIP) {
         ServerState.leaderIP = leaderIP;
+        ServerState.isElectionRunning = false;
+        ElectionConsumer.response = true;
     }
 
     @GetMapping("/leader/ping")
@@ -27,11 +29,13 @@ public class ElectionController{
     @ResponseStatus(value = HttpStatus.OK)
     public void election(@RequestParam String otherIP) throws InterruptedException, UnknownHostException {
 
-        if(NetworkUtil.isGreater(InetAddress.getByName(ServerState.serverIP),
-                InetAddress.getByName(otherIP))){
+        if(NetworkUtil.isGreater(
+                InetAddress.getByName(ServerState.serverIP),
+                InetAddress.getByName(otherIP))
+        ){
 
             if(!ServerState.isElectionRunning){
-                ElectionConsumer.initiatieElection();
+                ElectionConsumer.initiateElection();
             }
         }
     }
@@ -39,7 +43,8 @@ public class ElectionController{
     @PostMapping("/bully")
     public void bully(@RequestBody String node) throws InterruptedException {
         ServerState.isElectionRunning = false;
-        ElectionConsumer.
+        ElectionConsumer.isBullied = true;
+        ElectionConsumer.response = true;
     }
 
     @PostMapping("leader/requestqueue")

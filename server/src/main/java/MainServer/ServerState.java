@@ -5,6 +5,5 @@ public class ServerState {
     public static String responseQueueIP;
     public static String leaderIP;
     public static String serverIP;
-
     public static boolean isElectionRunning;
 }
