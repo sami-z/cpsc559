@@ -1,39 +1,50 @@
 package MainServer.ElectionCore;
 
-import MainServer.ElectionCore.State.ElectionState;
+import MainServer.ServerState;
 import Util.NetworkUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 @SpringBootApplication
 @RestController
 public class ElectionController{
 
-    @Autowired
-    private ElectionState state;
+    @PostMapping("/leader/server")
+    public void leader(@RequestParam String leaderIP) {
+        ServerState.leaderIP = leaderIP;
+    }
 
-    @PostMapping("/leader")
-    public void leader(@RequestBody ElectionState es) {
-        state.leaderIP = es.leaderIP;
-        state.isRunning = false;
+    @GetMapping("/leader/ping")
+    public void ping(){
+        return;
     }
 
     @PostMapping("/election")
     @ResponseStatus(value = HttpStatus.OK)
-    public void election(@RequestBody ElectionState es) throws InterruptedException {
-        if(NetworkUtil.isGreater(state.serverIP,es.serverIP)){
+    public void election(@RequestParam String otherIP) throws InterruptedException, UnknownHostException {
 
-            if(!state.isRunning){
+        if(NetworkUtil.isGreater(InetAddress.getByName(ServerState.serverIP),
+                InetAddress.getByName(otherIP))){
 
+            if(!ServerState.isElectionRunning){
+                ElectionConsumer.initiatieElection();
             }
         }
     }
 
     @PostMapping("/bully")
-    public void bully(@RequestBody ElectionState es) throws InterruptedException {
-        state.isRunning = false;
+    public void bully(@RequestBody String node) throws InterruptedException {
+        ServerState.isElectionRunning = false;
+        ElectionConsumer.
+    }
+
+    @PostMapping("leader/requestqueue")
+    public void requestLeader(@RequestAttribute String requestQueueIP){
+        ServerState.requestQueueIP = requestQueueIP;
     }
 
 }

@@ -1,5 +1,6 @@
 package MainServer.ExecutionCore;
 
+import MainServer.ServerState;
 import Util.DB;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +23,7 @@ public class MultiThreadedServer implements Runnable{
 
         while(this.isRunning){
             RestTemplate restTemplate = new RestTemplate();
-            String fetchRequestURI = NetworkConstants.getRequestQueueURI(NetworkConstants.REQUEST_QUEUE_IPS[0]);
+            String fetchRequestURI = NetworkConstants.getRequestQueueURI(ServerState.requestQueueIP);
             JsonNode request = restTemplate.getForObject(fetchRequestURI, JsonNode.class);
             // change this to correct check to see if nothing was in queue
             if (request == null) continue;

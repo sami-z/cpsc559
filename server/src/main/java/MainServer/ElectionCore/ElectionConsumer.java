@@ -2,6 +2,7 @@ package MainServer.ElectionCore;
 
 import MainServer.ElectionCore.State.ElectionState;
 import MainServer.Monitor.RequestQueueMonitor;
+import MainServer.ServerState;
 import Util.NetworkConstants;
 import Util.NetworkUtil;
 
@@ -12,10 +13,18 @@ import java.util.List;
 
 public class ElectionConsumer {
 
-    private static ElectionState es;
+    private static boolean response = false;
+
+    public static void sendLeader(String IP){
+
+    }
+
+    public static void sendElection(String IP){
+
+    }
 
     public static void initiatieElection() throws UnknownHostException, InterruptedException {
-        es.isRunning = true;
+        ServerState.isElectionRunning = true;
         List<InetAddress> higher = new ArrayList<>();
 
         for(String ip : NetworkConstants.SERVER_IPS){
@@ -27,17 +36,27 @@ public class ElectionConsumer {
 
         if(higher.size() == 0){
 
+            return;
+        }
+
+        for(String IP : higher){
+            sendElection(IP);
+        }
+
+        ElectionConsumer.response = false;
+        Thread.sleep(1000);
+        if(ElectionConsumer.response){
         }else{
 
         }
 
-        Thread.sleep(1000);
-
     }
 
     public void setLeader(){
+        for (String IP : NetworkConstants.SERVER_IPS){
+            sendLeader(IP);
+        }
         new Thread(new RequestQueueMonitor()).start();
-
     }
 
     public ElectionConsumer(ElectionState initialSate){
