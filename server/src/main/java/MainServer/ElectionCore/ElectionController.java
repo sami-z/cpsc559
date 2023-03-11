@@ -2,6 +2,7 @@ package MainServer.ElectionCore;
 
 import MainServer.ServerState;
 import Util.NetworkUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,8 @@ import java.net.UnknownHostException;
 public class ElectionController{
 
     @PostMapping("/leader/server")
-    public void leader(@RequestParam String leaderIP) {
+    public void leader(@RequestBody JsonNode node) {
+        String leaderIP = node.get("leaderIP").asText();
         System.out.println("New leader is " + leaderIP);
         ServerState.leaderIP = leaderIP;
         ServerState.isElectionRunning = false;
@@ -28,7 +30,9 @@ public class ElectionController{
 
     @PostMapping("/election")
     @ResponseStatus(value = HttpStatus.OK)
-    public void election(@RequestParam String otherIP) throws InterruptedException, UnknownHostException {
+    public void election(@RequestBody JsonNode node) throws InterruptedException, UnknownHostException {
+
+        String otherIP = node.get("otherIP").asText();
 
         if(NetworkUtil.isGreater(
                 InetAddress.getByName(ServerState.serverIP),
@@ -49,7 +53,8 @@ public class ElectionController{
     }
 
     @PostMapping("leader/requestqueue")
-    public void requestLeader(@RequestAttribute String requestQueueIP){
+    public void requestLeader(@RequestBody JsonNode node){
+        String requestQueueIP = node.get("requestQueueIP").asText();
         ServerState.requestQueueIP = requestQueueIP;
     }
 

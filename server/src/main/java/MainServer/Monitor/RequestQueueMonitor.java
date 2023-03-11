@@ -1,5 +1,6 @@
 package MainServer.Monitor;
 
+import MainServer.ServerState;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +19,7 @@ public class RequestQueueMonitor implements Runnable{
     @Override
     public void run() {
         int i = 0;
-        while (true) {
+        while (ServerState.serverIP.equals(ServerState.leaderIP)) {
             String ping_uri = NetworkConstants.getRequestQueueURIPing(REQUEST_QUEUE_IPS[i]);
             RestTemplate restTemplate = new RestTemplate();
 

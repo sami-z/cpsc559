@@ -4,6 +4,7 @@ import MainServer.ServerState;
 import Util.DB;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -24,7 +25,12 @@ public class MultiThreadedServer implements Runnable{
         while(this.isRunning){
             RestTemplate restTemplate = new RestTemplate();
             String fetchRequestURI = NetworkConstants.getRequestQueueURI(ServerState.requestQueueIP);
-            JsonNode request = restTemplate.getForObject(fetchRequestURI, JsonNode.class);
+            JsonNode request = null;
+            try {
+                request = restTemplate.getForObject(fetchRequestURI, JsonNode.class);
+            } catch (RestClientException e){
+                e.printStackTrace();
+             }
             // change this to correct check to see if nothing was in queue
             if (request == null) continue;
 

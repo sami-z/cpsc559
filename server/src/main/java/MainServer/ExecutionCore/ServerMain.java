@@ -2,6 +2,7 @@ package MainServer.ExecutionCore;
 
 import MainServer.ElectionCore.ElectionConsumer;
 import MainServer.ElectionCore.ElectionController;
+import MainServer.Monitor.LeaderMonitor;
 import MainServer.ServerState;
 import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
@@ -32,6 +33,7 @@ public class ServerMain {
         ElectionConsumer.initiateElection();
 
         System.out.println("MAIN SERVER IS RUNNING");
+        new Thread(new LeaderMonitor()).start();
         new Thread(new MultiThreadedServer()).start();
 
 

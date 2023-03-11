@@ -7,13 +7,18 @@ import Util.NetworkUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.rmi.ServerError;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,34 +26,48 @@ import static Util.NetworkConstants.REQUEST_QUEUE_IPS;
 
 public class ElectionConsumer {
     public static ObjectMapper mapper = new ObjectMapper();
-    public static RestTemplate restTemplate = new RestTemplate();
+    public static RestTemplate restTemplate;
     public static boolean response = false;
     public static boolean isBullied = false;
 
+    static{
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
+    }
+
     public static void sendLeader(String IP){
-        String uri = NetworkConstants.getProcessingServerURILeaderServer(IP);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        JsonNode rqNode = mapper.createObjectNode();
-        ((ObjectNode)rqNode).put("leaderIP", ServerState.serverIP);
-        HttpEntity<String> msg =
-                new HttpEntity<String>(rqNode.toString(), headers);
+        try {
+            String uri = NetworkConstants.getProcessingServerURILeaderServer(IP);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-        restTemplate.postForEntity(uri, msg, String.class);
+            JsonNode rqNode = mapper.createObjectNode();
+            ((ObjectNode) rqNode).put("leaderIP", ServerState.serverIP);
+            HttpEntity<String> msg =
+                    new HttpEntity<String>(rqNode.toString(), headers);
+            restTemplate.postForEntity(uri, msg, String.class);
+        } catch (RestClientException e){
+            e.printStackTrace();
+        }
     }
 
     public static void sendElection(String IP){
-        String uri = NetworkConstants.getProcessingServerURIElection(IP);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            String uri = NetworkConstants.getProcessingServerURIElection(IP);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-        JsonNode rqNode = mapper.createObjectNode();
-        ((ObjectNode)rqNode).put("leaderIP", IP);
-        HttpEntity<String> msg =
-                new HttpEntity<String>(rqNode.toString(), headers);
+            JsonNode rqNode = mapper.createObjectNode();
+            ((ObjectNode) rqNode).put("otherIP", ServerState.serverIP);
+            HttpEntity<String> msg =
+                    new HttpEntity<String>(rqNode.toString(), headers);
 
-        restTemplate.postForEntity(uri, msg, String.class);
+            restTemplate.postForEntity(uri, msg, String.class);
+        } catch (RestClientException e){
+            //e.printStackTrace();
+            System.out.println("aaa");
+        }
     }
 
     public static void initiateElection() throws UnknownHostException, InterruptedException {
@@ -90,8 +109,10 @@ public class ElectionConsumer {
     }
 
     public static void setLeader(){
+        ServerState.leaderIP = ServerState.serverIP;
         for (String IP : NetworkConstants.SERVER_IPS){
-            sendLeader(IP);
+            if(!IP.equals(ServerState.serverIP))
+                sendLeader(IP);
         }
         new Thread(new RequestQueueMonitor()).start();
     }
