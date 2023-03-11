@@ -1,11 +1,9 @@
 package MainServer.ElectionCore;
 
-import MainServer.ElectionCore.State.ElectionState;
 import MainServer.Monitor.RequestQueueMonitor;
 import MainServer.ServerState;
 import Util.NetworkConstants;
 import Util.NetworkUtil;
-import org.apache.catalina.Server;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -37,7 +35,7 @@ public class ElectionConsumer {
         }
 
         if(higher.size() == 0){
-
+            setLeader();
             return;
         }
 
@@ -53,6 +51,8 @@ public class ElectionConsumer {
         }else if(ElectionConsumer.isBullied){
             ElectionConsumer.response = false;
         }
+
+        System.out.println(ServerState.leaderIP);
 
     }
 
