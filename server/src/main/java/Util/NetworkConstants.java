@@ -3,7 +3,7 @@ package Util;
 import java.util.List;
 
 public final class NetworkConstants {
-    public static final String[] SERVER_IPS = null;
+    public static final String[] SERVER_IPS = new String[]{"172.31.14.51","172.31.5.251"};
     public static int  REQUEST_QUEUE_SOCKET_PORT = 80;
     public static int  RESPONSE_QUEUE_SERVER_PORT = 9090;
     public static int MAIN_SERVER_PORT = 8080;

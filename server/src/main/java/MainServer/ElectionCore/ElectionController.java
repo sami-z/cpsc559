@@ -15,6 +15,7 @@ public class ElectionController{
 
     @PostMapping("/leader/server")
     public void leader(@RequestParam String leaderIP) {
+        System.out.println("New leader is " + leaderIP);
         ServerState.leaderIP = leaderIP;
         ServerState.isElectionRunning = false;
         ElectionConsumer.response = true;

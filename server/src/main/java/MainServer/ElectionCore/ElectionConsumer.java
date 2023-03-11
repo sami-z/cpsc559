@@ -24,6 +24,9 @@ public class ElectionConsumer {
     }
 
     public static void initiateElection() throws UnknownHostException, InterruptedException {
+
+        System.out.println("STARTING THE ELECTION");
+
         ServerState.isElectionRunning = true;
         List<String> higher = new ArrayList<>();
 
@@ -42,6 +45,8 @@ public class ElectionConsumer {
         for(String IP : higher){
             sendElection(IP);
         }
+
+        System.out.println("SEND ELECTION");
 
         ElectionConsumer.isBullied = false;
         ElectionConsumer.response = false;
