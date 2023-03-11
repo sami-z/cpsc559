@@ -19,6 +19,14 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/api/request/fetch",IP,REQUEST_QUEUE_PORT);
     }
 
+    public static String getRequestQueueURIPing(String IP){
+        return String.format("http://%s:%s/api/request/ping",IP,REQUEST_QUEUE_PORT);
+    }
+
+    public static String getProcessingServerURILeader(String IP){
+        return String.format("http://%s:%s/leader/requestqueue",IP,MAIN_SERVER_PORT);
+    }
+
     public static String getResponseQueueURI(String IP){
         return String.format("http://%s:%s/api/response/post",IP,RESPONSE_QUEUE_PORT);
     }
