@@ -28,9 +28,7 @@ public class MultiThreadedServer implements Runnable{
             JsonNode request = null;
             try {
                 request = restTemplate.getForObject(fetchRequestURI, JsonNode.class);
-            } catch (RestClientException e){
-                e.printStackTrace();
-             }
+            } catch (RestClientException e){}
             // change this to correct check to see if nothing was in queue
             if (request == null) continue;
 

@@ -110,6 +110,13 @@ public class ElectionConsumer {
 
     public static void setLeader(){
         ServerState.leaderIP = ServerState.serverIP;
+
+        if(ServerState.requestQueueIP.isEmpty()){
+            ServerState.requestQueueIP = RequestQueueMonitor.getRunningRequestQueue();
+        }
+
+        RequestQueueMonitor.sendRequestQueueLeader(ServerState.requestQueueIP);
+
         for (String IP : NetworkConstants.SERVER_IPS){
             if(!IP.equals(ServerState.serverIP))
                 sendLeader(IP);

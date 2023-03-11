@@ -3,14 +3,14 @@ package Util;
 import java.util.List;
 
 public final class NetworkConstants {
-    public static final String[] SERVER_IPS = new String[]{"172.31.0.104","172.31.14.187", "172.31.1.137", "localhost"};
+    public static final String[] SERVER_IPS = new String[]{"172.31.0.104","172.31.14.187", "172.31.1.137"};
     public static int  REQUEST_QUEUE_SOCKET_PORT = 80;
     public static int  RESPONSE_QUEUE_SERVER_PORT = 9090;
     public static int MAIN_SERVER_PORT = 8080;
     public static int REQUEST_QUEUE_PORT = 8080;
     public static int RESPONSE_QUEUE_PORT = 8080;
     public static int DATABASE_MANAGER_PORT = 8080;
-    public static String[] REQUEST_QUEUE_IPS = new String[] {"18.189.196.143"};
+    public static String[] REQUEST_QUEUE_IPS = new String[] {"18.189.196.143","3.136.94.117"};
     public static String[] RESPONSE_QUEUE_IPS = new String[] {"3.12.236.117"};
 
 

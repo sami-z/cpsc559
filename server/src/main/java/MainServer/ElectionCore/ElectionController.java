@@ -55,6 +55,9 @@ public class ElectionController{
     @PostMapping("leader/requestqueue")
     public void requestLeader(@RequestBody JsonNode node){
         String requestQueueIP = node.get("requestQueueIP").asText();
+
+        System.out.println("new Request queue leader" + requestQueueIP);
+
         ServerState.requestQueueIP = requestQueueIP;
     }
 
