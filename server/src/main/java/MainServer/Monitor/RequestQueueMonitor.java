@@ -25,7 +25,7 @@ public class RequestQueueMonitor implements Runnable{
             try {
                 restTemplate.getForEntity(ping_uri, String.class);
             } catch (RestClientResponseException e) {
-                i++;
+                i = (i + 1) % REQUEST_QUEUE_IPS.length;
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.setContentType(MediaType.APPLICATION_JSON);
