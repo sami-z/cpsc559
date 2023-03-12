@@ -67,6 +67,14 @@ public class ExecutionCoreHandler {
             DB db = new DB();
             files = db.findFiles(request.get("userName").asText());
 
+            // Convert the ArrayList to a JSON object using Jackson
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.valueToTree(files);
+
+            for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
+                sendToResponseQueue(jsonNode,IP);
+            }
+
         }
         else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){
 
