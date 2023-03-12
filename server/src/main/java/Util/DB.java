@@ -31,8 +31,8 @@ public class DB {
 	public DB() {
 		this.mongoClient1 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER1);
 		this.mongoClient2 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER2);
-		replicaCluster1 = this.mongoClient1.getDatabase("cpsc559_db").getCollection("files_data");
-		replicaCluster2 = this.mongoClient2.getDatabase("cpsc559_db").getCollection("files_data");
+		replicaCluster1 = this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
+		replicaCluster2 = this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
 
 
 //		if (databases == null) {
@@ -46,6 +46,14 @@ public class DB {
 //		if (getCurrentPrimaryIndex() == -1) {
 //			loadLastPrimaryIndexFromFile();
 //		}
+	}
+
+	public MongoDatabase getPrimaryDatabase() {
+		if (isFirstClusterPrimary) {
+			return this.mongoClient1.getDatabase("cpsc559_db");
+		} else {
+			return this.mongoClient2.getDatabase("cpsc559_db");
+		}
 	}
 
 	private MongoCollection<Document> getPrimaryReplica() {
@@ -63,6 +71,8 @@ public class DB {
 //			secondaryReplica.insertOne(primaryDoc);
 //		}
 //	}
+
+//	public void
 
 	// TODO implement handling of a case where a file with the same filename as the request already exists under the same account (using username), in which case we must overwrite
 	public Document uploadFile(ClientRequestModel model) {
