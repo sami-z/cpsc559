@@ -1,11 +1,14 @@
 import React, {useState} from 'react'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import CropOriginalIcon from '@mui/icons-material/CropOriginal';
 import './styles.css'
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const FileItem = ({ id, caption, timestamp, fileUrl, size }) => {
     const [isSelected, setIsSelected] = useState(false);
-    console.log("In FileItem.js, ", caption, timestamp, fileUrl, size)
+    console.log("In FileItem.js, ", caption, timestamp, fileUrl, size);
+    const fileExtension = caption.split('.').pop();
     //const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
     const fileDate = "09/03/2023"
     const getReadableFileSizeString = (fileSizeInBytes) => {
@@ -19,13 +22,29 @@ const FileItem = ({ id, caption, timestamp, fileUrl, size }) => {
         return Math.max(fileSizeInBytes, 0.1).toFixed(1) + byteUnits[i];
     };
 
+    const getIconByExtension = (fileName) => {
+        const extension = fileName.split('.').pop();
+        switch (extension.toLowerCase()) {
+          case 'pdf':
+            return <PictureAsPdfIcon />;
+          case 'png':
+            return <CropOriginalIcon />;
+          case 'jpg':
+            return <CropOriginalIcon />;
+          case 'jpeg':
+            return <CropOriginalIcon />;
+          default:
+            return <InsertDriveFileIcon />;
+        }
+      };
+
 
     return (
         <div className='fileItem'>
             <a href={fileUrl} target="_blank" download>
             <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} />
                 <div className="fileItem--left">
-                    <InsertDriveFileIcon />
+                    {getIconByExtension(fileExtension)}
                     <p>{caption}</p>
                 </div>
                 <div className="fileItem--right">

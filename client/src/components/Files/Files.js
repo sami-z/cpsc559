@@ -3,65 +3,19 @@ import FileItem from './FileItem'
 import FileCard from './FileCard'
 import './styles.css'
 
-const Files = ({ searchTerm }) => {
-    // const [files, setFiles] = useState([])
+const Files = ({ files, searchTerm }) => {
+    const [dynamicFiles, setDynamicFiles] = useState(files);
 
-    // HARDCODED files Array 
-    let files = [
-        {
-            id: 1,
-            caption: "ragSmart.jpg",
-            timestamp: "1234",
-            fileUrl: "rag.com",
-            size: "12314"
-        },
-        {
-            id: 2,
-            caption: "ragDaddy.txt",
-            timestamp: "234",
-            fileUrl: "sam.com",
-            size: "123"
-        },
-        {
-            id: 3,
-            caption: "jake.jpg",
-            timestamp: "234",
-            fileUrl: "sam.com",
-            size: "123"
-        },
-        {
-            id: 4,
-            caption: "awwstin.txt",
-            timestamp: "234",
-            fileUrl: "sam.com",
-            size: "123"
-        },
-        {
-            id: 5,
-            caption: "mana.csv",
-            timestamp: "234",
-            fileUrl: "sam.com",
-            size: "123"
-        },
-        {
-            id: 6,
-            caption: "hello-world.txt",
-            timestamp: "234",
-            fileUrl: "sam.com",
-            size: "123"
-        },
-        {
-            id: 7,
-            caption: "cpsc559.iml",
-            timestamp: "234",
-            fileUrl: "sam.com",
-            size: "123"
-        },
-        
-    ]
+    useEffect(() => {
+        setDynamicFiles(files);
+    }, [files]);
 
     // Filter the files array based on whether the caption property includes the searchTerm
-    const filteredFiles = files.filter((item) => item.caption.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filteredFiles = dynamicFiles.filter((item) => JSON.parse(item).fileName?.toLowerCase().includes(searchTerm?.toLowerCase()));
+    console.log(files);
+
+    // console.log("Here I am printing the array: " + files);
+    // console.log(files.map(obj => obj.fileName));
 
     return (
         <div className="fileView">
@@ -69,8 +23,8 @@ const Files = ({ searchTerm }) => {
 
             <div className='fileView_row'>
                 {
-                    files.slice(0, 6).map(({ id, caption }) => (
-                        <FileCard key={id} name={caption} className="fileCard" />
+                    files.slice(0, 6).map((item, index) => (
+                        <FileCard key={index} name={JSON.parse(item).fileName} className="fileCard" />
                     ))
                 }
 
@@ -85,8 +39,8 @@ const Files = ({ searchTerm }) => {
                 </div>
             </div>
             {
-                filteredFiles.map((item, id) => (
-                    <FileItem key={id} caption={item.caption} timestamp={item.timestamp} fileUrl={item.fileUrl} size={item.size} />
+                filteredFiles.map((item, index) => (
+                    <FileItem key={index} caption={JSON.parse(item).fileName} timestamp={0} fileUrl={JSON.parse(item).bytes} size={0} />
                 ))
             }
 

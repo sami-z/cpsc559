@@ -11,23 +11,44 @@ function createWebSocket() {
 
 function App() {
   
-  const MINUTE_MS = 10000;
-  const newWebSocket = createWebSocket();
+  const MINUTE_MS = 500;
+  const [files, setFiles] = useState([]);
   
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('Logs every 2 secs');
-      
-      
-      console.log('WebSocket connection established!');
+      const newWebSocket = createWebSocket();
 
-      console.log(newWebSocket);
-      newWebSocket.send("{\"userName\":\"manbir\"}");
-      console.log(newWebSocket);
+      newWebSocket.onopen = () => {
+        console.log('WebSocket connection established!');
+        newWebSocket.send("{\"userName\":\"manbir\"}");
+      };
+
+      newWebSocket.onmessage = (event) => {
+        const blob = event.data;
+        const reader = new FileReader();
+        reader.onload = function() {
+          const message = reader.result;
+          console.log(message);
+
+          if (!message) {
+            return;
+          }
+
+          const jsonObject = JSON.stringify(message);
+          const newFiles = JSON.parse(jsonObject);
+
+          setFiles(prevFiles => [...prevFiles, newFiles]);
+
+          newWebSocket.close();
+        }
+        reader.readAsText(blob);
+      };
 
       // Send the file then close
       // handleFileUpload();
       // handleClose();
+
         
     }, MINUTE_MS);
 
@@ -42,7 +63,7 @@ function App() {
         <Navbar setSearchTerm={setSearchTerm}/>
         <div className='main_content'>
           <Sidebar/>
-          <Files searchTerm={searchTerm}/>
+          <Files files={files} searchTerm={searchTerm}/>
           
         </div>
       </div>
