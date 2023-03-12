@@ -77,7 +77,7 @@ public class ExecutionCoreHandler {
             // TODO release lock
 
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-                sendToResponseQueue(request, IP);
+                sendToResponseQueue(request,IP);
             }
         }
 

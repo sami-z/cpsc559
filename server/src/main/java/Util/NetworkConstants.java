@@ -13,14 +13,16 @@ public final class NetworkConstants {
     public static String[] REQUEST_QUEUE_IPS = new String[] {"18.189.196.143","3.136.94.117"};
     public static String[] RESPONSE_QUEUE_IPS = new String[] {"3.12.236.117"};
 
-
-
     public static String getRequestQueueURI(String IP){
         return String.format("http://%s:%s/api/request/fetch",IP,REQUEST_QUEUE_PORT);
     }
 
     public static String getRequestQueueURIPing(String IP){
         return String.format("http://%s:%s/api/request/ping",IP,REQUEST_QUEUE_PORT);
+    }
+
+    public static String getRequestQueuePushURI(String IP){
+        return String.format("http://%s:%s/api/request/push",IP,REQUEST_QUEUE_PORT);
     }
 
     public static String getProcessingServerURILeader(String IP){
@@ -40,6 +42,6 @@ public final class NetworkConstants {
     }
 
     public static String getDBManagerURI(){
-        return String.format("http://3.21.101.62:%s/dbmanager/upload",DATABASE_MANAGER_PORT);
+        return String.format("http://172.31.14.172:%s/dbmanager/upload",DATABASE_MANAGER_PORT);
     }
 }

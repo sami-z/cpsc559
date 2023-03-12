@@ -17,6 +17,7 @@ public class DatabaseController {
 
     @PostMapping("/dbmanager/upload")
     public void uploadToDatabase(@RequestBody ClientRequestModel requestModel) throws InterruptedException, IOException {
+        System.out.println(requestModel.fileName);
         DB db = new DB();
         Document replicatedEntry = db.uploadFile(requestModel);
         new Thread(new ReplicationRunner(replicatedEntry)).start();
