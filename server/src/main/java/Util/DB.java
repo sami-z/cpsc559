@@ -43,6 +43,14 @@ public class DB {
 		return (isFirstClusterPrimary) ? this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME) : this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME);
 	}
 
+	public MongoDatabase getPrimaryAdminDatabase() {
+		return (isFirstClusterPrimary) ? this.mongoClient1.getDatabase("admin") : this.mongoClient2.getDatabase("admin");
+	}
+
+	public MongoDatabase getSecondaryAdminDatabase() {
+		return (isFirstClusterPrimary) ? this.mongoClient2.getDatabase("admin") : this.mongoClient1.getDatabase("admin");
+	}
+
 	public MongoCollection<Document> getPrimaryReplica() {
 		return (isFirstClusterPrimary) ? replicaCluster1 : replicaCluster2;
 	}
@@ -76,6 +84,7 @@ public class DB {
 			getPrimaryReplica().insertOne(entry);
 		} catch (MongoException e) {
 			// TODO implement fault tolerance for clusters
+			e.printStackTrace();
 		}
 
 //		MongoCollection<Document> primaryReplica = getPrimaryReplicaCollection();
