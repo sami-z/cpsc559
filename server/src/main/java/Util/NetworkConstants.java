@@ -11,7 +11,7 @@ public final class NetworkConstants {
     public static int RESPONSE_QUEUE_PORT = 8080;
     public static int DATABASE_MANAGER_PORT = 8080;
     public static String[] REQUEST_QUEUE_IPS = new String[] {"18.189.196.143","3.136.94.117"};
-    public static String[] RESPONSE_QUEUE_IPS = new String[] {"3.12.236.117"};
+    public static String[] RESPONSE_QUEUE_IPS = new String[] {"18.224.111.143","18.216.20.109"};
 
     public static String getRequestQueueURI(String IP){
         return String.format("http://%s:%s/api/request/fetch",IP,REQUEST_QUEUE_PORT);
@@ -39,6 +39,10 @@ public final class NetworkConstants {
 
     public static String getResponseQueueURI(String IP){
         return String.format("http://%s:%s/api/response/post",IP,RESPONSE_QUEUE_PORT);
+    }
+
+    public static String getResponseQueueLeaderURI(String IP){
+        return String.format("http://%s:%s/api/request/leader",IP,RESPONSE_QUEUE_PORT);
     }
 
     public static String getDBManagerURI(){

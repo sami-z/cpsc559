@@ -32,7 +32,8 @@ public class RequestQueueController {
     }
 
     @PostMapping("/leader")
-    public void setLeader(@RequestParam String leaderIP){
+    public void setLeader(@RequestBody JsonNode node){
+        String leaderIP = node.get("leaderIP").asText();
         LeaderState.leaderIP = leaderIP;
     }
 }

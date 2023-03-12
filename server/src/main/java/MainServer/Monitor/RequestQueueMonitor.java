@@ -39,7 +39,7 @@ public class RequestQueueMonitor implements Runnable{
                 new HttpEntity<String>(rqNode.toString(), headers);
 
         for (String requestQueueIP: REQUEST_QUEUE_IPS) {
-            String request_queue_uri = NetworkConstants.getResponseQueueURI(requestQueueIP);
+            String request_queue_uri = NetworkConstants.getResponseQueueLeaderURI(requestQueueIP);
             try {
                 restTemplate.postForEntity(request_queue_uri, rqUpdate, String.class);
             } catch(RestClientException e){
