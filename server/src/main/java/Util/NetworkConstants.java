@@ -1,7 +1,5 @@
 package Util;
 
-import java.util.List;
-
 public final class NetworkConstants {
     public static final String[] SERVER_IPS = new String[]{"172.31.0.104","172.31.14.187", "172.31.1.137"};
     public static int  REQUEST_QUEUE_SOCKET_PORT = 80;
@@ -41,7 +39,7 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/api/response/post",IP,RESPONSE_QUEUE_PORT);
     }
 
-    public static String getResponseQueueLeaderURI(String IP){
+    public static String getRequestQueueLeaderURI(String IP){
         return String.format("http://%s:%s/api/request/leader",IP,RESPONSE_QUEUE_PORT);
     }
 

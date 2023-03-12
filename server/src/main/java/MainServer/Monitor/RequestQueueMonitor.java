@@ -5,13 +5,11 @@ import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.catalina.Server;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
@@ -39,7 +37,7 @@ public class RequestQueueMonitor implements Runnable{
                 new HttpEntity<String>(rqNode.toString(), headers);
 
         for (String requestQueueIP: REQUEST_QUEUE_IPS) {
-            String request_queue_uri = NetworkConstants.getResponseQueueLeaderURI(requestQueueIP);
+            String request_queue_uri = NetworkConstants.getRequestQueueLeaderURI(requestQueueIP);
             try {
                 restTemplate.postForEntity(request_queue_uri, rqUpdate, String.class);
             } catch(RestClientException e){
