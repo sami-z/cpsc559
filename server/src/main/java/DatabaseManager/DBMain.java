@@ -15,5 +15,7 @@ public class DBMain {
         app.setDefaultProperties(Collections
                 .singletonMap("server.port", Integer.toString(NetworkConstants.DATABASE_MANAGER_PORT)));
         app.run(args);
+
+        new Thread(new DatabaseClusterMonitor()).start();
     }
 }

@@ -33,46 +33,31 @@ public class DB {
 		this.mongoClient2 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER2);
 		replicaCluster1 = this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
 		replicaCluster2 = this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
-
-
-//		if (databases == null) {
-//			int beginOffset = readDatabaseOffsetFromFile() - DBConstants.NUMBER_OF_DATABASES;
-//			for (int i = 0; i < DBConstants.NUMBER_OF_DATABASES; i++) {
-//				beginOffset++;
-//				databases.add(mongoClient.getDatabase(generateDatabaseName(beginOffset)));
-//			}
-//		}
-//
-//		if (getCurrentPrimaryIndex() == -1) {
-//			loadLastPrimaryIndexFromFile();
-//		}
 	}
 
 	public MongoDatabase getPrimaryDatabase() {
-		if (isFirstClusterPrimary) {
-			return this.mongoClient1.getDatabase("cpsc559_db");
-		} else {
-			return this.mongoClient2.getDatabase("cpsc559_db");
-		}
+		return (isFirstClusterPrimary) ? this.mongoClient1.getDatabase("cpsc559_db") : this.mongoClient2.getDatabase("cpsc559_db");
 	}
 
-	private MongoCollection<Document> getPrimaryReplica() {
-		if (isFirstClusterPrimary) {
-			return replicaCluster1;
-		} else {
-			return replicaCluster2;
-		}
+	public MongoDatabase getSecondaryDatabase() {
+		return (isFirstClusterPrimary) ? this.mongoClient2.getDatabase("cpsc559_db") : this.mongoClient1.getDatabase("cpsc559_db");
 	}
 
-//	private void replicateDatabase(MongoCollection<Document> primaryReplica, MongoCollection<Document> secondaryReplica) {
-//		List<Document> primaryDocs = primaryReplica.find().into(new ArrayList<>());
-//
-//		for (Document primaryDoc : primaryDocs) {
-//			secondaryReplica.insertOne(primaryDoc);
-//		}
-//	}
+	public MongoCollection<Document> getPrimaryReplica() {
+		return (isFirstClusterPrimary) ? replicaCluster1 : replicaCluster2;
+	}
 
-//	public void
+	public MongoCollection<Document> getSecondaryReplica() {
+		return (isFirstClusterPrimary) ? replicaCluster2 : replicaCluster1;
+	}
+
+	public void replicateDatabase(MongoCollection<Document> primaryReplica, MongoCollection<Document> secondaryReplica) {
+		List<Document> primaryDocs = primaryReplica.find().into(new ArrayList<>());
+
+		for (Document primaryDoc : primaryDocs) {
+			secondaryReplica.insertOne(primaryDoc);
+		}
+	}
 
 	// TODO implement handling of a case where a file with the same filename as the request already exists under the same account (using username), in which case we must overwrite
 	public Document uploadFile(ClientRequestModel model) {
