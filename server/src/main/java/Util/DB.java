@@ -36,11 +36,11 @@ public class DB {
 	}
 
 	public MongoDatabase getPrimaryDatabase() {
-		return (isFirstClusterPrimary) ? this.mongoClient1.getDatabase("cpsc559_db") : this.mongoClient2.getDatabase("cpsc559_db");
+		return (isFirstClusterPrimary) ? this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME) : this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME);
 	}
 
 	public MongoDatabase getSecondaryDatabase() {
-		return (isFirstClusterPrimary) ? this.mongoClient2.getDatabase("cpsc559_db") : this.mongoClient1.getDatabase("cpsc559_db");
+		return (isFirstClusterPrimary) ? this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME) : this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME);
 	}
 
 	public MongoCollection<Document> getPrimaryReplica() {
