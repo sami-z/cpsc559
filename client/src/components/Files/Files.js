@@ -41,7 +41,7 @@ const Files = ({ files, searchTerm }) => {
             </div>
             {
                 filteredFiles.map((item, index) => (
-                    <FileItem key={index} caption={item.fileName} timestamp={0} fileData={item.bytes} size={0} />
+                    <FileItem key={index} caption={item.fileName} timestamp={0} fileData={item.bytes} size={atob(item.bytes).length} />
                 ))
             }
 

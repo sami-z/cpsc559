@@ -6,7 +6,7 @@ import './styles.css'
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const FileItem = ({ id, caption, timestamp, fileData, size }) => {
-  console.log("id, caption, timestamp, fireurl, size")
+  console.log("id, caption, timestamp, fireurl, size", size)
   const [isSelected, setIsSelected] = useState(false);
 
   let fileType = caption.split('.')[1]
