@@ -4,6 +4,7 @@ import FileCard from './FileCard'
 import './styles.css'
 
 const Files = ({ files, searchTerm }) => {
+    console.log("in FILES", files)
     const [dynamicFiles, setDynamicFiles] = useState(files);
 
     useEffect(() => {
@@ -11,7 +12,7 @@ const Files = ({ files, searchTerm }) => {
     }, [files]);
 
     // Filter the files array based on whether the caption property includes the searchTerm
-    const filteredFiles = dynamicFiles.filter((item) => JSON.parse(item).fileName?.toLowerCase().includes(searchTerm?.toLowerCase()));
+    const filteredFiles = dynamicFiles.filter((item) => item.fileName?.toLowerCase().includes(searchTerm?.toLowerCase()));
     console.log(files);
 
     // console.log("Here I am printing the array: " + files);
@@ -24,7 +25,7 @@ const Files = ({ files, searchTerm }) => {
             <div className='fileView_row'>
                 {
                     files.slice(0, 6).map((item, index) => (
-                        <FileCard key={index} name={JSON.parse(item).fileName} className="fileCard" />
+                        <FileCard key={index} name={item.fileName} className="fileCard" />
                     ))
                 }
 
@@ -40,7 +41,7 @@ const Files = ({ files, searchTerm }) => {
             </div>
             {
                 filteredFiles.map((item, index) => (
-                    <FileItem key={index} caption={JSON.parse(item).fileName} timestamp={0} fileUrl={JSON.parse(item).bytes} size={0} />
+                    <FileItem key={index} caption={item.fileName} timestamp={0} fileData={item.bytes} size={0} />
                 ))
             }
 

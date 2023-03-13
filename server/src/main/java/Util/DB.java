@@ -74,9 +74,9 @@ public class DB {
 		String formattedDate = currentDate.format(formatter);
 
 		Document entry = new Document("_id", new ObjectId())
-				.append("filename", model.fileName)
+				.append("fileName", model.fileName)
 				.append("bytes", model.bytes)
-				.append("owner", model.userName)
+				.append("userName", model.userName)
 				.append("created", formattedDate)
 				.append("shared", model.shareWith);
 
@@ -119,13 +119,13 @@ public class DB {
 //		}
 	}
 
-	public ArrayList<JsonNode> findFiles(String ownerName) throws JsonProcessingException {
+	public ArrayList<JsonNode> findFiles(String userName) throws JsonProcessingException {
 		ArrayList<JsonNode> ret = new ArrayList<>();
-		
-		FindIterable<Document> doc = getPrimaryReplica().find(eq("owner",ownerName));
-		if (doc != null) {
-			System.out.println("Found files for " + ownerName + "!");
-			for(Document d: doc) {
+		FindIterable<Document> docs = getPrimaryReplica().find(eq("userName",userName));
+		mapper = new ObjectMapper();
+		if (docs.iterator().hasNext()) {
+			System.out.println("Found files for " + userName + "!");
+			for(Document d: docs) {
 				JsonNode tempJson = (JsonNode) mapper.readTree(d.toJson());
 	        	ret.add(tempJson);
 	        	System.out.println(">" + tempJson.get("filename"));
@@ -137,24 +137,21 @@ public class DB {
 	}
 
 
-	public void saveFileFromDB(String filename, String dest) throws IOException {
+	public JsonNode loadFile(String filename) throws IOException {
 		Document doc = getPrimaryReplica().find(eq("filename", filename)).first();
 		if (doc != null) {
-	    	JsonNode json = (JsonNode) mapper.readTree(doc.toJson());
-	    	System.out.println("bytes: "+ json.get("bytes") + " end");
-	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(mapper.writeValueAsString(json.get("bytes")));
-	    	ByteArrayOutputStream out = new ByteArrayOutputStream();
-	        //ObjectOutputStream os = new ObjectOutputStream(out);
-	        //os.writeObject(json.get("selectedFile"));
-	        FileOutputStream fos = new FileOutputStream(dest);
-	        fos.write(fileBytes);
-	        fos.close();
-	        System.out.println("Saved file at location: " + dest);
+			return mapper.readTree(doc.toJson());
+//	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(mapper.writeValueAsString(json.get("bytes")));
+//	    	ByteArrayOutputStream out = new ByteArrayOutputStream();
+//	        FileOutputStream fos = new FileOutputStream(dest);
+//	        fos.write(fileBytes);
+//	        fos.close();
+//	        System.out.println("Saved file at location: " + dest);
 	        }
         else {
             System.out.println("File not found");
         }
-        
+        return null;
 	}
 	public void editSharedWith(String filename){
 		Bson filter = eq("filename", filename);

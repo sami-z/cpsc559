@@ -5,13 +5,16 @@ import Util.DB;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.JsonArray;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class ExecutionCoreHandler {
@@ -52,7 +55,6 @@ public class ExecutionCoreHandler {
 
     public static void processEvent(JsonNode request) throws IOException {
         // Parse HTML
-
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -61,18 +63,23 @@ public class ExecutionCoreHandler {
 
         if (request == null) return;
 
-        ArrayList<JsonNode> files = null;
+
         // Check type of request
         if(request.get("requestType").asText().equalsIgnoreCase("READ")){ // locking
+            String readType = request.get("readType").asText();
             DB db = new DB();
-            files = db.findFiles(request.get("userName").asText());
-
-            // Convert the ArrayList to a JSON object using Jackson
+            ArrayList<JsonNode> files = db.findFiles(request.get("userName").asText());
             ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.valueToTree(files);
-
-            for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-                sendToResponseQueue(jsonNode,IP);
+            JsonNode response = objectMapper.valueToTree(files);
+            System.out.println("trying to print first element" + response.get(0));
+            if(readType.equals("allFiles")){
+                for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
+//                    for (JsonNode file : files) {
+//                        System.out.println("the actual file"+file);
+//                        sendToResponseQueue(file, IP);
+//                    }
+                    sendToResponseQueue(response, IP);
+                }
             }
 
         }
@@ -81,14 +88,14 @@ public class ExecutionCoreHandler {
             // TODO obtain lock
 
             sendWrite(request);
-
-            // TODO release lock
-
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-                sendToResponseQueue(request,IP);
+                sendToResponseQueue(request, IP);
             }
+            // TODO release lock
         }
-
-
+        else{
+            System.out.println("invalid request type (must be READ or WRITE)");
+            return;
+        }
     }
 }
