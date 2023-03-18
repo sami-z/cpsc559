@@ -38,13 +38,13 @@
     padding-left: 10px;
   }
   
-  label {
+  .label {
     font-size: 18px;
     font-weight: 500;
     margin-bottom: 10px;
   }
   
-  input {
+  .input {
     display: block;
     padding: 12px 1px;
     border: none;
@@ -62,7 +62,7 @@
     margin-top: 20px;
   }
   
-  button {
+  .buttons-for-login {
     padding: 12px 30px;
     border: none;
     border-radius: 5px;

@@ -12,7 +12,6 @@ function getModalStyle() {
         top: `50%`,
         left: `50%`,
         transform: `translate(-50%, -50%)`,
-
     };
 }
 
@@ -28,7 +27,7 @@ const useStyles = makeStyles({
         borderRadius: 3,
         color: 'black',
         height: 48,
-        padding: '0 30px',
+        padding: '0 10px',
     },
 });
 
@@ -148,7 +147,7 @@ function Upload() {
                                 <input type="file" onChange={handleChange} />
                                 <button onClick={handleSend}>Upload to DFS</button>
                             </>
-                        )
+                        ) 
                     }
                 </div>
             </Modal>

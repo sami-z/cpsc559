@@ -5,13 +5,13 @@ import CropOriginalIcon from '@mui/icons-material/CropOriginal';
 import './styles.css'
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const FileItem = ({ id, caption, timestamp, fileData, size }) => {
+const FileItem = ({ id, caption, timestamp, size }) => {
   console.log("id, caption, timestamp, fireurl, size", size)
   const [isSelected, setIsSelected] = useState(false);
 
   let fileType = caption.split('.')[1]
-  let fileUrl = `data:application/${fileType};base64,${fileData}`
-  console.log("In FileItem.js, ", caption, timestamp, fileUrl, size);
+  // let fileUrl = `data:application/${fileType};base64,${fileData}`
+  console.log("In FileItem.js, ", caption, timestamp, size);
   const fileExtension = caption.split('.').pop();
   //const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
   const fileDate = "09/03/2023"
@@ -44,7 +44,7 @@ const FileItem = ({ id, caption, timestamp, fileData, size }) => {
 
   return (
     <div className='fileItem'>
-      <a href={fileUrl} target="_blank" download={caption}>
+      <a target="_blank" download={caption}>
         <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} />
         <div className="fileItem--left">
           {getIconByExtension(fileExtension)}

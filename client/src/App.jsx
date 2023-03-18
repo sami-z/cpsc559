@@ -13,6 +13,7 @@ import { Input, InputAdornment } from '@mui/material';
 
 
 let flager = false
+
 function createWebSocket(port) {
   return new WebSocket(port);
 }
@@ -22,11 +23,49 @@ function Login() {
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    // Perform login logic
+    const enteredUsername = username.trim(); 
+    const enteredPass = password.trim()
+    console.log("Entered username for login: ", enteredUsername);
+    console.log("Entered password for login ", enteredPass);
+
+    const newWebSocket = createWebSocket(WEBSOCKET_URL);
+    const payload = { requestType: "LOGIN", userName: enteredUsername, password: enteredPass };
+        
+        newWebSocket.addEventListener('open', () => {
+            console.log('WebSocket connection established!');
+
+            console.log(newWebSocket);
+
+
+            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
+                newWebSocket.send(JSON.stringify(payload));
+            }
+
+
+            else {
+                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
+            }
+
+            // setTimeout(() => {
+            //     setUploadStatus('uploaded');
+            //     setOpen(false);
+            //     setFileData(null);
+            //     setFileBytes(null);
+            //     setUploadStatus('idle');
+            // }, 2500); // add a 2.5 second delay
+            newWebSocket.close();
+
+        });
+
+
+    
   };
 
   const handleRegister = () => {
-    // Perform register logic
+    const enteredUsername = username.trim(); 
+    const enteredPass = password.trim()
+    console.log("Entered username for register: ", enteredUsername);
+    console.log("Entered password for register ", enteredPass);
   };
 
   return (
@@ -67,10 +106,10 @@ function Login() {
         </div>
 
         <div className="button-group">
-          <button type="button" className="login-button" onClick={handleLogin}>
+          <button type="button" className="login-button buttons-for-login" onClick={handleLogin}>
             Login
           </button>
-          <button type="button" className="register-button" onClick={handleRegister}>
+          <button type="button" className="register-button buttons-for-login" onClick={handleRegister}>
             Register
           </button>
         </div>
@@ -85,33 +124,33 @@ function App() {
   const MINUTE_MS = 5000;
   const [files, setFiles] = useState([]);
   
-  const rqstSocket = createWebSocket(WEBSOCKET_URL)
-  const payload = { requestType: "READ", userName: "manbir", readType: "allFiles" };
+  // const rqstSocket = createWebSocket(WEBSOCKET_URL)
+  // const payload = { requestType: "READ", userName: "manbir", readType: "allFiles" };
   
 
-  rqstSocket.addEventListener('open', () => {
-      console.log('RqstQ connection established!');
+  // rqstSocket.addEventListener('open', () => {
+  //     console.log('RqstQ connection established!');
 
-      console.log(rqstSocket);
+  //     console.log(rqstSocket);
 
-      if(!flager){
-        if (rqstSocket && rqstSocket.readyState === WebSocket.OPEN) {
-            rqstSocket.send(JSON.stringify(payload));
-            flager = true
-        }
+  //     if(!flager){
+  //       if (rqstSocket && rqstSocket.readyState === WebSocket.OPEN) {
+  //           rqstSocket.send(JSON.stringify(payload));
+  //           flager = true
+  //       }
         
-      }
+  //     }
 
 
-      else {
-          console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-      }
+  //     else {
+  //         console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
+  //     }
 
 
-      rqstSocket.close();
+  //     rqstSocket.close();
       
 
-  });
+  // });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -172,7 +211,7 @@ function App() {
 
   return (
     <div className="App">
-      {isLoggedIn ? (
+      {true ? ( //replace with: isLoggedIn
         <div className='app_main'>
           <Navbar setSearchTerm={setSearchTerm}/>
           <div className='main_content'>
