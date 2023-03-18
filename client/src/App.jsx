@@ -5,15 +5,83 @@ import Sidebar from "./components/Sidebar/Sidebar"
 import { useState, useEffect } from 'react';
 import { RESPONSE_QUEUE_SERVER_PORT } from './components/WebSocket/WebSocket';
 import { WEBSOCKET_URL } from './components/WebSocket/WebSocket';
-import { typeOf } from 'react-is';
+import './Login.css';
+import PersonIcon from '@mui/icons-material/Person';
+import KeyIcon from '@mui/icons-material/Key';
+import { Input, InputAdornment } from '@mui/material';
+
+
 
 let flager = false
 function createWebSocket(port) {
   return new WebSocket(port);
 }
 
+function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = () => {
+    // Perform login logic
+  };
+
+  const handleRegister = () => {
+    // Perform register logic
+  };
+
+  return (
+    <div className="login">
+      <h1>Login or Register</h1>
+      <h4 className="subheading">to continue to Distributed File System</h4>
+      <form>
+        <div className="form-group">
+          <Input
+            type="text"
+            className="input-field"
+            placeholder="Username"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            startAdornment={
+              <InputAdornment position="start">
+                <PersonIcon />
+              </InputAdornment>
+            }
+          />
+        </div>
+
+        <div className="form-group">
+          <Input
+            type="password"
+            className="input-field"
+            placeholder="Password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            startAdornment={
+              <InputAdornment position="start">
+                <KeyIcon/>
+              </InputAdornment>
+            }
+          />
+        </div>
+
+        <div className="button-group">
+          <button type="button" className="login-button" onClick={handleLogin}>
+            Login
+          </button>
+          <button type="button" className="register-button" onClick={handleRegister}>
+            Register
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+
 function App() {
-  console.log("Start of App.jsx")
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const MINUTE_MS = 5000;
   const [files, setFiles] = useState([]);
   
@@ -104,14 +172,17 @@ function App() {
 
   return (
     <div className="App">
-      <div className='app_main'>
-        <Navbar setSearchTerm={setSearchTerm}/>
-        <div className='main_content'>
-          <Sidebar/>
-          <Files files={files} searchTerm={searchTerm}/>
-          
+      {isLoggedIn ? (
+        <div className='app_main'>
+          <Navbar setSearchTerm={setSearchTerm}/>
+          <div className='main_content'>
+            <Sidebar/>
+            <Files files={files} searchTerm={searchTerm}/>
+          </div>
         </div>
-      </div>
+      ) : (
+        <Login />
+      )}   
     </div>
   );
 }
