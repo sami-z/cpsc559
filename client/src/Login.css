@@ -72,14 +72,22 @@
   }
   
   .login-button {
-    background-color: #007BFF;
+    background-color: #6C757D;
     color: #fff;
     margin-right: 10px;
     width: 150px;
+  }
+
+  .login-button:hover {
+    background-color:#007acc; 
   }
   
   .register-button {
     background-color: #6C757D;
     color: #fff;
     width: 150px;
+  }
+
+  .register-button:hover {
+    background-color: #007acc; 
   }
