@@ -98,7 +98,6 @@ public class DB {
 		} catch (Exception e) {
 			// TODO implement fault tolerance for clusters
 			System.out.println("MongoDB Atlas Primary Cluster is down in DB");
-			e.printStackTrace();
 
 			DB.shouldRecover = true;
 			if (DB.isFirstClusterPrimary) {
@@ -115,7 +114,6 @@ public class DB {
 			getSecondaryReplica().insertOne(entry);
 		} catch (Exception e) {
 			System.out.println("Secondary cluster is currently down in DB");
-			e.printStackTrace();
 		}
 	}
 

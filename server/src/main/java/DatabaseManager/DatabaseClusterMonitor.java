@@ -45,7 +45,6 @@ public class DatabaseClusterMonitor implements Runnable{
                 }
             } catch (Exception e) {
                 System.out.println("MongoDB Atlas Primary Cluster is down in DB Cluster Monitor");
-                e.printStackTrace();
 
                 DB.shouldRecover = true;
                 DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
@@ -96,7 +95,6 @@ public class DatabaseClusterMonitor implements Runnable{
 
                 } catch (Exception e) {
                     System.out.println("MongoDB Atlas Secondary Cluster is still down in DB Cluster Monitor");
-                    e.printStackTrace();
                 }
             }
         }
