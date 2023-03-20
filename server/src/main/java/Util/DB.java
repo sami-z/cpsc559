@@ -34,14 +34,18 @@ public class DB {
 		MongoClientSettings clientSettings = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster1.osrr3zu.mongodb.net/?retryWrites=true&w=majority"))
 				.applyToSocketSettings(builder ->
-						builder.connectTimeout(3, SECONDS))
+						builder.connectTimeout(0, SECONDS))
+				.applyToClusterSettings(builder ->
+						builder.serverSelectionTimeout(0, SECONDS))
 				.build();
 		mongoClient1 = MongoClients.create(clientSettings);
 
 		MongoClientSettings clientSettings2 = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority"))
 				.applyToSocketSettings(builder ->
-						builder.connectTimeout(3, SECONDS))
+						builder.connectTimeout(0, SECONDS))
+				.applyToClusterSettings(builder ->
+						builder.serverSelectionTimeout(0, SECONDS))
 				.build();
 		mongoClient2 = MongoClients.create(clientSettings2);
 	}
@@ -119,18 +123,28 @@ public class DB {
 
 	public ArrayList<JsonNode> findFiles(String userName) throws JsonProcessingException {
 		ArrayList<JsonNode> ret = new ArrayList<>();
-		FindIterable<Document> docs = getPrimaryReplica().find(eq("userName",userName));
+		FindIterable<Document> docs;
+		try {
+			docs = getPrimaryReplica().find(eq("userName",userName));
+		} catch (Exception e) {
+			DB.shouldRecover = true;
+			if (DB.isFirstClusterPrimary) {
+				DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
+			}
+			docs = getPrimaryReplica().find(eq("userName",userName));
+		}
+
 		mapper = new ObjectMapper();
 		if (docs.iterator().hasNext()) {
 			System.out.println("Found files for " + userName + "!");
 			for(Document d: docs) {
 				JsonNode tempJson = (JsonNode) mapper.readTree(d.toJson());
-	        	ret.add(tempJson);
-	        	System.out.println(">" + tempJson.get("filename"));
-	        }
-        } else {
-            System.out.println("No match");
-        }
+				ret.add(tempJson);
+				System.out.println(">" + tempJson.get("filename"));
+			}
+		} else {
+			System.out.println("No match");
+		}
 		return ret;
 	}
 

@@ -30,7 +30,9 @@ public class DatabaseClusterMonitor implements Runnable{
                     MongoClientSettings clientSettings = MongoClientSettings.builder()
                             .applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster1.osrr3zu.mongodb.net/?retryWrites=true&w=majority"))
                             .applyToSocketSettings(builder ->
-                                    builder.connectTimeout(3, SECONDS))
+                                    builder.connectTimeout(0, SECONDS))
+                            .applyToClusterSettings(builder ->
+                                    builder.serverSelectionTimeout(0, SECONDS))
                             .build();
                     MongoClient mongoClient1 = MongoClients.create(clientSettings);
                     mongoClient1.close();
@@ -38,7 +40,9 @@ public class DatabaseClusterMonitor implements Runnable{
                     MongoClientSettings clientSettings = MongoClientSettings.builder()
                             .applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority"))
                             .applyToSocketSettings(builder ->
-                                    builder.connectTimeout(3, SECONDS))
+                                    builder.connectTimeout(0, SECONDS))
+                            .applyToClusterSettings(builder ->
+                                    builder.serverSelectionTimeout(0, SECONDS))
                             .build();
                     MongoClient mongoClient2 = MongoClients.create(clientSettings);
                     mongoClient2.close();
@@ -59,14 +63,18 @@ public class DatabaseClusterMonitor implements Runnable{
                         MongoClientSettings clientSettings = MongoClientSettings.builder()
                                 .applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority"))
                                 .applyToSocketSettings(builder ->
-                                        builder.connectTimeout(3, SECONDS))
+                                        builder.connectTimeout(0, SECONDS))
+                                .applyToClusterSettings(builder ->
+                                        builder.serverSelectionTimeout(0, SECONDS))
                                 .build();
                         secondaryMongoClient = MongoClients.create(clientSettings);
                     } else {
                         MongoClientSettings clientSettings = MongoClientSettings.builder()
                                 .applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster1.osrr3zu.mongodb.net/?retryWrites=true&w=majority"))
                                 .applyToSocketSettings(builder ->
-                                        builder.connectTimeout(3, SECONDS))
+                                        builder.connectTimeout(0, SECONDS))
+                                .applyToClusterSettings(builder ->
+                                        builder.serverSelectionTimeout(0, SECONDS))
                                 .build();
                         secondaryMongoClient = MongoClients.create(clientSettings);
                     }
