@@ -33,7 +33,7 @@ public class ServerMain {
         ElectionConsumer.initiateElection();
 
         System.out.println("MAIN SERVER IS RUNNING");
-        new Thread(new LeaderMonitor()).start();
+        //new Thread(new LeaderMonitor()).start();
         new Thread(new MultiThreadedServer()).start();
 
 

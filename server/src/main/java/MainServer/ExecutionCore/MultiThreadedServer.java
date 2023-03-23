@@ -33,6 +33,7 @@ public class MultiThreadedServer implements Runnable{
             if (request == null) continue;
 
             try {
+                System.out.println("server got request" + System.currentTimeMillis());
                 System.out.println(request.toPrettyString());
                 ExecutionCoreHandler.processEvent(request);
             } catch (IOException e) {
