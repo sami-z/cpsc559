@@ -14,7 +14,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.time.Duration;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class ExecutionCoreHandler {
@@ -59,7 +61,6 @@ public class ExecutionCoreHandler {
 
     public static void processEvent(JsonNode request) throws IOException {
         // Parse HTML
-
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -68,11 +69,24 @@ public class ExecutionCoreHandler {
 
         if (request == null) return;
 
-        ArrayList<JsonNode> files = null;
+
         // Check type of request
         if(request.get("requestType").asText().equalsIgnoreCase("READ")){ // locking
+            String readType = request.get("readType").asText();
             DB db = new DB();
-            files = db.findFiles(request.get("userName").asText());
+            ArrayList<JsonNode> files = db.findFiles(request.get("userName").asText());
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode response = objectMapper.valueToTree(files);
+            System.out.println("trying to print first element" + response.get(0));
+            if(readType.equals("allFiles")){
+                for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
+//                    for (JsonNode file : files) {
+//                        System.out.println("the actual file"+file);
+//                        sendToResponseQueue(file, IP);
+//                    }
+                    sendToResponseQueue(response, IP);
+                }
+            }
 
         }
         else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){
@@ -82,13 +96,15 @@ public class ExecutionCoreHandler {
             sendWrite(request);
             System.out.println("database write done" + System.currentTimeMillis());
             // TODO release lock
-
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-                sendToResponseQueue(request,IP);
+                sendToResponseQueue(request, IP);
             }
             System.out.println("Responsequeue sent" + System.currentTimeMillis());
+            // TODO release lock
         }
-
-
+        else{
+            System.out.println("invalid request type (must be READ or WRITE)");
+            return;
+        }
     }
 }
