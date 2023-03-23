@@ -44,6 +44,7 @@ public class RequestQueueWebServer extends WebSocketServer{
 
     @Override
     public void onMessage(WebSocket webSocket, String s) {
+        System.out.println(System.currentTimeMillis());
         System.out.println(s);
         try {
             JsonNode request = mapper.readTree(s);

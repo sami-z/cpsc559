@@ -5,13 +5,15 @@ import Util.DB;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.JsonArray;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
+import java.time.Duration;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -42,7 +44,8 @@ public class ExecutionCoreHandler {
     }
 
     public static void sendToResponseQueue(JsonNode rq, String IP){
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        RestTemplate restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String uri = NetworkConstants.getResponseQueueURI(IP);
@@ -50,7 +53,10 @@ public class ExecutionCoreHandler {
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);
 
-        restTemplate.postForEntity(uri,request,String.class);
+        try {
+            restTemplate.postForEntity(uri, request, String.class);
+        } catch(RestClientException e){
+        }
     }
 
     public static void processEvent(JsonNode request) throws IOException {
@@ -86,11 +92,14 @@ public class ExecutionCoreHandler {
         else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){
 
             // TODO obtain lock
-
+            System.out.println("Send to database" + System.currentTimeMillis());
             sendWrite(request);
+            System.out.println("database write done" + System.currentTimeMillis());
+            // TODO release lock
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 sendToResponseQueue(request, IP);
             }
+            System.out.println("Responsequeue sent" + System.currentTimeMillis());
             // TODO release lock
         }
         else{
