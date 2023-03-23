@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
@@ -19,6 +20,7 @@ import static com.mongodb.client.model.Updates.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import com.mongodb.client.result.UpdateResult;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -85,17 +87,35 @@ public class DB {
 	}
 
 	// TODO implement handling of a case where a file with the same filename as the request already exists under the same account (using username), in which case we must overwrite
-	public Document uploadFile(ClientRequestModel model) {
+	public Document uploadFile(ClientRequestModel model, long timestamp) {
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		String formattedDate = currentDate.format(formatter);
 
-		Document entry = new Document("_id", new ObjectId())
-				.append("fileName", model.fileName)
-				.append("bytes", model.bytes)
-				.append("userName", model.userName)
-				.append("created", formattedDate)
-				.append("shared", model.shareWith);
+		Document query = new Document("fileName", model.fileName);
+		Document queryResult = getPrimaryReplica().find(query).first();
+		Document entry;
+
+		if (queryResult == null) {
+			entry = new Document("_id", new ObjectId())
+					.append("fileName", model.fileName)
+					.append("bytes", model.bytes)
+					.append("userName", model.userName)
+					.append("created", formattedDate)
+					.append("shared", model.shareWith)
+					.append("timestamp", timestamp);
+		} else {
+			Bson deleteFilter = Filters.eq("_id", queryResult.getObjectId("_id"));
+			getPrimaryReplica().deleteOne(deleteFilter);
+
+			entry = new Document("_id", queryResult.getObjectId("_id"))
+					.append("fileName", model.fileName)
+					.append("bytes", model.bytes)
+					.append("userName", model.userName)
+					.append("created", formattedDate)
+					.append("shared", model.shareWith)
+					.append("timestamp", timestamp);
+		}
 
 		try {
 			getPrimaryReplica().insertOne(entry);
@@ -114,10 +134,20 @@ public class DB {
 	}
 
 	public void uploadFile(Document entry) throws IOException {
-		try {
-			getSecondaryReplica().insertOne(entry);
-		} catch (Exception e) {
-			System.out.println("Secondary cluster is currently down in DB");
+		String fileName = entry.getString("fileName");
+		long entryTimestamp = entry.getLong("timestamp");
+
+		RestTemplate restTemplate = new RestTemplate();
+		String getHeadURI = NetworkConstants.getDBManagerGetHeadURI() + "?fileName=" + fileName;
+
+		long latestTimestamp = restTemplate.getForObject(getHeadURI, Long.class);
+
+		if (entryTimestamp >= latestTimestamp) {
+			try {
+				getSecondaryReplica().insertOne(entry);
+			} catch (Exception e) {
+				System.out.println("Secondary cluster is currently down in DB");
+			}
 		}
 	}
 

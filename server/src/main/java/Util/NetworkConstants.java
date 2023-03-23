@@ -51,4 +51,8 @@ public final class NetworkConstants {
     public static String getDBManagerURI(){
         return String.format("http://172.31.14.172:%s/dbmanager/upload",DATABASE_MANAGER_PORT);
     }
+
+    public static String getDBManagerGetHeadURI() {
+        return String.format("http://172.31.14.172:%s/dbmanager/getHead",DATABASE_MANAGER_PORT);
+    }
 }
