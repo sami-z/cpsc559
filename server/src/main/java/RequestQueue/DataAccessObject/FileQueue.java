@@ -2,11 +2,11 @@ package RequestQueue.DataAccessObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 
-@Component
+@Repository("fileQueue")
 public class FileQueue {
     HashMap<String, Integer> fq;
     HashMap<String, Integer> fqTail;

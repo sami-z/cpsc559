@@ -13,7 +13,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Collections;
 
 @SpringBootApplication
@@ -29,7 +28,6 @@ public class RequestQueueServerMain {
         System.out.println(ip);
 
         LeaderState.serverIP = ip;
-        LeaderState.leaderIP = ip;
 
         SpringApplication app = new SpringApplication(RequestQueueServerMain.class);
         app.setDefaultProperties(Collections

@@ -1,6 +1,7 @@
 package Util;
 
 import MainServer.ServerState;
+import RequestQueue.Leader.LeaderState;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -54,10 +55,19 @@ public class NetworkUtil {
         restTemplate.postForEntity(uri,request,String.class);
     }
 
+    public static void sendWriteToLeader(String IP, JsonNode request){
+        RestTemplate rt = new RestTemplate();
+        String request_queue_uri = NetworkConstants.getRequestQueuePushURI(IP);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> rqUpdate = new HttpEntity<String>(request.toString(), headers);
+        rt.postForEntity(request_queue_uri, rqUpdate, String.class);
+    }
+
     public static void obtainLock(String IP, String filename){
         RestTemplate restTemplate = new RestTemplate();
-        String getHead = NetworkConstants.getRequestQueueRemoveHeadURI(IP,filename);
-        restTemplate.getForEntity(removeHeadURI,String.class);
+        String getHeadURI = NetworkConstants.getRequestQueueRemoveHeadURI(IP,filename);
+        restTemplate.getForEntity(getHeadURI,String.class);
     }
 
     public static void releaseLock(String IP, String filename){
