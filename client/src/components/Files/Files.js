@@ -3,7 +3,7 @@ import FileItem from './FileItem'
 import FileCard from './FileCard'
 import './styles.css'
 
-const Files = ({ files, searchTerm }) => {
+const Files = ({ files, searchTerm, handleSelectFile }) => {
     const [dynamicFiles, setDynamicFiles] = useState(files);
 
     useEffect(() => {
@@ -37,7 +37,7 @@ const Files = ({ files, searchTerm }) => {
             </div>
             {
                 filteredFiles.map((item, index) => (
-                    <FileItem key={index} caption={item.fileName} timestamp={0} size={0} />
+                    <FileItem key={index} caption={item.fileName} timestamp={0} size={0} onSelectFile={handleSelectFile}/>
                 ))
             }
 

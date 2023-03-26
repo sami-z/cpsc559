@@ -2,7 +2,6 @@ package Util;
 
 import java.io.*;
 import java.util.*;
-
 import MainServer.Models.ClientRequestModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,16 +9,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
-
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
-
 import com.mongodb.client.result.UpdateResult;
-
+import org.springframework.web.client.RestTemplate;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -34,20 +33,26 @@ public class DB {
 		MongoClientSettings clientSettings = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster1.osrr3zu.mongodb.net/?retryWrites=true&w=majority"))
 				.applyToSocketSettings(builder ->
-						builder.connectTimeout(0, SECONDS))
+						builder.connectTimeout(3, SECONDS))
 				.applyToClusterSettings(builder ->
-						builder.serverSelectionTimeout(0, SECONDS))
+						builder.serverSelectionTimeout(3, SECONDS))
 				.build();
 		mongoClient1 = MongoClients.create(clientSettings);
 
 		MongoClientSettings clientSettings2 = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority"))
 				.applyToSocketSettings(builder ->
-						builder.connectTimeout(0, SECONDS))
+						builder.connectTimeout(3, SECONDS))
 				.applyToClusterSettings(builder ->
-						builder.serverSelectionTimeout(0, SECONDS))
+						builder.serverSelectionTimeout(3, SECONDS))
 				.build();
 		mongoClient2 = MongoClients.create(clientSettings2);
+
+//		this.mongoClient1 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER1);
+//		this.mongoClient2 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER2);
+//		replicaCluster1 = this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
+//		replicaCluster2 = this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
+		mapper = new ObjectMapper();
 	}
 
 	public MongoClient getPrimaryMongoClient() {
@@ -85,17 +90,35 @@ public class DB {
 	}
 
 	// TODO implement handling of a case where a file with the same filename as the request already exists under the same account (using username), in which case we must overwrite
-	public Document uploadFile(ClientRequestModel model) {
+	public Document uploadFile(ClientRequestModel model, long timestamp) {
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		String formattedDate = currentDate.format(formatter);
 
-		Document entry = new Document("_id", new ObjectId())
-				.append("fileName", model.fileName)
-				.append("bytes", model.bytes)
-				.append("userName", model.userName)
-				.append("created", formattedDate)
-				.append("shared", model.shareWith);
+		Document query = new Document("fileName", model.fileName);
+		Document queryResult = getPrimaryReplica().find(query).first();
+		Document entry;
+
+		if (queryResult == null) {
+			entry = new Document("_id", new ObjectId())
+					.append("fileName", model.fileName)
+					.append("bytes", model.bytes)
+					.append("userName", model.userName)
+					.append("created", formattedDate)
+					.append("shared", model.shareWith)
+					.append("timestamp", timestamp);
+		} else {
+			Bson deleteFilter = Filters.eq("_id", queryResult.getObjectId("_id"));
+			getPrimaryReplica().deleteOne(deleteFilter);
+
+			entry = new Document("_id", queryResult.getObjectId("_id"))
+					.append("fileName", model.fileName)
+					.append("bytes", model.bytes)
+					.append("userName", model.userName)
+					.append("created", formattedDate)
+					.append("shared", model.shareWith)
+					.append("timestamp", timestamp);
+		}
 
 		try {
 			getPrimaryReplica().insertOne(entry);
@@ -114,10 +137,20 @@ public class DB {
 	}
 
 	public void uploadFile(Document entry) throws IOException {
-		try {
-			getSecondaryReplica().insertOne(entry);
-		} catch (Exception e) {
-			System.out.println("Secondary cluster is currently down in DB");
+		String fileName = entry.getString("fileName");
+		long entryTimestamp = entry.getLong("timestamp");
+
+		RestTemplate restTemplate = new RestTemplate();
+		String getHeadURI = NetworkConstants.getDBManagerGetHeadURI() + "?fileName=" + fileName;
+
+		long latestTimestamp = restTemplate.getForObject(getHeadURI, Long.class);
+
+		if (entryTimestamp >= latestTimestamp) {
+			try {
+				getSecondaryReplica().insertOne(entry);
+			} catch (Exception e) {
+				System.out.println("Secondary cluster is currently down in DB");
+			}
 		}
 	}
 
@@ -135,6 +168,8 @@ public class DB {
 		}
 
 		mapper = new ObjectMapper();
+
+//		FindIterable<Document> docs = getPrimaryReplica().find(eq("userName",userName));
 		if (docs.iterator().hasNext()) {
 			System.out.println("Found files for " + userName + "!");
 			for(Document d: docs) {
@@ -150,7 +185,8 @@ public class DB {
 
 
 	public JsonNode loadFile(String filename) throws IOException {
-		Document doc = getPrimaryReplica().find(eq("filename", filename)).first();
+
+		Document doc = getPrimaryReplica().find(eq("fileName", filename)).first();
 		if (doc != null) {
 			return mapper.readTree(doc.toJson());
 //	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(mapper.writeValueAsString(json.get("bytes")));
@@ -165,13 +201,36 @@ public class DB {
         }
         return null;
 	}
-	public void editSharedWith(String filename){
-		Bson filter = eq("filename", filename);
-		Bson updateOperation = set("shared", Arrays.asList("ragya","sami","testingUser"));
+	public void editSharedWith(String fileName, ArrayList<String> sharedList){
+		Bson filter = eq("fileName", fileName);
+		Bson updateOperation = set("shared", sharedList);
 		UpdateResult updateResult = getPrimaryReplica().updateOne(filter, updateOperation);
 
 		System.out.println(getPrimaryReplica().find(filter).first().toJson());
 		System.out.println(updateResult);
-		//this.filesCollection.findOneAndUpdate({"filename":filename},"shared", Arrays.asList("ragya","sami"));
+	}
+
+	public ArrayList<String> deleteFile(ArrayList<String> files, boolean isReplicating){
+
+		ArrayList<String> arr = new ArrayList<>();
+		DeleteResult updateResult;
+		for (String fileName : files){
+			if (!isReplicating){
+				updateResult = getPrimaryReplica().deleteOne(eq("fileName", fileName));
+			}
+			else{
+				updateResult = getSecondaryReplica().deleteOne(eq("fileName", fileName));
+			}
+
+			if (updateResult.getDeletedCount() == 1){
+				arr.add(fileName);
+			}
+		}
+
+		return arr;
+	}
+
+	public void deleteFile(){
+
 	}
 }

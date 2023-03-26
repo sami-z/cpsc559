@@ -39,7 +39,6 @@ public class RequestQueueController {
     @ResponseBody
     public void removeHead(@PathVariable String filename){
         fileQueue.removeHead(filename);
-        return;
     }
 
     @PostMapping("/push")

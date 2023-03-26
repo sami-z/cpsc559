@@ -1,6 +1,16 @@
 package Util;
 
+import MainServer.ServerState;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+
 import java.net.InetAddress;
+import java.time.Duration;
 
 public class NetworkUtil {
 
@@ -15,5 +25,48 @@ public class NetworkUtil {
 
         return false;
     }
+
+    public static void sendToResponseQueue(JsonNode rq, String IP){
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        RestTemplate restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String uri = NetworkConstants.getResponseQueueURI(IP);
+
+        HttpEntity<String> request =
+                new HttpEntity<String>(rq.toString(), headers);
+
+        try {
+            restTemplate.postForEntity(uri, request, String.class);
+        } catch(RestClientException e){
+        }
+    }
+
+    public static void sendWrite(JsonNode rq){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String uri = NetworkConstants.getDBManagerURI();
+
+        HttpEntity<String> request =
+                new HttpEntity<String>(rq.toString(), headers);
+
+        restTemplate.postForEntity(uri,request,String.class);
+    }
+
+    public static void obtainLock(String IP, String filename){
+        RestTemplate restTemplate = new RestTemplate();
+        String getHead = NetworkConstants.getRequestQueueRemoveHeadURI(IP,filename);
+        restTemplate.getForEntity(removeHeadURI,String.class);
+    }
+
+    public static void releaseLock(String IP, String filename){
+        RestTemplate restTemplate = new RestTemplate();
+        String removeHeadURI = NetworkConstants.getRequestQueueRemoveHeadURI(IP,filename);
+        restTemplate.getForEntity(removeHeadURI,String.class);
+    }
+
+
+
 
 }

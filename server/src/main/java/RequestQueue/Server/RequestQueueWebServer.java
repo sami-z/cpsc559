@@ -69,7 +69,9 @@ public class RequestQueueWebServer extends WebSocketServer{
                 // Send to leaderIP
             }
             if (request != null && !request.isEmpty()) {
-                fileQueue.increaseHead(request);
+                if(request.get("requestType").asText().equalsIgnoreCase("WRITE")) {
+                    fileQueue.increaseHead(request);
+                }
                 requestQueueHandler.produceRequest(request);
             }
         } catch (JsonProcessingException e) {

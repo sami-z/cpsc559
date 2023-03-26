@@ -25,30 +25,4 @@ public class ResponseQueueHandler{
     public JsonNode pop(String uName){
         return responseQueue.pop(uName);
     }
-
-
-//    @Override
-//    public void run() {
-//        mapper = new ObjectMapper();
-//        JsonNode node = null;
-//
-//        try {
-//            node = mapper.readTree(clientSocket.getInputStream());
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//        System.out.println(node.toPrettyString());
-//
-//        String uName = node.get("userName").asText();
-//
-//        rq.push(uName,node);
-//
-//        try {
-//            clientSocket.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
 }
