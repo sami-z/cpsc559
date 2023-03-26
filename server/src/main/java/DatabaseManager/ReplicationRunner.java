@@ -1,6 +1,5 @@
 package DatabaseManager;
 
-import MainServer.Models.ClientRequestModel;
 import Util.DB;
 import org.bson.Document;
 
