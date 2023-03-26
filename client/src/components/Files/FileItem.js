@@ -1,13 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CropOriginalIcon from '@mui/icons-material/CropOriginal';
 import './styles.css'
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const FileItem = ({ id, caption, timestamp, size }) => {
+
+
+const FileItem = ({ id, caption, timestamp, size, onSelectFile, selectedFiles}) => {
   console.log("id, caption, timestamp, fireurl, size", size)
   const [isSelected, setIsSelected] = useState(false);
+
+     
 
   let fileType = caption.split('.')[1]
   // let fileUrl = `data:application/${fileType};base64,${fileData}`
@@ -44,8 +48,12 @@ const FileItem = ({ id, caption, timestamp, size }) => {
 
   return (
     <div className='fileItem'>
-      <a target="_blank" download={caption}>
-        <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} />
+      <a  target="_blank" download={caption}>
+        {/* <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} /> */}
+        <input type="checkbox" checked={isSelected} onChange={() => {
+            setIsSelected(prevState => !prevState);
+            onSelectFile(caption, !isSelected);
+        }} />
         <div className="fileItem--left">
           {getIconByExtension(fileExtension)}
           <p>{caption}</p>

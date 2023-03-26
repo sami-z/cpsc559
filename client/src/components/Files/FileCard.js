@@ -4,6 +4,8 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CropOriginalIcon from '@mui/icons-material/CropOriginal';
 import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
+import { RESPONSE_QUEUE_SERVER_PORT } from '../WebSocket/WebSocket';
+import { create } from '@mui/material/styles/createTransitions';
 
 const FileCard = ({ name }) => {
   const fileExtension = name.split('.').pop();
@@ -68,6 +70,35 @@ const FileCard = ({ name }) => {
       }
 
     });
+
+    const responseSocket = createWebSocket(RESPONSE_QUEUE_SERVER_PORT);
+    responseSocket.addEventListener('message', (event) => {
+      console.log("Logging event: " + event);
+      console.log("Logging event data: " + event.data);
+      const { responseType, data } = JSON.parse(event.data);
+
+      const blob = event.data;
+      const reader = new FileReader();
+      reader.onload = function() {
+        const message = reader.result;
+        console.log("just receieved msg from rspoonseQ",message);
+  
+        if (!message) {
+          return;
+        }
+
+        const newFiles = JSON.parse(message);
+        const bytes = new Uint8Array(data);
+        const blob = new Blob([bytes]);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.click();
+        URL.revokeObjectURL(url); 
+        console.log("I BE IN HERE");
+        }
+      });
   };
 
 

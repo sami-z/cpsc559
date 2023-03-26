@@ -32,7 +32,7 @@ const useStyles = makeStyles({
     },
 });
 
-function Delete() {
+function Delete({selectedFiles}) {
     const classes = useStyles();
 
 
@@ -43,18 +43,14 @@ function Delete() {
     const [fileBytes, setFileBytes] = useState(null);
     const [uploading, setUploading] = useState(false);
 
-    const handleSend = async () => {
+    const handleDelete = async () => {
 
-        // public String requestType;
-        // public String userName;
-        // public String fileName;
-        // public String fileType;
-        // public String bytes;
-        // public String shareWith;
+
+        console.log("IN HANDLE DELETE: ", selectedFiles);
 
         setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
-        const payload = { requestType: "WRITE", userName: "manbir", fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null };
+        const payload = { requestType: "WRITE", userName: "manbir", writeType: "DELETE", filesToDelete: selectedFiles, shareWith: null };
         
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -84,8 +80,7 @@ function Delete() {
 
         });
 
-
-
+        
     };
 
     const handleOpen = () => {
@@ -96,22 +91,22 @@ function Delete() {
         setOpen(false);
     };
 
-    const handleChange = (e) => {
-        // setUploadStatus('uploading');
-        if (e.target.files[0]) {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                setFileData(file);
-                const base64Data = e.target.result.split(",")[1];
-                setFileBytes(base64Data);
-                console.log("File to upload", file);
-                console.log("File bytes", base64Data);
-            };
+    // const handleChange = (e) => {
+    //     // setUploadStatus('uploading');
+    //     if (e.target.files[0]) {
+    //         const file = e.target.files[0];
+    //         const reader = new FileReader();
+    //         reader.onload = (e) => {
+    //             setFileData(file);
+    //             const base64Data = e.target.result.split(",")[1];
+    //             setFileBytes(base64Data);
+    //             console.log("File to upload", file);
+    //             console.log("File bytes", base64Data);
+    //         };
 
-            reader.readAsDataURL(file);
-        }
-    }
+    //         reader.readAsDataURL(file);
+    //     }
+    // }
 
 
     return (
@@ -131,7 +126,7 @@ function Delete() {
                 {/* // {classes.paper} */}
                 <div style={modalStyle} className={classes.root}>
                     <center>
-                        <p>Are you sure you wish to delete these file(s)?:</p>
+                        <p>Delete the selected file(s)?:</p>
                     </center>
                     {
                         uploadStatus === 'uploading' ? (
@@ -145,8 +140,10 @@ function Delete() {
 
                         ) : (
                             <>
-                                <input type="select" onChange={handleChange} />
-                                <button onClick={handleSend}>Confirm</button>
+                                {/* <input type="select" onChange={handleChange} /> */}
+                                <center>
+                                    <button onClick={handleDelete}>Confirm</button>
+                                </center>
                             </>
                         )
                     }

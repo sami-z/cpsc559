@@ -2,7 +2,6 @@ package Util;
 
 import java.io.*;
 import java.util.*;
-
 import MainServer.Models.ClientRequestModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,17 +10,15 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
-
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
-
 import com.mongodb.client.result.UpdateResult;
 import org.springframework.web.client.RestTemplate;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -50,6 +47,12 @@ public class DB {
 						builder.serverSelectionTimeout(0, SECONDS))
 				.build();
 		mongoClient2 = MongoClients.create(clientSettings2);
+
+//		this.mongoClient1 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER1);
+//		this.mongoClient2 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER2);
+//		replicaCluster1 = this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
+//		replicaCluster2 = this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
+//		mapper = new ObjectMapper();
 	}
 
 	public MongoClient getPrimaryMongoClient() {
@@ -165,6 +168,8 @@ public class DB {
 		}
 
 		mapper = new ObjectMapper();
+
+//		FindIterable<Document> docs = getPrimaryReplica().find(eq("userName",userName));
 		if (docs.iterator().hasNext()) {
 			System.out.println("Found files for " + userName + "!");
 			for(Document d: docs) {
@@ -180,7 +185,7 @@ public class DB {
 
 
 	public JsonNode loadFile(String filename) throws IOException {
-		Document doc = getPrimaryReplica().find(eq("filename", filename)).first();
+		Document doc = getPrimaryReplica().find(eq("fileName", filename)).first();
 		if (doc != null) {
 			return mapper.readTree(doc.toJson());
 //	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(mapper.writeValueAsString(json.get("bytes")));
@@ -195,13 +200,25 @@ public class DB {
         }
         return null;
 	}
-	public void editSharedWith(String filename){
-		Bson filter = eq("filename", filename);
-		Bson updateOperation = set("shared", Arrays.asList("ragya","sami","testingUser"));
+	public void editSharedWith(String fileName, ArrayList<String> sharedList){
+		Bson filter = eq("fileName", fileName);
+		Bson updateOperation = set("shared", sharedList);
 		UpdateResult updateResult = getPrimaryReplica().updateOne(filter, updateOperation);
 
 		System.out.println(getPrimaryReplica().find(filter).first().toJson());
 		System.out.println(updateResult);
-		//this.filesCollection.findOneAndUpdate({"filename":filename},"shared", Arrays.asList("ragya","sami"));
+	}
+
+	public ArrayList<String> deleteFile(ArrayList<String> files){
+
+		ArrayList<String> arr = new ArrayList<>();
+		for (String fileName : files){
+			DeleteResult updateResult = getPrimaryReplica().deleteOne(eq("fileName", fileName));
+			if (updateResult.getDeletedCount() == 1){
+				arr.add(fileName);
+			}
+		}
+
+		return arr;
 	}
 }

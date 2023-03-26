@@ -2,17 +2,15 @@ import './App.css';
 import Navbar from "./components/Navbar/Navbar";
 import Files from "./components/Files/Files"
 import Sidebar from "./components/Sidebar/Sidebar"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { RESPONSE_QUEUE_SERVER_PORT } from './components/WebSocket/WebSocket';
 import { WEBSOCKET_URL } from './components/WebSocket/WebSocket';
 import './Login.css';
 import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import { Input, InputAdornment } from '@mui/material';
+import { FoodBank } from '@mui/icons-material';
 
-
-
-let flager = false
 
 function createWebSocket(port) {
   return new WebSocket(port);
@@ -123,6 +121,38 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const MINUTE_MS = 5000;
   const [files, setFiles] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  
+
+  // Remove an array of files
+  const removeFiles = (filesToRemove) => {
+
+    console.log("RAJODE ", filesToRemove);
+    setFiles(prevFiles => {
+      // Filter out files to remove
+      
+      const newFiles = prevFiles.filter(file => !filesToRemove.includes(file.fileName));
+      // Return new array of files
+      return newFiles;
+    });
+  }
+
+  useEffect(() => {
+    console.log("REMOVED: " + files.fileName);
+  }, [files]);
+
+
+  const handleSelectFile = (id, isSelected) => {
+    if (isSelected) {
+      setSelectedFiles([...selectedFiles, id]);
+    } else {
+      setSelectedFiles(selectedFiles.filter(fileId => fileId !== id));
+    }
+  };
+
+  useEffect(() => {
+    console.log("RAGOD: " + selectedFiles);
+  }, [selectedFiles]);
   
   // const rqstSocket = createWebSocket(WEBSOCKET_URL)
   // const payload = { requestType: "READ", userName: "manbir", readType: "allFiles" };
@@ -152,6 +182,8 @@ function App() {
 
   // });
 
+  const prevSelectedFiles = useRef([]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('Logs every 2 secs');
@@ -170,9 +202,6 @@ function App() {
           const message = reader.result;
           console.log("just receieved msg from rspoonseQ",message);
 
-          // if (!message || !message.includes("fileName")) {
-          //   return;
-          // }
           if (!message) {
             return;
           }
@@ -180,8 +209,10 @@ function App() {
           // const jsonString = JSON.stringify(message);
           const newFiles = JSON.parse(message);
           console.log("newfiles: ", typeof(newFiles));
+
           if(Array.isArray(newFiles))
           {
+            console.log("ARRAY");
             newFiles.forEach((item) => {
               console.log("the item is: ", item)
               setFiles(prevFiles=>[...prevFiles, item])
@@ -189,9 +220,46 @@ function App() {
           }
           else{
             console.log("received single file");
-            setFiles(prevFiles => [...prevFiles, newFiles]);
+
+            if (newFiles.readType === "SINGLE"){
+              
+              const updatedFiles = files.map((file) => {
+                console.log("FILE NAME 1: " + file.fileName);
+                console.log("FILE NAME 2: " + newFiles.fileName);
+
+
+                if (file.fileName === newFiles.fileName) {
+                  return { ...file, bytes: newFiles.bytes };
+                } else {
+                  return file;
+                }
+              });
+
+              console.log("Updated files: " + updatedFiles);
+              setFiles(updatedFiles); 
+
+              var fileURL = document.createElement("a"); //Create <a>
+              let fileType = newFiles.fileName.split('.')[1]
+              fileURL.href = `data:application/${fileType};base64,${newFiles.bytes}`
+              fileURL.download = newFiles.fileName; //File name Here
+              fileURL.click(); //Downloaded file
+            }
+            
+            else if(newFiles.readType === "DELETE"){
+                console.log("received files to delete: " + newFiles.delete);
+                const myArray = newFiles.delete.split(",");
+                console.log("MY ARRAY: " + myArray[1]);
+
+                removeFiles(myArray);
+
+                // setDeletePressed(false);
+
+            }
+
+            else{
+              setFiles(prevFiles => [...prevFiles, newFiles]);
+            }
           }
-          console.log("SAMI FILES", files)
           newWebSocket.close();
         }
         reader.readAsText(blob);
@@ -205,7 +273,7 @@ function App() {
     }, MINUTE_MS);
 
     return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
-  }, [])
+  }, useEffect(() => console.log("BLEH",files), [files]));
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -215,8 +283,8 @@ function App() {
         <div className='app_main'>
           <Navbar setSearchTerm={setSearchTerm}/>
           <div className='main_content'>
-            <Sidebar/>
-            <Files files={files} searchTerm={searchTerm}/>
+            <Sidebar selectedFiles={selectedFiles}/>
+            <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} />
           </div>
         </div>
       ) : (

@@ -18,6 +18,7 @@ public class ReplicationRunner implements Runnable{
         DB db = new DB();
         try {
             db.uploadFile(replicatedEntry);
+//            db.deleteFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

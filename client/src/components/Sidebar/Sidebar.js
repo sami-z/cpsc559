@@ -3,12 +3,12 @@ import Upload from './Upload'
 import Share from './Share'
 import Delete from './Delete'
 import './styles.css'
-const Sidebar = () => {
+const Sidebar = ({selectedFiles}) => {
   return (
     <div className='sidebar'>
       <Upload />
-      <Share />
-      <Delete />
+      <Share selectedFiles={selectedFiles}/>
+      <Delete selectedFiles={selectedFiles} />
     </div>
   )
 }

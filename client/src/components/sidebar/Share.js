@@ -25,7 +25,7 @@ const useStyles = makeStyles({
     },
 });
 
-function ShareButton() {
+function ShareButton({selectedFiles}) {
     const classes = useStyles();
     const [name, setName] = useState('');
     const [open, setOpen] = useState(false);
