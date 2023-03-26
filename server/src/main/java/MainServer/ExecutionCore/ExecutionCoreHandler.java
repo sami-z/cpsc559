@@ -1,5 +1,6 @@
 package MainServer.ExecutionCore;
 
+import DatabaseManager.ReplicationRunner;
 import Util.DB;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -118,10 +119,9 @@ public class ExecutionCoreHandler {
 
                 ArrayList<String> arr = new ObjectMapper().convertValue(request.get("filesToDelete"), ArrayList.class);
 
-                ArrayList<String> arr2 = db.deleteFile(arr);
-
+                ArrayList<String> arr2 = db.deleteFile(arr, false);
+                new Thread(new ReplicationRunner(null, arr)).start();
                 System.out.println("PRINITNG  DELETE LIST: " + arr2);
-
 
                 String listString = String.join(",", arr2);
                 ObjectMapper mapper = new ObjectMapper();
@@ -162,6 +162,8 @@ public class ExecutionCoreHandler {
             else{
                 // TODO obtain lock
                 System.out.println("Send to database" + System.currentTimeMillis());
+
+                System.out.println("Request is: " + request);
 
 
                 sendWrite(request);

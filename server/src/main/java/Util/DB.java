@@ -33,18 +33,18 @@ public class DB {
 		MongoClientSettings clientSettings = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster1.osrr3zu.mongodb.net/?retryWrites=true&w=majority"))
 				.applyToSocketSettings(builder ->
-						builder.connectTimeout(0, SECONDS))
+						builder.connectTimeout(3, SECONDS))
 				.applyToClusterSettings(builder ->
-						builder.serverSelectionTimeout(0, SECONDS))
+						builder.serverSelectionTimeout(3, SECONDS))
 				.build();
 		mongoClient1 = MongoClients.create(clientSettings);
 
 		MongoClientSettings clientSettings2 = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority"))
 				.applyToSocketSettings(builder ->
-						builder.connectTimeout(0, SECONDS))
+						builder.connectTimeout(3, SECONDS))
 				.applyToClusterSettings(builder ->
-						builder.serverSelectionTimeout(0, SECONDS))
+						builder.serverSelectionTimeout(3, SECONDS))
 				.build();
 		mongoClient2 = MongoClients.create(clientSettings2);
 
@@ -52,7 +52,7 @@ public class DB {
 //		this.mongoClient2 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER2);
 //		replicaCluster1 = this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
 //		replicaCluster2 = this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
-//		mapper = new ObjectMapper();
+		mapper = new ObjectMapper();
 	}
 
 	public MongoClient getPrimaryMongoClient() {
@@ -185,6 +185,7 @@ public class DB {
 
 
 	public JsonNode loadFile(String filename) throws IOException {
+
 		Document doc = getPrimaryReplica().find(eq("fileName", filename)).first();
 		if (doc != null) {
 			return mapper.readTree(doc.toJson());
@@ -209,16 +210,27 @@ public class DB {
 		System.out.println(updateResult);
 	}
 
-	public ArrayList<String> deleteFile(ArrayList<String> files){
+	public ArrayList<String> deleteFile(ArrayList<String> files, boolean isReplicating){
 
 		ArrayList<String> arr = new ArrayList<>();
+		DeleteResult updateResult;
 		for (String fileName : files){
-			DeleteResult updateResult = getPrimaryReplica().deleteOne(eq("fileName", fileName));
+			if (!isReplicating){
+				updateResult = getPrimaryReplica().deleteOne(eq("fileName", fileName));
+			}
+			else{
+				updateResult = getSecondaryReplica().deleteOne(eq("fileName", fileName));
+			}
+
 			if (updateResult.getDeletedCount() == 1){
 				arr.add(fileName);
 			}
 		}
 
 		return arr;
+	}
+
+	public void deleteFile(){
+
 	}
 }

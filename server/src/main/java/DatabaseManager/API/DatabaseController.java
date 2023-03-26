@@ -22,12 +22,12 @@ public class DatabaseController {
 
     @PostMapping("/dbmanager/upload")
     public void uploadToDatabase(@RequestBody ClientRequestModel requestModel) throws InterruptedException, IOException {
-        System.out.println(requestModel.fileName);
+        System.out.println("hello i am here: " + requestModel.fileName);
         DB db = new DB();
         long timestamp = System.currentTimeMillis();
         databaseHandler.updateTimestamp(requestModel.fileName, timestamp);
         Document replicatedEntry = db.uploadFile(requestModel, timestamp);
-        new Thread(new ReplicationRunner(replicatedEntry)).start();
+        new Thread(new ReplicationRunner(replicatedEntry, null)).start();
     }
 
     @GetMapping("/dbmanager/getHead")

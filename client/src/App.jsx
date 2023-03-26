@@ -9,8 +9,6 @@ import './Login.css';
 import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import { Input, InputAdornment } from '@mui/material';
-import { FoodBank } from '@mui/icons-material';
-
 
 function createWebSocket(port) {
   return new WebSocket(port);
@@ -54,9 +52,6 @@ function Login() {
             newWebSocket.close();
 
         });
-
-
-    
   };
 
   const handleRegister = () => {

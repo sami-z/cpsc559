@@ -21,6 +21,6 @@ public class DBMain {
                 .singletonMap("server.port", Integer.toString(NetworkConstants.DATABASE_MANAGER_PORT)));
         app.run(args);
 
-        new Thread(new DatabaseClusterMonitor()).start();
+//        new Thread(new DatabaseClusterMonitor()).start();
     }
 }

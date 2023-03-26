@@ -7,7 +7,7 @@ const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep
 
 
 
-const FileItem = ({ id, caption, timestamp, size, onSelectFile, selectedFiles}) => {
+const FileItem = ({ id, caption, timestamp, size, onSelectFile}) => {
   console.log("id, caption, timestamp, fireurl, size", size)
   const [isSelected, setIsSelected] = useState(false);
 
