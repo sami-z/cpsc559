@@ -30,58 +30,47 @@ public class DB {
 	public static boolean shouldRecover = false;
 
 	public DB() {
+		this.mongoClient1 = createMongoClient(true);
+		this.mongoClient2 = createMongoClient(false);
+		this.mapper = new ObjectMapper();
+	}
+
+	public MongoClient createMongoClient(boolean shouldGetPrimary) {
+		String URI;
+		if (shouldGetPrimary) {
+			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER1 : DBConstants.MONGO_URI_CLUSTER2;
+		} else {
+			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER2 : DBConstants.MONGO_URI_CLUSTER1;
+		}
 		MongoClientSettings clientSettings = MongoClientSettings.builder()
-				.applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster1.osrr3zu.mongodb.net/?retryWrites=true&w=majority"))
+				.applyConnectionString(new ConnectionString(URI))
 				.applyToSocketSettings(builder ->
 						builder.connectTimeout(3, SECONDS))
 				.applyToClusterSettings(builder ->
 						builder.serverSelectionTimeout(3, SECONDS))
 				.build();
-		mongoClient1 = MongoClients.create(clientSettings);
-
-		MongoClientSettings clientSettings2 = MongoClientSettings.builder()
-				.applyConnectionString(new ConnectionString("mongodb+srv://admin:123@cluster0.137nczk.mongodb.net/?retryWrites=true&w=majority"))
-				.applyToSocketSettings(builder ->
-						builder.connectTimeout(3, SECONDS))
-				.applyToClusterSettings(builder ->
-						builder.serverSelectionTimeout(3, SECONDS))
-				.build();
-		mongoClient2 = MongoClients.create(clientSettings2);
-
-//		this.mongoClient1 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER1);
-//		this.mongoClient2 = MongoClients.create(DBConstants.MONGO_URI_CLUSTER2);
-//		replicaCluster1 = this.mongoClient1.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
-//		replicaCluster2 = this.mongoClient2.getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
-		mapper = new ObjectMapper();
+		return MongoClients.create(clientSettings);
 	}
 
-	public MongoClient getPrimaryMongoClient() {
-		return (isFirstClusterPrimary) ? mongoClient1 : mongoClient2;
+	public MongoClient getMongoClient(boolean shouldGetPrimary) {
+		if (shouldGetPrimary) {
+			return (isFirstClusterPrimary) ? this.mongoClient1 : this.mongoClient2;
+		} else {
+			return (isFirstClusterPrimary) ? this.mongoClient2 : this.mongoClient1;
+		}
 	}
 
-	public MongoClient getSecondaryMongoClient() {
-		return (isFirstClusterPrimary) ? mongoClient2 : mongoClient1;
-	}
-
-	public MongoDatabase getPrimaryDatabase() {
-		return getPrimaryMongoClient().getDatabase(DBConstants.DATABASE_NAME);
-	}
-
-	public MongoDatabase getSecondaryDatabase() {
-		return getSecondaryMongoClient().getDatabase(DBConstants.DATABASE_NAME);
-	}
-
-	public MongoCollection<Document> getPrimaryReplica() {
-		return getPrimaryDatabase().getCollection(DBConstants.COLLECTION_NAME);
-	}
-
-	public MongoCollection<Document> getSecondaryReplica() {
-		return getSecondaryDatabase().getCollection(DBConstants.COLLECTION_NAME);
+	public MongoCollection<Document> getReplica(boolean shouldGetPrimary) {
+		if (shouldGetPrimary) {
+			return getMongoClient(true).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
+		} else {
+			return getMongoClient(false).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.COLLECTION_NAME);
+		}
 	}
 
 	public void replicateDatabase() {
-		List<Document> primaryDocs = getPrimaryReplica().find().into(new ArrayList<>());
-		MongoCollection<Document> secondaryReplica = getSecondaryReplica();
+		List<Document> primaryDocs = getReplica(true).find().into(new ArrayList<>());
+		MongoCollection<Document> secondaryReplica = getReplica(false);
 		secondaryReplica.drop();
 
 		for (Document primaryDoc : primaryDocs) {
@@ -96,7 +85,7 @@ public class DB {
 		String formattedDate = currentDate.format(formatter);
 
 		Document query = new Document("fileName", model.fileName);
-		Document queryResult = getPrimaryReplica().find(query).first();
+		Document queryResult = getReplica(true).find(query).first();
 		Document entry;
 
 		if (queryResult == null) {
@@ -109,7 +98,7 @@ public class DB {
 					.append("timestamp", timestamp);
 		} else {
 			Bson deleteFilter = Filters.eq("_id", queryResult.getObjectId("_id"));
-			getPrimaryReplica().deleteOne(deleteFilter);
+			getReplica(true).deleteOne(deleteFilter);
 
 			entry = new Document("_id", queryResult.getObjectId("_id"))
 					.append("fileName", model.fileName)
@@ -121,16 +110,15 @@ public class DB {
 		}
 
 		try {
-			getPrimaryReplica().insertOne(entry);
+			getReplica(true).insertOne(entry);
 		} catch (Exception e) {
-			// TODO implement fault tolerance for clusters
 			System.out.println("MongoDB Atlas Primary Cluster is down in DB");
 
 			DB.shouldRecover = true;
 			if (DB.isFirstClusterPrimary) {
 				DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
 			}
-			getPrimaryReplica().insertOne(entry);
+			getReplica(true).insertOne(entry);
 		}
 
 		return entry;
@@ -141,13 +129,13 @@ public class DB {
 		long entryTimestamp = entry.getLong("timestamp");
 
 		RestTemplate restTemplate = new RestTemplate();
-		String getHeadURI = NetworkConstants.getDBManagerGetHeadURI() + "?fileName=" + fileName;
+		String getHeadURI = NetworkConstants.getDBManagerGetHeadURI(fileName);
 
 		long latestTimestamp = restTemplate.getForObject(getHeadURI, Long.class);
 
 		if (entryTimestamp >= latestTimestamp) {
 			try {
-				getSecondaryReplica().insertOne(entry);
+				getReplica(false).insertOne(entry);
 			} catch (Exception e) {
 				System.out.println("Secondary cluster is currently down in DB");
 			}
@@ -158,13 +146,13 @@ public class DB {
 		ArrayList<JsonNode> ret = new ArrayList<>();
 		FindIterable<Document> docs;
 		try {
-			docs = getPrimaryReplica().find(eq("userName",userName));
+			docs = getReplica(true).find(eq("userName",userName));
 		} catch (Exception e) {
 			DB.shouldRecover = true;
 			if (DB.isFirstClusterPrimary) {
 				DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
 			}
-			docs = getPrimaryReplica().find(eq("userName",userName));
+			docs = getReplica(true).find(eq("userName",userName));
 		}
 
 		mapper = new ObjectMapper();
@@ -186,7 +174,7 @@ public class DB {
 
 	public JsonNode loadFile(String filename) throws IOException {
 
-		Document doc = getPrimaryReplica().find(eq("fileName", filename)).first();
+		Document doc = getReplica(true).find(eq("fileName", filename)).first();
 		if (doc != null) {
 			return mapper.readTree(doc.toJson());
 //	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(mapper.writeValueAsString(json.get("bytes")));
@@ -204,9 +192,9 @@ public class DB {
 	public void editSharedWith(String fileName, ArrayList<String> sharedList){
 		Bson filter = eq("fileName", fileName);
 		Bson updateOperation = set("shared", sharedList);
-		UpdateResult updateResult = getPrimaryReplica().updateOne(filter, updateOperation);
+		UpdateResult updateResult = getReplica(true).updateOne(filter, updateOperation);
 
-		System.out.println(getPrimaryReplica().find(filter).first().toJson());
+		System.out.println(getReplica(true).find(filter).first().toJson());
 		System.out.println(updateResult);
 	}
 
@@ -216,10 +204,10 @@ public class DB {
 		DeleteResult updateResult;
 		for (String fileName : files){
 			if (!isReplicating){
-				updateResult = getPrimaryReplica().deleteOne(eq("fileName", fileName));
+				updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
 			}
 			else{
-				updateResult = getSecondaryReplica().deleteOne(eq("fileName", fileName));
+				updateResult = getReplica(false).deleteOne(eq("fileName", fileName));
 			}
 
 			if (updateResult.getDeletedCount() == 1){

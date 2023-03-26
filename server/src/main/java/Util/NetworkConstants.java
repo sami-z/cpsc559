@@ -54,9 +54,9 @@ public final class NetworkConstants {
         return String.format("http://localhost:%s/dbmanager/upload",DATABASE_MANAGER_PORT);
     }
 
-    public static String getDBManagerGetHeadURI() {
+    public static String getDBManagerGetHeadURI(String fileName) {
 //        return String.format("http://172.31.14.172:%s/dbmanager/getHead",DATABASE_MANAGER_PORT);
-        return String.format("http://localhost:%s/dbmanager/getHead",DATABASE_MANAGER_PORT);
+        return String.format("http://localhost:%s/dbmanager/get-head/%s", DATABASE_MANAGER_PORT, fileName);
     }
 
     public static String getRequestQueueHeadURI(String IP, String fileName){

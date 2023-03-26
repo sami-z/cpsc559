@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
+@RequestMapping("/api/dbmanager")
 public class DatabaseController {
     private final DatabaseHandler databaseHandler;
 
@@ -20,7 +21,7 @@ public class DatabaseController {
         this.databaseHandler = databaseHandler;
     }
 
-    @PostMapping("/dbmanager/upload")
+    @PostMapping("/upload")
     public void uploadToDatabase(@RequestBody ClientRequestModel requestModel) throws InterruptedException, IOException {
         System.out.println("hello i am here: " + requestModel.fileName);
         DB db = new DB();
@@ -30,8 +31,8 @@ public class DatabaseController {
         new Thread(new ReplicationRunner(replicatedEntry, null)).start();
     }
 
-    @GetMapping("/dbmanager/getHead")
-    public long getTimestamp(@RequestParam("fileName") String fileName) {
+    @GetMapping("/get-head/{fileName}")
+    public long getTimestamp(@PathVariable String fileName) {
         return databaseHandler.getTimestamp(fileName);
     }
 }
