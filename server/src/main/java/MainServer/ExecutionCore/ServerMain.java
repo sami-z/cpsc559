@@ -23,20 +23,15 @@ public class ServerMain {
         String IP = in.readLine(); //you get the IP as a String
 
         ServerState.serverIP = IP;
-        ServerState.leaderIP = IP;
-        ServerState.requestQueueIP = "localhost";
-
 
         SpringApplication app = new SpringApplication(ElectionController.class);
         app.setDefaultProperties(Collections
                 .singletonMap("server.port", Integer.toString(NetworkConstants.MAIN_SERVER_PORT)));
         app.run(args);
 
-//        ElectionConsumer.initiateElection();
-
         System.out.println("MAIN SERVER IS RUNNING");
 
-//        new Thread(new LeaderMonitor()).start();
+        new Thread(new LeaderMonitor()).start();
         new Thread(new MultiThreadedServer()).start();
 
 
