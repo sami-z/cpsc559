@@ -1,5 +1,6 @@
 package RequestQueue.Server;
 
+import RequestQueue.DataAccessObject.FileQueue;
 import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import Util.NetworkConstants;
@@ -36,8 +37,9 @@ public class RequestQueueServerMain {
 
         ApplicationContext context = app.run(args);
         RequestQueueHandler requestQueueMicroService = context.getBean(RequestQueueHandler.class);
+        FileQueue fq = context.getBean(FileQueue.class);
 
-        RequestQueueWebServer requestQueueWebServer = new RequestQueueWebServer(NetworkConstants.REQUEST_QUEUE_SOCKET_PORT, requestQueueMicroService);
+        RequestQueueWebServer requestQueueWebServer = new RequestQueueWebServer(NetworkConstants.REQUEST_QUEUE_SOCKET_PORT, requestQueueMicroService,fq);
         Thread requestQueueWebServerThread = new Thread(requestQueueWebServer);
         requestQueueWebServerThread.start();
         System.out.println("Request queue web server is running...");

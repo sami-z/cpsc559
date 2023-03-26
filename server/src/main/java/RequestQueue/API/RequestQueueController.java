@@ -1,5 +1,6 @@
 package RequestQueue.API;
 
+import RequestQueue.DataAccessObject.FileQueue;
 import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,10 +11,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class RequestQueueController {
     private final RequestQueueHandler requestQueueHandler;
+    private final FileQueue fileQueue;
 
     @Autowired
-    public RequestQueueController(RequestQueueHandler requestQueueHandler) {
+    public RequestQueueController(RequestQueueHandler requestQueueHandler, FileQueue fileQueue) {
         this.requestQueueHandler = requestQueueHandler;
+        this.fileQueue = fileQueue;
     }
 
     @GetMapping("/fetch")
@@ -23,6 +26,19 @@ public class RequestQueueController {
 
     @GetMapping("/ping")
     public void ping(){
+        return;
+    }
+
+    @GetMapping("/get-head/{filename}")
+    @ResponseBody
+    public String getHead(@PathVariable String filename){
+        return Integer.toString(fileQueue.getHead(filename));
+    }
+
+    @GetMapping("/remove-head/{filename}")
+    @ResponseBody
+    public void removeHead(@PathVariable String filename){
+        fileQueue.removeHead(filename);
         return;
     }
 

@@ -91,16 +91,19 @@ public class ExecutionCoreHandler {
         }
         else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){
 
-            // TODO obtain lock
+            String fileName  = request.get("fileName").asText();
+
+            obtainLock(fileName);
+
             System.out.println("Send to database" + System.currentTimeMillis());
             sendWrite(request);
             System.out.println("database write done" + System.currentTimeMillis());
-            // TODO release lock
+
+            releaseLock(fileName);
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 sendToResponseQueue(request, IP);
             }
             System.out.println("Responsequeue sent" + System.currentTimeMillis());
-            // TODO release lock
         }
         else{
             System.out.println("invalid request type (must be READ or WRITE)");

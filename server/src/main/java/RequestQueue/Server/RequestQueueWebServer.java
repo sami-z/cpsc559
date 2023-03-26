@@ -1,5 +1,6 @@
 package RequestQueue.Server;
 
+import RequestQueue.DataAccessObject.FileQueue;
 import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import Util.NetworkConstants;
@@ -24,12 +25,14 @@ import static Util.NetworkConstants.REQUEST_QUEUE_IPS;
 public class RequestQueueWebServer extends WebSocketServer{
     private final RequestQueueHandler requestQueueHandler;
     private final ObjectMapper mapper;
+    private final FileQueue fileQueue;
 
 
-    public RequestQueueWebServer(int portNumber, RequestQueueHandler requestQueueHandler) throws UnknownHostException {
+    public RequestQueueWebServer(int portNumber, RequestQueueHandler requestQueueHandler, FileQueue fq) throws UnknownHostException {
         super(new InetSocketAddress(portNumber));
         this.requestQueueHandler = requestQueueHandler;
         this.mapper = new ObjectMapper();
+        this.fileQueue = fq;
     }
 
     @Override
@@ -66,6 +69,7 @@ public class RequestQueueWebServer extends WebSocketServer{
                 // Send to leaderIP
             }
             if (request != null && !request.isEmpty()) {
+                fileQueue.increaseHead(request);
                 requestQueueHandler.produceRequest(request);
             }
         } catch (JsonProcessingException e) {
