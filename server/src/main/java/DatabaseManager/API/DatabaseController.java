@@ -6,10 +6,7 @@ import MainServer.Models.ClientRequestModel;
 import Util.DB;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/dbmanager")
@@ -22,7 +19,7 @@ public class DatabaseController {
     }
 
     @PostMapping("/upload")
-    public void uploadToDatabase(@RequestBody ClientRequestModel requestModel) throws InterruptedException, IOException {
+    public void uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
         System.out.println("hello i am here: " + requestModel.fileName);
         DB db = new DB();
         long timestamp = System.currentTimeMillis();

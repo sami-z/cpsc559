@@ -78,6 +78,24 @@ public class DB {
 		}
 	}
 
+	public Document createEntry(ClientRequestModel model, long timestamp, ObjectId id, String formattedDate) {
+		Document entry;
+		if (id == null) {
+			entry = new Document("_id", new ObjectId());
+		} else {
+			entry = new Document("_id", id);
+		}
+
+		entry.append("fileName", model.fileName)
+				.append("bytes", model.bytes)
+				.append("userName", model.userName)
+				.append("created", formattedDate)
+				.append("shared", model.shareWith)
+				.append("timestamp", timestamp);
+
+		return entry;
+	}
+
 	// TODO implement handling of a case where a file with the same filename as the request already exists under the same account (using username), in which case we must overwrite
 	public Document uploadFile(ClientRequestModel model, long timestamp) {
 		LocalDate currentDate = LocalDate.now();
@@ -89,24 +107,11 @@ public class DB {
 		Document entry;
 
 		if (queryResult == null) {
-			entry = new Document("_id", new ObjectId())
-					.append("fileName", model.fileName)
-					.append("bytes", model.bytes)
-					.append("userName", model.userName)
-					.append("created", formattedDate)
-					.append("shared", model.shareWith)
-					.append("timestamp", timestamp);
+			entry = createEntry(model, timestamp, null, formattedDate);
 		} else {
 			Bson deleteFilter = Filters.eq("_id", queryResult.getObjectId("_id"));
 			getReplica(true).deleteOne(deleteFilter);
-
-			entry = new Document("_id", queryResult.getObjectId("_id"))
-					.append("fileName", model.fileName)
-					.append("bytes", model.bytes)
-					.append("userName", model.userName)
-					.append("created", formattedDate)
-					.append("shared", model.shareWith)
-					.append("timestamp", timestamp);
+			entry = createEntry(model, timestamp, queryResult.getObjectId("_id"), formattedDate);
 		}
 
 		try {
