@@ -65,7 +65,9 @@ public class RequestQueueMonitor implements Runnable{
             try {
                 restTemplate.getForEntity(ping_uri, String.class);
                 return requestIP;
-            } catch(RestClientException e){}
+            } catch(RestClientException e){
+                System.out.println("Request queue did not respond to ping: " + requestIP);
+            }
         }
 
         return null;

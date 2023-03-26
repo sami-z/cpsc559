@@ -35,15 +35,20 @@ public class LeaderMonitor implements Runnable{
         try {
             while (true) {
                 if (ServerState.leaderIP.isEmpty()) {
+                    System.out.println("The current leaderIP is NULL");
                     ElectionConsumer.initiateElection();
+                    Thread.sleep(10000);
                     continue;
                 }
 
                 String ping_uri = NetworkConstants.getProcessingServerURIPing(ServerState.leaderIP);
+                System.out.println(ping_uri);
                 try {
                     restTemplate.getForEntity(ping_uri, String.class);
                 } catch (RestClientException e){
+                    System.out.println("Leader did not respond to ping");
                     ElectionConsumer.initiateElection();
+                    Thread.sleep(10000);
                 }
                 Thread.sleep(1000);
             }

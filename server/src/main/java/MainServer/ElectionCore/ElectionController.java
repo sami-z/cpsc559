@@ -38,7 +38,6 @@ public class ElectionController{
                 InetAddress.getByName(ServerState.serverIP),
                 InetAddress.getByName(otherIP))
         ){
-
             if(!ServerState.isElectionRunning){
                 ElectionConsumer.initiateElection();
             }

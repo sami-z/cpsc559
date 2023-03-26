@@ -12,17 +12,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.rmi.ServerError;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-
-import static Util.NetworkConstants.REQUEST_QUEUE_IPS;
 
 public class ElectionConsumer {
     public static ObjectMapper mapper = new ObjectMapper();

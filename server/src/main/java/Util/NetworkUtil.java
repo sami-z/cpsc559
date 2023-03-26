@@ -7,6 +7,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -64,10 +65,11 @@ public class NetworkUtil {
         rt.postForEntity(request_queue_uri, rqUpdate, String.class);
     }
 
-    public static void obtainLock(String IP, String filename){
+    public static int obtainLock(String IP, String filename){
         RestTemplate restTemplate = new RestTemplate();
-        String getHeadURI = NetworkConstants.getRequestQueueRemoveHeadURI(IP,filename);
-        restTemplate.getForEntity(getHeadURI,String.class);
+        String getHeadURI = NetworkConstants.getRequestQueueHeadURI(IP,filename);
+        ResponseEntity<Integer> currOrder = restTemplate.getForEntity(getHeadURI,Integer.class);
+        return currOrder.getBody();
     }
 
     public static void releaseLock(String IP, String filename){

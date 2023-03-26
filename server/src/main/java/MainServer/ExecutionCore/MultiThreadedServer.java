@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 
 public class MultiThreadedServer implements Runnable{
-    ServerSocket serverSocket = null;
     boolean isRunning = false;
 
     public synchronized void stop() {
@@ -22,6 +21,10 @@ public class MultiThreadedServer implements Runnable{
     public void run() {
         this.isRunning = true;
 
+        System.out.println("before request queeu");
+        while(ServerState.requestQueueIP.isEmpty());
+
+        System.out.println("fetching request");
         while(this.isRunning){
             RestTemplate restTemplate = new RestTemplate();
             String fetchRequestURI = NetworkConstants.getRequestQueueURI(ServerState.requestQueueIP);
@@ -30,18 +33,18 @@ public class MultiThreadedServer implements Runnable{
                 request = restTemplate.getForObject(fetchRequestURI, JsonNode.class);
             } catch (RestClientException e){}
             // change this to correct check to see if nothing was in queue
-            if (request == null) continue;
+            if (request == null)continue;
 
             try {
                 System.out.println("server got request" + System.currentTimeMillis());
                 System.out.println(request.toPrettyString());
                 ExecutionCoreHandler.processEvent(request);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
-        System.out.println("Server Stopped.") ;
+        System.out.println("Server Stopped.");
         System.out.println("Closing server");
     }
 }

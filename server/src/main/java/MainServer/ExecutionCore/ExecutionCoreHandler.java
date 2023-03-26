@@ -7,17 +7,27 @@ import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.catalina.Server;
 
 import java.io.*;
 import java.util.ArrayList;
 
-import static Util.NetworkUtil.*;
+import Util.NetworkUtil;
 
 
 public class ExecutionCoreHandler {
 
     private ObjectMapper mapper = new ObjectMapper();
+
+    public static void obtainLock(String IP, JsonNode request){
+        System.out.println("trying to obtain lock");
+        int headOrder = -1;
+        int currOrder = request.get("orderValue").asInt();
+        while(headOrder!=currOrder){
+            headOrder = NetworkUtil.obtainLock(IP,request.get("fileName").asText());
+            System.out.println("headOrder: " + headOrder);
+            System.out.println("Current order: " + currOrder);
+        }
+    }
 
     public static void processEvent(JsonNode request) throws IOException {
         DB db = new DB();
@@ -50,7 +60,7 @@ public class ExecutionCoreHandler {
 //                        System.out.println("the actual file"+file);
 //                        sendToResponseQueue(file, IP);
 //                    }
-                    sendToResponseQueue(response, IP);
+                    NetworkUtil.sendToResponseQueue(response, IP);
                 }
                 System.out.println("database blah" + System.currentTimeMillis());
             }
@@ -66,7 +76,7 @@ public class ExecutionCoreHandler {
 //                        System.out.println("the actual file"+file);
 //                        sendToResponseQueue(file, IP);
 //                    }
-                    sendToResponseQueue(singleFile, IP);
+                    NetworkUtil.sendToResponseQueue(singleFile, IP);
                 }
                 System.out.println("DATABASE SINGLE FOR LOOP" + System.currentTimeMillis());
 
@@ -75,9 +85,8 @@ public class ExecutionCoreHandler {
         }
         else if(request.get("requestType").asText().equalsIgnoreCase("WRITE")){
             String writeType = request.get("writeType").asText();
-            // TODO obtain lock
             String fileName = request.get("fileName").asText();
-            obtainLock(ServerState.requestQueueIP,fileName);
+            obtainLock(ServerState.requestQueueIP,request);
 
             if(writeType.equals("DELETE")){
 
@@ -100,7 +109,7 @@ public class ExecutionCoreHandler {
 
 
                 for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-                    sendToResponseQueue(response, IP);
+                    NetworkUtil.sendToResponseQueue(response, IP);
                 }
             }
 
@@ -116,21 +125,19 @@ public class ExecutionCoreHandler {
                 System.out.println("Request is: " + request);
 
 
-                sendWrite(request);
+                NetworkUtil.sendWrite(request);
 
                 System.out.println("database write done" + System.currentTimeMillis());
                 for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-                    sendToResponseQueue(request, IP);
+                    NetworkUtil.sendToResponseQueue(request, IP);
                 }
 
                 System.out.println("Responsequeue sent" + System.currentTimeMillis());
 
 
-                // TODO release lock
-
             }
 
-            releaseLock(ServerState.requestQueueIP,fileName);
+            NetworkUtil.releaseLock(ServerState.requestQueueIP,fileName);
         }
         else{
             System.out.println("invalid request type (must be READ or WRITE)");
