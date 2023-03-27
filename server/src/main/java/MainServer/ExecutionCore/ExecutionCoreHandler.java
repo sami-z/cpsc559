@@ -7,21 +7,14 @@ import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.FindIterable;
-import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.*;
 import java.util.ArrayList;
 import Util.NetworkUtil;
 import static com.mongodb.client.model.Filters.eq;
 
-
-
 public class ExecutionCoreHandler {
-
-    private ObjectMapper mapper = new ObjectMapper();
-
     public static void obtainLock(String IP, JsonNode request) {
         System.out.println("trying to obtain lock");
         int headOrder = -1;
@@ -117,7 +110,7 @@ public class ExecutionCoreHandler {
             }
 
             else if (readType.equals("LOGIN")){
-                FindIterable<Document> entry = db.getSecondaryReplica_Login().find(eq("userName", request.get("userName").asText()));
+                FindIterable<Document> entry = db.getLoginReplica(true).find(eq("userName", request.get("userName").asText()));
 
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode response = mapper.createObjectNode();
@@ -153,19 +146,14 @@ public class ExecutionCoreHandler {
             obtainLock(ServerState.requestQueueIP,request);
 
             if(writeType.equals("DELETE")){
+                String deleteList = NetworkUtil.sendDelete(request);
+                System.out.println("PRINITNG  DELETE LIST: " + deleteList);
 
-                ArrayList<String> arr = new ObjectMapper().convertValue(request.get("filesToDelete"), ArrayList.class);
-
-                ArrayList<String> arr2 = db.deleteFile(arr, false);
-                new Thread(new ReplicationRunner(null, arr)).start();
-                System.out.println("PRINITNG  DELETE LIST: " + arr2);
-
-                String listString = String.join(",", arr2);
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode response = mapper.createObjectNode();
                 ((ObjectNode)response).put("userName", request.get("userName").asText());
                 ((ObjectNode)response).put("readType", "DELETE");
-                ((ObjectNode)response).put("delete", listString);
+                ((ObjectNode)response).put("delete", deleteList);
 
 
 
@@ -183,27 +171,16 @@ public class ExecutionCoreHandler {
             }
 
             else if (writeType.equals("REGISTER")){
-                NetworkUtil.sendRegister(request);
-                FindIterable<Document> entry = db.getSecondaryReplica_Login().find(eq("userName", request.get("userName").asText()));
+                boolean wasSuccessful = NetworkUtil.sendRegister(request);
 
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode response = mapper.createObjectNode();
                 ((ObjectNode)response).put("userName", request.get("userName").asText());
                 ((ObjectNode)response).put("writeType", "REGISTER");
 
-                for (Document doc : entry) {
-                    String actualUserName = doc.getString("userName");
-
-                    if (request.get("userName").asText().equals(actualUserName)) {
-                        ((ObjectNode) response).put("registered", "SUCCESS");
-                        break; // break the loop once a match is found
-                    } else {
-                        ((ObjectNode) response).put("registered", "FAILURE");
-                    }
-                }
-
-                if (!response.has("registered")) {
-                    // handle case where no match was found
+                if (wasSuccessful) {
+                    ((ObjectNode) response).put("registered", "SUCCESS");
+                } else {
                     ((ObjectNode) response).put("registered", "FAILURE");
                 }
 
@@ -211,7 +188,7 @@ public class ExecutionCoreHandler {
                     NetworkUtil.sendToResponseQueue(response, IP);
                 }
             }
-            else{
+            else {
 
                 System.out.println("Send to database" + System.currentTimeMillis());
 

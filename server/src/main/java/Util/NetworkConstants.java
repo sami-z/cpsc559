@@ -53,8 +53,16 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/api/dbmanager/upload",DB_MANAGER_IP,DATABASE_MANAGER_PORT);
     }
 
+    public static String getDBManagerDeleteURI(){
+        return String.format("http://%s:%s/api/dbmanager/delete",DB_MANAGER_IP,DATABASE_MANAGER_PORT);
+    }
+
     public static String getDBManagerGetHeadURI(String fileName) {
         return String.format("http://%s:%s/api/dbmanager/get-head/%s", DB_MANAGER_IP,DATABASE_MANAGER_PORT, fileName);
+    }
+
+    public static String getDBManagerRegisterURI() {
+        return String.format("http://%s:%s/api/dbmanager/register",DB_MANAGER_IP, DATABASE_MANAGER_PORT);
     }
 
     public static String getRequestQueueHeadURI(String IP, String fileName){
@@ -63,9 +71,5 @@ public final class NetworkConstants {
 
     public static String getRequestQueueRemoveHeadURI(String IP, String fileName){
         return String.format("http://%s:%s/api/request/remove-head/%s",IP,REQUEST_QUEUE_PORT,fileName);
-    }
-
-    public static String getDBManagerRegister() {
-        return String.format("http://localhost:%s/dbmanager/register",DATABASE_MANAGER_PORT);
     }
 }

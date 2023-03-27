@@ -56,16 +56,27 @@ public class NetworkUtil {
         restTemplate.postForEntity(uri,request,String.class);
     }
 
-    public static void sendRegister(JsonNode rq){
+    public static String sendDelete(JsonNode rq){
+        RestTemplate rt = new RestTemplate();
+        String URI = NetworkConstants.getDBManagerDeleteURI();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> deleteRq = new HttpEntity<String>(rq.toString(), headers);
+        ResponseEntity<String> deleteList = rt.postForEntity(URI, deleteRq, String.class);
+        return deleteList.getBody();
+    }
+
+    public static boolean sendRegister(JsonNode rq){
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String uri = NetworkConstants.getDBManagerRegister();
+        String uri = NetworkConstants.getDBManagerRegisterURI();
 
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);
 
-        restTemplate.postForEntity(uri,request,String.class);
+        ResponseEntity<Boolean> wasSuccessful = restTemplate.postForEntity(uri,request, Boolean.class);
+        return wasSuccessful.getBody();
     }
 
     public static void sendWriteToLeader(String IP, JsonNode request){
@@ -75,6 +86,13 @@ public class NetworkUtil {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> rqUpdate = new HttpEntity<String>(request.toString(), headers);
         rt.postForEntity(request_queue_uri, rqUpdate, String.class);
+    }
+
+    public static long getTimestamp(String fileName) {
+        RestTemplate restTemplate = new RestTemplate();
+        String getHeadURI = NetworkConstants.getDBManagerGetHeadURI(fileName);
+        ResponseEntity<Long> timestamp = restTemplate.getForEntity(getHeadURI, Long.class);
+        return timestamp.getBody();
     }
 
     public static int obtainLock(String IP, String filename){

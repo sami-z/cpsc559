@@ -68,6 +68,14 @@ public class DB {
 		}
 	}
 
+	public MongoCollection<Document> getLoginReplica(boolean shouldGetPrimary) {
+		if (shouldGetPrimary) {
+			return getMongoClient(true).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.LOGIN_COLLECTION_NAME);
+		} else {
+			return getMongoClient(false).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.LOGIN_COLLECTION_NAME);
+		}
+	}
+
 	public void replicateDatabase() {
 		List<Document> primaryDocs = getReplica(true).find().into(new ArrayList<>());
 		MongoCollection<Document> secondaryReplica = getReplica(false);
@@ -75,6 +83,14 @@ public class DB {
 
 		for (Document primaryDoc : primaryDocs) {
 			secondaryReplica.insertOne(primaryDoc);
+		}
+
+		List<Document> primaryLoginDocs = getLoginReplica(true).find().into(new ArrayList<>());
+		MongoCollection<Document> secondaryLoginReplica = getLoginReplica(false);
+		secondaryLoginReplica.drop();
+
+		for (Document primaryDoc : primaryLoginDocs) {
+			secondaryLoginReplica.insertOne(primaryDoc);
 		}
 	}
 
@@ -116,14 +132,15 @@ public class DB {
 		if (queryResult == null) {
 			entry = createEntry(model, timestamp, null, formattedDate);
 		} else {
-			Bson deleteFilter = Filters.eq("_id", queryResult.getObjectId("_id"));
+			ObjectId existingObjectId = queryResult.getObjectId("_id");
+			Bson deleteFilter = Filters.eq("_id", existingObjectId);
 			try {
 				getReplica(true).deleteOne(deleteFilter);
 			} catch (Exception e) {
 				recoverFromDatabaseFailure();
 				getReplica(true).deleteOne(deleteFilter);
 			}
-			entry = createEntry(model, timestamp, queryResult.getObjectId("_id"), formattedDate);
+			entry = createEntry(model, timestamp, existingObjectId, formattedDate);
 		}
 
 		try {
@@ -131,29 +148,6 @@ public class DB {
 		} catch (Exception e) {
 			recoverFromDatabaseFailure();
 			getReplica(true).insertOne(entry);
-		}
-
-		return entry;
-	}
-
-	public Document registerUser(ClientRequestModel model) {
-		Document entry = new Document("_id", new ObjectId())
-				.append("userName", model.userName)
-				.append("password", model.password);
-
-		try {
-			getReplica(true).insertOne(entry);
-		} catch (Exception e) {
-			recoverFromDatabaseFailure();
-			getReplica(true).insertOne(entry);
-//			// TODO implement fault tolerance for clusters
-//			System.out.println("MongoDB Atlas Primary Cluster is down in DB");
-//
-//			DB.shouldRecover = true;
-//			if (DB.isFirstClusterPrimary) {
-//				DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
-//			}
-//			getPrimaryReplica().insertOne(entry);
 		}
 
 		return entry;
@@ -162,11 +156,7 @@ public class DB {
 	public void uploadFile(Document entry) throws IOException {
 		String fileName = entry.getString("fileName");
 		long entryTimestamp = entry.getLong("timestamp");
-
-		RestTemplate restTemplate = new RestTemplate();
-		String getHeadURI = NetworkConstants.getDBManagerGetHeadURI(fileName);
-
-		long latestTimestamp = restTemplate.getForObject(getHeadURI, Long.class);
+		long latestTimestamp = NetworkUtil.getTimestamp(fileName);
 
 		if (entryTimestamp >= latestTimestamp) {
 			try {
@@ -174,6 +164,37 @@ public class DB {
 			} catch (Exception e) {
 				System.out.println("Secondary cluster is currently down in DB");
 			}
+		}
+	}
+
+	public Document registerUser(ClientRequestModel model) {
+		Document query = new Document("userName", model.userName);
+		Document queryResult = getLoginReplica(true).find(query).first();
+		Document loginDoc;
+
+		if (queryResult == null) {
+			loginDoc = new Document("_id", new ObjectId())
+					.append("userName", model.userName)
+					.append("password", model.password);
+		} else {
+			return null;
+		}
+
+		try {
+			getLoginReplica(true).insertOne(loginDoc);
+		} catch (Exception e) {
+			recoverFromDatabaseFailure();
+			getLoginReplica(true).insertOne(loginDoc);
+		}
+
+		return loginDoc;
+	}
+
+	public void registerUser(Document entry) {
+		try {
+			getLoginReplica(false).insertOne(entry);
+		} catch (Exception e) {
+			System.out.println("Secondary cluster is currently down in DB");
 		}
 	}
 
@@ -241,37 +262,41 @@ public class DB {
 		System.out.println(updateResult);
 	}
 
-	public ArrayList<String> deleteFile(ArrayList<String> files, boolean isReplicating) {
-
-		ArrayList<String> arr = new ArrayList<>();
+	public String deleteFile(ArrayList<String> files) {
+		ArrayList<String> deletedFiles = new ArrayList<>();
 		DeleteResult updateResult;
 		for (String fileName : files) {
-			if (!isReplicating) {
-				try {
-					updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
-				} catch (Exception e) {
-					recoverFromDatabaseFailure();
-					updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
-				}
-			}
-			else{
-				try {
-					updateResult = getReplica(false).deleteOne(eq("fileName", fileName));
-				} catch (Exception e) {
-					recoverFromDatabaseFailure();
-					updateResult = getReplica(false).deleteOne(eq("fileName", fileName));
-				}
+			try {
+				updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
+			} catch (Exception e) {
+				recoverFromDatabaseFailure();
+				updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
 			}
 
 			if (updateResult.getDeletedCount() == 1){
-				arr.add(fileName);
+				deletedFiles.add(fileName);
 			}
 		}
 
-		return arr;
+		return String.join(",", deletedFiles);
 	}
 
-	public void deleteFile(){
+	public void deleteFile(ArrayList<ArrayList<String>> files, boolean isReplicating) {
+		if (isReplicating) {
+			for (ArrayList<String> innerTSList : files) {
+				String fileName = innerTSList.get(0);
+				long entryTimestamp = Long.parseLong(innerTSList.get(1));
+				long latestTimestamp = NetworkUtil.getTimestamp(fileName);
 
+				if (entryTimestamp >= latestTimestamp) {
+					try {
+						getReplica(false).deleteOne(eq("fileName", fileName));
+					} catch (Exception e) {
+						System.out.println("Secondary cluster is currently down in DB");
+						return;
+					}
+				}
+			}
+		}
 	}
 }
