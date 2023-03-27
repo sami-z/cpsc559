@@ -20,32 +20,12 @@ public class ExecutionCoreHandler {
         int headOrder = -1;
         int currOrder = request.get("orderValue").asInt();
         while (headOrder != currOrder) {
-            headOrder = NetworkUtil.obtainLock(IP, request.get("fileName").asText());
+            headOrder = NetworkUtil.getRequestHead(IP, request.get("fileName").asText());
             System.out.println("headOrder: " + headOrder);
             System.out.println("Current order: " + currOrder);
         }
+
     }
-
-
-    public static void releaseLock(String filename){
-        return;
-    }
-
-//    public static void sendToResponseQueue(JsonNode rq, String IP){
-//        RestTemplateBuilder builder = new RestTemplateBuilder();
-//        RestTemplate restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        String uri = NetworkConstants.getResponseQueueURI(IP);
-//
-//        HttpEntity<String> request =
-//                new HttpEntity<String>(rq.toString(), headers);
-//
-//        try {
-//            restTemplate.postForEntity(uri, request, String.class);
-//        } catch(RestClientException e){
-//        }
-//    }
 
     public static void processEvent(JsonNode request) throws IOException {
         DB db = new DB();
@@ -191,7 +171,7 @@ public class ExecutionCoreHandler {
             }
         }
         else{
-            System.out.println("invalid request type (must be READ or WRITE)");
+            System.out.println("invalid request type");
             return;
         }
 

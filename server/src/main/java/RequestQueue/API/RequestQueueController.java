@@ -1,6 +1,7 @@
 package RequestQueue.API;
 
 import RequestQueue.DataAccessObject.FileQueue;
+import RequestQueue.DataAccessObject.HeadItem;
 import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,7 +33,13 @@ public class RequestQueueController {
     @GetMapping("/get-head/{filename}")
     @ResponseBody
     public String getHead(@PathVariable String filename){
-        return Integer.toString(fileQueue.getHead(filename));
+        HeadItem hi = fileQueue.getHead(filename);
+
+        if(System.currentTimeMillis()-hi.currTime > 20 * 1000){
+            fileQueue.removeHead(filename);
+        }
+
+        return Integer.toString(hi.orderValue);
     }
 
     @GetMapping("/remove-head/{filename}")

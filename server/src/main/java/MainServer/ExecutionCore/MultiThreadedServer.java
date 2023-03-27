@@ -22,7 +22,6 @@ public class MultiThreadedServer implements Runnable{
         this.isRunning = true;
 
         System.out.println("before request queeu");
-        while(ServerState.requestQueueIP.isEmpty());
 
         System.out.println("fetching request");
         while(this.isRunning){
@@ -31,7 +30,7 @@ public class MultiThreadedServer implements Runnable{
             JsonNode request = null;
             try {
                 request = restTemplate.getForObject(fetchRequestURI, JsonNode.class);
-            } catch (RestClientException e){}
+            } catch (Exception e){}
             // change this to correct check to see if nothing was in queue
             if (request == null)continue;
 

@@ -105,7 +105,7 @@ public class NetworkUtil {
         return timestamp.getBody();
     }
 
-    public static int obtainLock(String IP, String filename){
+    public static int getRequestHead(String IP, String filename){
         RestTemplate restTemplate = new RestTemplate();
         String getHeadURI = NetworkConstants.getRequestQueueHeadURI(IP,filename);
         ResponseEntity<Integer> currOrder = restTemplate.getForEntity(getHeadURI,Integer.class);
