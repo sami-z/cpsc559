@@ -286,6 +286,18 @@ public class DB {
 		System.out.println(updateResult);
 	}
 
+	public void editSharedWith(String fileName, ArrayList<String> sharedList, boolean isReplicating) {
+		if (isReplicating) {
+			Bson filter = eq("fileName", fileName);
+			Bson updateOperation = set("shared", sharedList);
+			try {
+				getReplica(false).updateOne(filter, updateOperation);
+			} catch (Exception e) {
+				System.out.println("Secondary cluster is currently down in DB");
+			}
+		}
+	}
+
 	public String deleteFile(ArrayList<String> files) {
 		ArrayList<String> deletedFiles = new ArrayList<>();
 		DeleteResult updateResult;

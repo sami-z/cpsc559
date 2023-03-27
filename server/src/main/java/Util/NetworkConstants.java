@@ -57,6 +57,10 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/api/dbmanager/delete",DB_MANAGER_IP,DATABASE_MANAGER_PORT);
     }
 
+    public static String getDBManagerShareURI(){
+        return String.format("http://%s:%s/api/dbmanager/share",DB_MANAGER_IP,DATABASE_MANAGER_PORT);
+    }
+
     public static String getDBManagerGetHeadURI(String fileName) {
         return String.format("http://%s:%s/api/dbmanager/get-head/%s", DB_MANAGER_IP,DATABASE_MANAGER_PORT, fileName);
     }

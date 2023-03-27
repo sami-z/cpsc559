@@ -152,9 +152,7 @@ public class ExecutionCoreHandler {
             NetworkUtil.releaseLock(ServerState.requestQueueIP,fileName);
         }
         else if(requestType.equalsIgnoreCase("SHARE")){
-            String fileName = request.get("fileName").asText();
-            ArrayList<String> arr = new ObjectMapper().convertValue(request.get("sharedWith"), ArrayList.class);
-            db.editSharedWith(fileName, arr);
+            NetworkUtil.sendShare(request);
         } else if(requestType.equalsIgnoreCase("DELETE")){
 
             String deleteList = NetworkUtil.sendDelete(request);
