@@ -55,6 +55,7 @@ public class DatabaseController {
     public String getTimestamp(@PathVariable String fileName) {
         return Long.toString(databaseHandler.getTimestamp(fileName));
     }
+
    @PostMapping("/register")
    @ResponseBody
    public String registerUser(@RequestBody ClientRequestModel requestModel) {

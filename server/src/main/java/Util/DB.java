@@ -159,10 +159,24 @@ public class DB {
 		long latestTimestamp = NetworkUtil.getTimestamp(fileName);
 
 		if (entryTimestamp >= latestTimestamp) {
-			try {
+			Document query = new Document("fileName", entry.getString("fileName"));
+			Document queryResult = getReplica(false).find(query).first();
+			if (queryResult == null) {
 				getReplica(false).insertOne(entry);
-			} catch (Exception e) {
-				System.out.println("Secondary cluster is currently down in DB");
+			} else {
+				ObjectId existingObjectId = queryResult.getObjectId("_id");
+				Bson deleteFilter = Filters.eq("_id", existingObjectId);
+				try {
+					getReplica(false).deleteOne(deleteFilter);
+				} catch (Exception e) {
+					System.out.println("Secondary cluster is currently down in DB");
+					return;
+				}
+				try {
+					getReplica(false).insertOne(entry);
+				} catch (Exception e) {
+					System.out.println("Secondary cluster is currently down in DB");
+				}
 			}
 		}
 	}
