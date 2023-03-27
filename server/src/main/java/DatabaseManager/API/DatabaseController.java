@@ -8,6 +8,8 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/dbmanager")
 public class DatabaseController {
@@ -31,5 +33,11 @@ public class DatabaseController {
     @GetMapping("/get-head/{fileName}")
     public long getTimestamp(@PathVariable String fileName) {
         return databaseHandler.getTimestamp(fileName);
+    }
+   @PostMapping("/dbmanager/register")
+    public void registerUser(@RequestBody ClientRequestModel requestModel) throws InterruptedException, IOException {
+        DB db = new DB();
+        Document replicatedEntry = db.registerUser(requestModel);
+//        new Thread(new ReplicationRunner(replicatedEntry, null)).start();
     }
 }

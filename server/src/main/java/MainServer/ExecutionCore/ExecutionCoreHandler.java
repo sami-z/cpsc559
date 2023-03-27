@@ -6,28 +6,53 @@ import Util.DB;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.result.UpdateResult;
+import org.bson.Document;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import java.io.*;
 import java.util.ArrayList;
-
 import Util.NetworkUtil;
+import static com.mongodb.client.model.Filters.eq;
+
 
 
 public class ExecutionCoreHandler {
 
     private ObjectMapper mapper = new ObjectMapper();
 
-    public static void obtainLock(String IP, JsonNode request){
+    public static void obtainLock(String IP, JsonNode request) {
         System.out.println("trying to obtain lock");
         int headOrder = -1;
         int currOrder = request.get("orderValue").asInt();
-        while(headOrder!=currOrder){
-            headOrder = NetworkUtil.obtainLock(IP,request.get("fileName").asText());
+        while (headOrder != currOrder) {
+            headOrder = NetworkUtil.obtainLock(IP, request.get("fileName").asText());
             System.out.println("headOrder: " + headOrder);
             System.out.println("Current order: " + currOrder);
         }
     }
+
+
+    public static void releaseLock(String filename){
+        return;
+    }
+
+//    public static void sendToResponseQueue(JsonNode rq, String IP){
+//        RestTemplateBuilder builder = new RestTemplateBuilder();
+//        RestTemplate restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        String uri = NetworkConstants.getResponseQueueURI(IP);
+//
+//        HttpEntity<String> request =
+//                new HttpEntity<String>(rq.toString(), headers);
+//
+//        try {
+//            restTemplate.postForEntity(uri, request, String.class);
+//        } catch(RestClientException e){
+//        }
+//    }
 
     public static void processEvent(JsonNode request) throws IOException {
         DB db = new DB();
@@ -46,21 +71,30 @@ public class ExecutionCoreHandler {
             System.out.println("database requestType" + System.currentTimeMillis());
             String readType = request.get("readType").asText();
 
-//            ArrayList<JsonNode> files = db.findFiles(request.get("userName").asText());
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            JsonNode response = objectMapper.valueToTree(files);
-//            System.out.println("trying to print first element" + response.get(0));
             System.out.println("database requestType" + System.currentTimeMillis());
             if(readType.equals("allFiles")){
                 ArrayList<JsonNode> files = db.findFiles(request.get("userName").asText());
+
+                JsonNode response;
+
                 ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode response = objectMapper.valueToTree(files);
+                if (!files.isEmpty()){
+                    response = objectMapper.valueToTree(files);
+                }
+                else{
+                    response = objectMapper.createObjectNode();
+                    ((ObjectNode)response).put("readType", "ALLFILESEMPTY");
+                    ((ObjectNode)response).put("userName", request.get("userName").asText());
+                }
+
                 for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
 //                    for (JsonNode file : files) {
 //                        System.out.println("the actual file"+file);
 //                        sendToResponseQueue(file, IP);
 //                    }
                     NetworkUtil.sendToResponseQueue(response, IP);
+
+//                    sendToResponseQueue(response, IP);
                 }
                 System.out.println("database blah" + System.currentTimeMillis());
             }
@@ -80,6 +114,36 @@ public class ExecutionCoreHandler {
                 }
                 System.out.println("DATABASE SINGLE FOR LOOP" + System.currentTimeMillis());
 
+            }
+
+            else if (readType.equals("LOGIN")){
+                FindIterable<Document> entry = db.getSecondaryReplica_Login().find(eq("userName", request.get("userName").asText()));
+
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode response = mapper.createObjectNode();
+                ((ObjectNode)response).put("userName", request.get("userName").asText());
+                ((ObjectNode)response).put("readType", "LOGIN");
+
+                for (Document doc : entry) {
+                    String actualUserName = doc.getString("userName");
+                    String actualPassword = doc.getString("password");
+
+                    if (request.get("userName").asText().equals(actualUserName) && request.get("password").asText().equals(actualPassword)) {
+                        ((ObjectNode) response).put("loggedIn", "SUCCESS");
+                        break; // break the loop once a match is found
+                    } else {
+                        ((ObjectNode) response).put("loggedIn", "FAILURE");
+                    }
+                }
+
+                if (!response.has("loggedIn")) {
+                    // handle case where no match was found
+                    ((ObjectNode) response).put("loggedIn", "FAILURE");
+                }
+
+                for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
+                    NetworkUtil.sendToResponseQueue(response, IP);
+                }
             }
 
         }
@@ -116,7 +180,36 @@ public class ExecutionCoreHandler {
             else if (writeType.equals("SHARE")) {
                 ArrayList<String> arr = new ObjectMapper().convertValue(request.get("sharedWith"), ArrayList.class);
                 db.editSharedWith(fileName, arr);
+            }
 
+            else if (writeType.equals("REGISTER")){
+                NetworkUtil.sendRegister(request);
+                FindIterable<Document> entry = db.getSecondaryReplica_Login().find(eq("userName", request.get("userName").asText()));
+
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode response = mapper.createObjectNode();
+                ((ObjectNode)response).put("userName", request.get("userName").asText());
+                ((ObjectNode)response).put("writeType", "REGISTER");
+
+                for (Document doc : entry) {
+                    String actualUserName = doc.getString("userName");
+
+                    if (request.get("userName").asText().equals(actualUserName)) {
+                        ((ObjectNode) response).put("registered", "SUCCESS");
+                        break; // break the loop once a match is found
+                    } else {
+                        ((ObjectNode) response).put("registered", "FAILURE");
+                    }
+                }
+
+                if (!response.has("registered")) {
+                    // handle case where no match was found
+                    ((ObjectNode) response).put("registered", "FAILURE");
+                }
+
+                for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
+                    NetworkUtil.sendToResponseQueue(response, IP);
+                }
             }
             else{
 

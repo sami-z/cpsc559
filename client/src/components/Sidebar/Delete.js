@@ -32,7 +32,7 @@ const useStyles = makeStyles({
     },
 });
 
-function Delete({selectedFiles}) {
+function Delete(props) {
     const classes = useStyles();
 
 
@@ -46,11 +46,11 @@ function Delete({selectedFiles}) {
     const handleDelete = async () => {
 
 
-        console.log("IN HANDLE DELETE: ", selectedFiles);
+        console.log("IN HANDLE DELETE: ", props.selectedFiles);
 
         setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
-        const payload = { requestType: "WRITE", userName: "manbir", writeType: "DELETE", filesToDelete: selectedFiles, shareWith: null };
+        const payload = { requestType: "WRITE", userName: props.userName, writeType: "DELETE", filesToDelete: props.selectedFiles, shareWith: null };
         
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');

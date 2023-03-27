@@ -25,7 +25,7 @@ const useStyles = makeStyles({
     },
 });
 
-function ShareButton({selectedFiles}) {
+function ShareButton(props) {
     const classes = useStyles();
     const [name, setName] = useState('');
     const [open, setOpen] = useState(false);
@@ -53,7 +53,7 @@ function ShareButton({selectedFiles}) {
     const handleSharePermission = () => {
         const newWebSocket = createWebSocket();
         // Send a JSON payload through the WebSocket connection to share the permission with the specified user
-        const payload = { userName: "manbir", fileName: "samiSmart.jpg", shareWith: name };
+        const payload = { userName: props.userName, fileName: "samiSmart.jpg", shareWith: name };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -78,7 +78,6 @@ function ShareButton({selectedFiles}) {
         });
 
         console.log(JSON.stringify(payload))
-
     };
 
     return (

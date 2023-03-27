@@ -7,8 +7,8 @@ import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
 import { RESPONSE_QUEUE_SERVER_PORT } from '../WebSocket/WebSocket';
 import { create } from '@mui/material/styles/createTransitions';
 
-const FileCard = ({ name }) => {
-  const fileExtension = name.split('.').pop();
+const FileCard = (props) => {
+  const fileExtension = props.name.split('.').pop();
 
   const getIconByExtension = (fileName) => {
     const extension = fileName.split('.').pop();
@@ -64,8 +64,8 @@ const FileCard = ({ name }) => {
 
       if (socket && socket.readyState === WebSocket.OPEN) {
 
-        const payload = {requestType: "READ", readType: "SINGLE", userName: "manbir", fileName: name}
-        console.log("FILE I WANT TO DOWNLOAD: " + name);
+        const payload = {requestType: "READ", readType: "SINGLE", userName: props.userName, fileName: props.name}
+        console.log("FILE I WANT TO DOWNLOAD: " + props.name);
         socket.send(JSON.stringify(payload));          
       }
 
@@ -109,7 +109,7 @@ const FileCard = ({ name }) => {
       </div>
 
       <div className="fileCard--bottom">
-        <p>{name}</p>
+        <p>{props.name}</p>
       </div>
     </div>
   )

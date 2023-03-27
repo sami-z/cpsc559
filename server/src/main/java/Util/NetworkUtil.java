@@ -56,6 +56,18 @@ public class NetworkUtil {
         restTemplate.postForEntity(uri,request,String.class);
     }
 
+    public static void sendRegister(JsonNode rq){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String uri = NetworkConstants.getDBManagerRegister();
+
+        HttpEntity<String> request =
+                new HttpEntity<String>(rq.toString(), headers);
+
+        restTemplate.postForEntity(uri,request,String.class);
+    }
+
     public static void sendWriteToLeader(String IP, JsonNode request){
         RestTemplate rt = new RestTemplate();
         String request_queue_uri = NetworkConstants.getRequestQueuePushURI(IP);

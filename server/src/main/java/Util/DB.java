@@ -98,7 +98,6 @@ public class DB {
 
 	public void recoverFromDatabaseFailure() {
 		System.out.println("MongoDB Atlas Primary Cluster is down in DB");
-
 		DB.shouldRecover = true;
 		if (DB.isFirstClusterPrimary) {
 			DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
@@ -132,6 +131,29 @@ public class DB {
 		} catch (Exception e) {
 			recoverFromDatabaseFailure();
 			getReplica(true).insertOne(entry);
+		}
+
+		return entry;
+	}
+
+	public Document registerUser(ClientRequestModel model) {
+		Document entry = new Document("_id", new ObjectId())
+				.append("userName", model.userName)
+				.append("password", model.password);
+
+		try {
+			getReplica(true).insertOne(entry);
+		} catch (Exception e) {
+			recoverFromDatabaseFailure();
+			getReplica(true).insertOne(entry);
+//			// TODO implement fault tolerance for clusters
+//			System.out.println("MongoDB Atlas Primary Cluster is down in DB");
+//
+//			DB.shouldRecover = true;
+//			if (DB.isFirstClusterPrimary) {
+//				DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
+//			}
+//			getPrimaryReplica().insertOne(entry);
 		}
 
 		return entry;

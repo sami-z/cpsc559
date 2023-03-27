@@ -64,4 +64,8 @@ public final class NetworkConstants {
     public static String getRequestQueueRemoveHeadURI(String IP, String fileName){
         return String.format("http://%s:%s/api/request/remove-head/%s",IP,REQUEST_QUEUE_PORT,fileName);
     }
+
+    public static String getDBManagerRegister() {
+        return String.format("http://localhost:%s/dbmanager/register",DATABASE_MANAGER_PORT);
+    }
 }

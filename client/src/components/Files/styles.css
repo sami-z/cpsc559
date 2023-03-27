@@ -97,5 +97,48 @@
 
 .fileItem:hover{
      background-color: #ccc;
+     cursor: pointer;
+}
+
+.fileCard:active {
+    background-color: #c8e4fc;
+}
+
+.fileItem:active {
+    background-color: #c8e4fc;
+}
+
+.highlight {
+    background-color: #c8e4fc;
+    height: 55px;
+    border-bottom: 1px solid rgb(219, 219, 219);
+    border-top: 1px solid rgb(219, 219, 219);
+    width: 100%;
+}
+
+.highlight>a{
+    height: 100%;
+    display: flex;
+    text-decoration: none;
+    color: rgb(85, 78, 78);
+}
+
+.highlight>a>div{
+    display: flex;
+    align-items: center;
+}
+
+.highlight>a>div>*{
+    margin: 10px;
+}
+
+.highlight--left{
+    flex: 1;
+}
+
+.highlight--right{
+    display: flex;
+    justify-content: center;
+    margin-right: 100px;
 }
 

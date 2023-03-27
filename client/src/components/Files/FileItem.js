@@ -3,13 +3,62 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CropOriginalIcon from '@mui/icons-material/CropOriginal';
 import './styles.css'
+import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
+import { RESPONSE_QUEUE_SERVER_PORT } from '../WebSocket/WebSocket';
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+function createWebSocket(port) {
+  return new WebSocket(port);
+}
 
-
-const FileItem = ({ id, caption, timestamp, size, onSelectFile}) => {
+const FileItem = ({ id, caption, timestamp, size, onSelectFile, userName}) => {
   console.log("id, caption, timestamp, fireurl, size", size)
   const [isSelected, setIsSelected] = useState(false);
+
+
+  const handleFileClick = () => {
+    const socket = createWebSocket(WEBSOCKET_URL);
+    socket.addEventListener('open', () => {
+      console.log('RqstQ connection established!');
+
+      if (socket && socket.readyState === WebSocket.OPEN) {
+
+        const payload = {requestType: "READ", readType: "SINGLE", userName: userName, fileName: caption}
+        console.log("FILE I WANT TO DOWNLOAD: " + JSON.stringify(payload));
+        socket.send(JSON.stringify(payload));          
+      }
+
+    });
+
+    const responseSocket = createWebSocket(RESPONSE_QUEUE_SERVER_PORT);
+    responseSocket.addEventListener('message', (event) => {
+      console.log("Logging event: " + event);
+      console.log("Logging event data: " + event.data);
+      const { responseType, data } = JSON.parse(event.data);
+
+      const blob = event.data;
+      const reader = new FileReader();
+      reader.onload = function() {
+        const message = reader.result;
+        console.log("just receieved msg from rspoonseQ",message);
+  
+        if (!message) {
+          return;
+        }
+
+        const newFiles = JSON.parse(message);
+        const bytes = new Uint8Array(data);
+        const blob = new Blob([bytes]);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.target = '_blank';
+        a.click();
+        URL.revokeObjectURL(url); 
+        console.log("I BE IN HERE");
+        }
+      });
+  };
 
      
 
@@ -47,8 +96,8 @@ const FileItem = ({ id, caption, timestamp, size, onSelectFile}) => {
   };
 
   return (
-    <div className='fileItem'>
-      <a  target="_blank" download={caption}>
+    <div className={isSelected ? 'highlight' : 'fileItem'}>
+      <a onClick={handleFileClick}>
         {/* <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} /> */}
         <input type="checkbox" checked={isSelected} onChange={() => {
             setIsSelected(prevState => !prevState);
@@ -62,7 +111,7 @@ const FileItem = ({ id, caption, timestamp, size, onSelectFile}) => {
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(size)}</p>
         </div>
-      </a>
+        </a>
     </div>
   )
 }

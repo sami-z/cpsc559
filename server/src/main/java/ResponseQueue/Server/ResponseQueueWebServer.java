@@ -47,6 +47,7 @@ public class ResponseQueueWebServer extends WebSocketServer {
 
             if(currNode == null)
                 webSocket.send(noUpdate.getBytes(StandardCharsets.UTF_8));
+
             else
                 webSocket.send(currNode.toPrettyString().getBytes(StandardCharsets.UTF_8));
 

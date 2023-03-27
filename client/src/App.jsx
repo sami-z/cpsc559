@@ -9,23 +9,26 @@ import './Login.css';
 import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import { Input, InputAdornment } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 
 function createWebSocket(port) {
   return new WebSocket(port);
 }
 
-function Login() {
+function Login(props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  
 
   const handleLogin = () => {
+    props.setIsLoading(true);
     const enteredUsername = username.trim(); 
     const enteredPass = password.trim()
     console.log("Entered username for login: ", enteredUsername);
     console.log("Entered password for login ", enteredPass);
 
     const newWebSocket = createWebSocket(WEBSOCKET_URL);
-    const payload = { requestType: "LOGIN", userName: enteredUsername, password: enteredPass };
+    const payload = { requestType: "READ", userName: enteredUsername, password: enteredPass, readType: "LOGIN"};
         
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -42,29 +45,46 @@ function Login() {
                 console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
             }
 
-            // setTimeout(() => {
-            //     setUploadStatus('uploaded');
-            //     setOpen(false);
-            //     setFileData(null);
-            //     setFileBytes(null);
-            //     setUploadStatus('idle');
-            // }, 2500); // add a 2.5 second delay
             newWebSocket.close();
 
         });
   };
 
   const handleRegister = () => {
+    props.setIsLoading(true);
     const enteredUsername = username.trim(); 
     const enteredPass = password.trim()
-    console.log("Entered username for register: ", enteredUsername);
-    console.log("Entered password for register ", enteredPass);
+    console.log("Entered username for login: ", enteredUsername);
+    console.log("Entered password for login ", enteredPass);
+
+    const newWebSocket = createWebSocket(WEBSOCKET_URL);
+    const payload = { requestType: "WRITE", userName: enteredUsername, password: enteredPass, writeType: "REGISTER"};
+        
+        newWebSocket.addEventListener('open', () => {
+            console.log('WebSocket connection established!');
+
+            console.log(newWebSocket);
+
+
+            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
+                newWebSocket.send(JSON.stringify(payload));
+            }
+
+
+            else {
+                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
+            }
+
+            newWebSocket.close();
+
+        });
   };
 
   return (
     <div className="login">
       <h1>Login or Register</h1>
       <h4 className="subheading">to continue to Distributed File System</h4>
+      {props.loginStatus === 'failed' && <p className="error-message">Login or Registration failed. Please try again.</p>}
       <form>
         <div className="form-group">
           <Input
@@ -73,7 +93,9 @@ function Login() {
             placeholder="Username"
             id="username"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => {setUsername(e.target.value); 
+              props.updateUser(e.target.value);
+            }}
             startAdornment={
               <InputAdornment position="start">
                 <PersonIcon />
@@ -117,6 +139,24 @@ function App() {
   const MINUTE_MS = 5000;
   const [files, setFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [userName, setUsername] = useState('');
+  const [loginStatus, setLoginStatus] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const updateUser = (newUser) => {
+    setUsername(newUser);
+  };
+
+  // Get the current title of the document
+  const currentTitle = document.title;
+
+  // Change the title of the document
+  if (isLoggedIn){
+    document.title = "Welcome to the DFS "+ userName + "!";
+  }
+  else{
+    document.title = "Welcome to the DFS!";
+  }
   
 
   // Remove an array of files
@@ -148,34 +188,39 @@ function App() {
   useEffect(() => {
     console.log("RAGOD: " + selectedFiles);
   }, [selectedFiles]);
+
+
+  useEffect(() => {
+    if (isLoggedIn){
+      // setIsLoading(true);
+      const rqstSocket = createWebSocket(WEBSOCKET_URL)
+      const payload = { requestType: "READ", userName: userName, readType: "allFiles" };
   
-  // const rqstSocket = createWebSocket(WEBSOCKET_URL)
-  // const payload = { requestType: "READ", userName: "manbir", readType: "allFiles" };
-  
 
-  // rqstSocket.addEventListener('open', () => {
-  //     console.log('RqstQ connection established!');
+      rqstSocket.addEventListener('open', () => {
+        console.log('RqstQ connection established!');
 
-  //     console.log(rqstSocket);
+        console.log(rqstSocket);
 
-  //     if(!flager){
-  //       if (rqstSocket && rqstSocket.readyState === WebSocket.OPEN) {
-  //           rqstSocket.send(JSON.stringify(payload));
-  //           flager = true
-  //       }
-        
-  //     }
+        // if(!flager){
+        if (rqstSocket && rqstSocket.readyState === WebSocket.OPEN) {
+            rqstSocket.send(JSON.stringify(payload));
+            // flager = true
+        }
+          
+        //}
 
+        else {
+            console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
+        }
 
-  //     else {
-  //         console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-  //     }
-
-
-  //     rqstSocket.close();
+        rqstSocket.close();
       
-
-  // });
+        });
+      }
+    }, [isLoggedIn]);
+  
+ 
 
   const prevSelectedFiles = useRef([]);
 
@@ -187,7 +232,7 @@ function App() {
       newWebSocket.onopen = () => {
         console.log('WebSocket connection established!');
         
-        newWebSocket.send("{\"userName\":\"manbir\"}");
+        newWebSocket.send("{\"userName\":\"" + userName + "\"}");
       };
 
       newWebSocket.onmessage = (event) => {
@@ -212,12 +257,14 @@ function App() {
               console.log("the item is: ", item)
               setFiles(prevFiles=>[...prevFiles, item])
             });
+            setIsLoading(false);
           }
           else{
-            console.log("received single file");
-
-            if (newFiles.readType === "SINGLE"){
-              
+            if (newFiles.readType === "ALLFILESEMPTY"){
+              setIsLoading(false);
+            }
+            else if (newFiles.readType === "SINGLE"){
+             
               const updatedFiles = files.map((file) => {
                 console.log("FILE NAME 1: " + file.fileName);
                 console.log("FILE NAME 2: " + newFiles.fileName);
@@ -251,6 +298,36 @@ function App() {
 
             }
 
+            else if (newFiles.writeType === "REGISTER"){
+
+              if (newFiles.registered === "SUCCESS"){
+                setLoginStatus('success');
+                setIsLoggedIn(true);
+                setIsLoading(false);
+              }
+
+              else{
+                setLoginStatus('failed');
+                setIsLoggedIn(false);
+                setIsLoading(false);
+              }
+            }
+
+            else if (newFiles.readType === "LOGIN"){
+              if (newFiles.loggedIn === "SUCCESS"){
+                setLoginStatus('success');
+                setIsLoggedIn(true);
+                // setIsLoading(false);
+              }
+
+              else{
+                setLoginStatus('failed');
+                setIsLoggedIn(false);
+                setIsLoading(false);
+              }
+
+            }
+
             else{
               setFiles(prevFiles => [...prevFiles, newFiles]);
             }
@@ -274,16 +351,20 @@ function App() {
 
   return (
     <div className="App">
-      {true ? ( //replace with: isLoggedIn
+      {isLoggedIn && !isLoading ? ( 
         <div className='app_main'>
           <Navbar setSearchTerm={setSearchTerm}/>
           <div className='main_content'>
-            <Sidebar selectedFiles={selectedFiles}/>
-            <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} />
+          <Sidebar selectedFiles={selectedFiles} userName={userName}/>
+          <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} userName={userName} />
           </div>
         </div>
+      ) : isLoading ? (
+        <div className='loader-container'>
+          <CircularProgress />
+        </div>
       ) : (
-        <Login />
+        <Login loginStatus={loginStatus} updateUser={updateUser} setIsLoading={setIsLoading}/>
       )}   
     </div>
   );

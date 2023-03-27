@@ -31,7 +31,7 @@ const useStyles = makeStyles({
     },
 });
 
-function Upload() {
+function Upload(props) {
     const classes = useStyles();
 
 
@@ -54,7 +54,8 @@ function Upload() {
 
         setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
-        const payload = { requestType: "WRITE", userName: "manbir", fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null, writeType: "UPLOAD"};
+        console.log("THIS IS THE USERNAME IS DELETE: " + props.userName)
+        const payload = { requestType: "WRITE", userName: props.userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null, writeType: "UPLOAD"};
         
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
