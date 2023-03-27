@@ -29,7 +29,7 @@ public class DatabaseController {
         long timestamp = System.currentTimeMillis();
         databaseHandler.updateTimestamp(requestModel.fileName, timestamp);
         ArrayList<Document> docs = db.uploadFile(requestModel, timestamp);
-        new Thread(new ReplicationRunner(docs.get(0), null, null, null, true, false, false)).start();
+        new Thread(new ReplicationRunner(docs.get(0), null, null, 0,null, true, false, false)).start();
         if (docs.get(1) == null) {
             return Boolean.toString(false);
         } else {
@@ -51,7 +51,7 @@ public class DatabaseController {
             tsList.add(innerTSList);
         }
         String deletedFiles = db.deleteFile(filesToDelete);
-        new Thread(new ReplicationRunner(null, null, null, tsList, false, false, false)).start();
+        new Thread(new ReplicationRunner(null, null, null, 0, tsList, false, false, false)).start();
         return deletedFiles;
     }
 
@@ -59,8 +59,10 @@ public class DatabaseController {
     public void editShare(@RequestBody JsonNode shareRequest) {
         String fileName = shareRequest.get("fileName").asText();
         ArrayList<String> shareList = new ObjectMapper().convertValue(shareRequest.get("sharedWith"), ArrayList.class);
+        long timestamp = System.currentTimeMillis();
+        databaseHandler.updateTimestamp(fileName, timestamp);
         db.editSharedWith(fileName, shareList);
-        new Thread(new ReplicationRunner(null, shareList, fileName, null, false, false, true)).start();
+        new Thread(new ReplicationRunner(null, shareList, fileName, 0,null, false, false, true)).start();
     }
 
     @GetMapping("/get-head/{fileName}")
@@ -76,7 +78,7 @@ public class DatabaseController {
         if (replicatedEntry == null) {
             return Boolean.toString(false);
         }
-        new Thread(new ReplicationRunner(replicatedEntry, null, null, null,false, true, false)).start();
+        new Thread(new ReplicationRunner(replicatedEntry, null, null, 0, null,false, true, false)).start();
        return Boolean.toString(true);
     }
 }
