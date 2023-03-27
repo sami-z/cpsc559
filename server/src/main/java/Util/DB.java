@@ -96,7 +96,15 @@ public class DB {
 		return entry;
 	}
 
-	// TODO implement handling of a case where a file with the same filename as the request already exists under the same account (using username), in which case we must overwrite
+	public void recoverFromDatabaseFailure() {
+		System.out.println("MongoDB Atlas Primary Cluster is down in DB");
+
+		DB.shouldRecover = true;
+		if (DB.isFirstClusterPrimary) {
+			DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
+		}
+	}
+
 	public Document uploadFile(ClientRequestModel model, long timestamp) {
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -110,19 +118,19 @@ public class DB {
 			entry = createEntry(model, timestamp, null, formattedDate);
 		} else {
 			Bson deleteFilter = Filters.eq("_id", queryResult.getObjectId("_id"));
-			getReplica(true).deleteOne(deleteFilter);
+			try {
+				getReplica(true).deleteOne(deleteFilter);
+			} catch (Exception e) {
+				recoverFromDatabaseFailure();
+				getReplica(true).deleteOne(deleteFilter);
+			}
 			entry = createEntry(model, timestamp, queryResult.getObjectId("_id"), formattedDate);
 		}
 
 		try {
 			getReplica(true).insertOne(entry);
 		} catch (Exception e) {
-			System.out.println("MongoDB Atlas Primary Cluster is down in DB");
-
-			DB.shouldRecover = true;
-			if (DB.isFirstClusterPrimary) {
-				DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
-			}
+			recoverFromDatabaseFailure();
 			getReplica(true).insertOne(entry);
 		}
 
@@ -153,10 +161,7 @@ public class DB {
 		try {
 			docs = getReplica(true).find(eq("userName",userName));
 		} catch (Exception e) {
-			DB.shouldRecover = true;
-			if (DB.isFirstClusterPrimary) {
-				DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
-			}
+			recoverFromDatabaseFailure();
 			docs = getReplica(true).find(eq("userName",userName));
 		}
 
@@ -178,8 +183,13 @@ public class DB {
 
 
 	public JsonNode loadFile(String filename) throws IOException {
-
-		Document doc = getReplica(true).find(eq("fileName", filename)).first();
+		Document doc;
+		try {
+			doc = getReplica(true).find(eq("fileName", filename)).first();
+		} catch (Exception e) {
+			recoverFromDatabaseFailure();
+			doc = getReplica(true).find(eq("fileName", filename)).first();
+		}
 		if (doc != null) {
 			return mapper.readTree(doc.toJson());
 //	    	byte[] fileBytes = javax.xml.bind.DatatypeConverter.parseBase64Binary(mapper.writeValueAsString(json.get("bytes")));
@@ -197,22 +207,38 @@ public class DB {
 	public void editSharedWith(String fileName, ArrayList<String> sharedList){
 		Bson filter = eq("fileName", fileName);
 		Bson updateOperation = set("shared", sharedList);
-		UpdateResult updateResult = getReplica(true).updateOne(filter, updateOperation);
+		UpdateResult updateResult;
+		try {
+			updateResult = getReplica(true).updateOne(filter, updateOperation);
+		} catch (Exception e) {
+			recoverFromDatabaseFailure();
+			updateResult = getReplica(true).updateOne(filter, updateOperation);
+		}
 
 		System.out.println(getReplica(true).find(filter).first().toJson());
 		System.out.println(updateResult);
 	}
 
-	public ArrayList<String> deleteFile(ArrayList<String> files, boolean isReplicating){
+	public ArrayList<String> deleteFile(ArrayList<String> files, boolean isReplicating) {
 
 		ArrayList<String> arr = new ArrayList<>();
 		DeleteResult updateResult;
-		for (String fileName : files){
-			if (!isReplicating){
-				updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
+		for (String fileName : files) {
+			if (!isReplicating) {
+				try {
+					updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
+				} catch (Exception e) {
+					recoverFromDatabaseFailure();
+					updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
+				}
 			}
 			else{
-				updateResult = getReplica(false).deleteOne(eq("fileName", fileName));
+				try {
+					updateResult = getReplica(false).deleteOne(eq("fileName", fileName));
+				} catch (Exception e) {
+					recoverFromDatabaseFailure();
+					updateResult = getReplica(false).deleteOne(eq("fileName", fileName));
+				}
 			}
 
 			if (updateResult.getDeletedCount() == 1){
