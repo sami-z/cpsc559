@@ -24,12 +24,17 @@ public class DatabaseController {
     }
 
     @PostMapping("/upload")
-    public void uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
+    public String uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
         System.out.println("hello i am here: " + requestModel.fileName);
         long timestamp = System.currentTimeMillis();
         databaseHandler.updateTimestamp(requestModel.fileName, timestamp);
-        Document replicatedEntry = db.uploadFile(requestModel, timestamp);
-        new Thread(new ReplicationRunner(replicatedEntry, null, true, false)).start();
+        ArrayList<Document> docs = db.uploadFile(requestModel, timestamp);
+        new Thread(new ReplicationRunner(docs.get(0), null, true, false)).start();
+        if (docs.get(1) == null) {
+            return Boolean.toString(false);
+        } else {
+            return Boolean.toString(true);
+        }
     }
 
     @PostMapping("/delete")

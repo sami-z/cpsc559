@@ -137,12 +137,15 @@ public class ExecutionCoreHandler {
             System.out.println("Request is: " + request);
 
 
-            NetworkUtil.sendWrite(request);
+            boolean wasReplaced = NetworkUtil.sendWrite(request);
+
+            if (!wasReplaced) {
+                for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
+                    NetworkUtil.sendToResponseQueue(request, IP);
+                }
+            }
 
             System.out.println("database write done" + System.currentTimeMillis());
-            for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-                NetworkUtil.sendToResponseQueue(request, IP);
-            }
 
             System.out.println("Responsequeue sent" + System.currentTimeMillis());
 

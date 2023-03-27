@@ -120,7 +120,8 @@ public class DB {
 		}
 	}
 
-	public Document uploadFile(ClientRequestModel model, long timestamp) {
+	public ArrayList<Document> uploadFile(ClientRequestModel model, long timestamp) {
+		ArrayList<Document> ret = new ArrayList<>();
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		String formattedDate = currentDate.format(formatter);
@@ -128,6 +129,7 @@ public class DB {
 		Document query = new Document("fileName", model.fileName);
 		Document queryResult = getReplica(true).find(query).first();
 		Document entry;
+		boolean wasReplaced = false;
 
 		if (queryResult == null) {
 			entry = createEntry(model, timestamp, null, formattedDate);
@@ -141,6 +143,7 @@ public class DB {
 				getReplica(true).deleteOne(deleteFilter);
 			}
 			entry = createEntry(model, timestamp, existingObjectId, formattedDate);
+			wasReplaced = true;
 		}
 
 		try {
@@ -150,7 +153,14 @@ public class DB {
 			getReplica(true).insertOne(entry);
 		}
 
-		return entry;
+		ret.add(entry);
+		if (wasReplaced) {
+			ret.add(new Document("_id", new ObjectId()).append("wasReplaced", "true"));
+		} else {
+			ret.add(null);
+		}
+
+		return ret;
 	}
 
 	public void uploadFile(Document entry) throws IOException {

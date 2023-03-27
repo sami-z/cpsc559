@@ -44,7 +44,7 @@ public class NetworkUtil {
         }
     }
 
-    public static void sendWrite(JsonNode rq){
+    public static boolean sendWrite(JsonNode rq){
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -53,7 +53,8 @@ public class NetworkUtil {
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);
 
-        restTemplate.postForEntity(uri,request,String.class);
+        ResponseEntity<Boolean> wasReplaced = restTemplate.postForEntity(uri,request,Boolean.class);
+        return wasReplaced.getBody();
     }
 
     public static String sendDelete(JsonNode rq){
