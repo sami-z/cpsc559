@@ -28,7 +28,7 @@ function Login(props) {
     console.log("Entered password for login ", enteredPass);
 
     const newWebSocket = createWebSocket(WEBSOCKET_URL);
-    const payload = { requestType: "READ", userName: enteredUsername, password: enteredPass, readType: "LOGIN"};
+    const payload = { requestType: "LOGIN", userName: enteredUsername, password: enteredPass};
         
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -58,7 +58,7 @@ function Login(props) {
     console.log("Entered password for login ", enteredPass);
 
     const newWebSocket = createWebSocket(WEBSOCKET_URL);
-    const payload = { requestType: "WRITE", userName: enteredUsername, password: enteredPass, writeType: "REGISTER"};
+    const payload = { requestType: "REGISTER", userName: enteredUsername, password: enteredPass};
         
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -194,7 +194,7 @@ function App() {
     if (isLoggedIn){
       // setIsLoading(true);
       const rqstSocket = createWebSocket(WEBSOCKET_URL)
-      const payload = { requestType: "READ", userName: userName, readType: "allFiles" };
+      const payload = { requestType: "READ_ALL_FILES", userName: userName };
   
 
       rqstSocket.addEventListener('open', () => {
@@ -260,10 +260,10 @@ function App() {
             setIsLoading(false);
           }
           else{
-            if (newFiles.readType === "ALLFILESEMPTY"){
+            if (newFiles.responseType === "ALLFILESEMPTY"){
               setIsLoading(false);
             }
-            else if (newFiles.readType === "SINGLE"){
+            else if (newFiles.responseType === "SINGLE"){
              
               const updatedFiles = files.map((file) => {
                 console.log("FILE NAME 1: " + file.fileName);
@@ -287,7 +287,7 @@ function App() {
               fileURL.click(); //Downloaded file
             }
             
-            else if(newFiles.readType === "DELETE"){
+            else if(newFiles.responseType === "DELETE"){
                 console.log("received files to delete: " + newFiles.delete);
                 const myArray = newFiles.delete.split(",");
                 console.log("MY ARRAY: " + myArray[1]);
@@ -298,7 +298,7 @@ function App() {
 
             }
 
-            else if (newFiles.writeType === "REGISTER"){
+            else if (newFiles.responseType === "REGISTER"){
 
               if (newFiles.registered === "SUCCESS"){
                 setLoginStatus('success');
@@ -313,7 +313,7 @@ function App() {
               }
             }
 
-            else if (newFiles.readType === "LOGIN"){
+            else if (newFiles.responseType === "LOGIN"){
               if (newFiles.loggedIn === "SUCCESS"){
                 setLoginStatus('success');
                 setIsLoggedIn(true);

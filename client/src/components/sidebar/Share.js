@@ -53,7 +53,7 @@ function ShareButton(props) {
     const handleSharePermission = () => {
         const newWebSocket = createWebSocket();
         // Send a JSON payload through the WebSocket connection to share the permission with the specified user
-        const payload = { userName: props.userName, fileName: "samiSmart.jpg", shareWith: name };
+        const payload = { requestType: "SHARE", userName: props.userName, fileName: "samiSmart.jpg", shareWith: name };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');

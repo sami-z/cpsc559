@@ -97,17 +97,17 @@ const FileItem = ({ id, caption, timestamp, size, onSelectFile, userName}) => {
 
   return (
     <div className={isSelected ? 'highlight' : 'fileItem'}>
-      <a onClick={handleFileClick}>
+      <a>
         {/* <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} /> */}
         <input type="checkbox" checked={isSelected} onChange={() => {
             setIsSelected(prevState => !prevState);
             onSelectFile(caption, !isSelected);
         }} />
-        <div className="fileItem--left">
+        <div className="fileItem--left" onClick={handleFileClick}>
           {getIconByExtension(fileExtension)}
           <p>{caption}</p>
         </div>
-        <div className="fileItem--right">
+        <div className="fileItem--right" onClick={handleFileClick}>
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(size)}</p>
         </div>
