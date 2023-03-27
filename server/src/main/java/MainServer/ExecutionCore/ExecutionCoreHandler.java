@@ -27,6 +27,22 @@ public class ExecutionCoreHandler {
 
     }
 
+    public static void updateShare(JsonNode request) throws IOException {
+        DB db = new DB();
+        JsonNode file = db.loadFile(request.get("fileName").asText());
+        ((ObjectNode)file).put("responseType", "SINGLE");
+
+        JsonNode usernames = request.get("shareWith");
+        String username;
+        for (int i = 0; i < usernames.size(); i++) {
+            username = usernames.get(i).asText();
+            ((ObjectNode)file).put("userName", username);
+            for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
+                NetworkUtil.sendToResponseQueue(file, IP);
+            }
+        }
+    }
+
     public static void processEvent(JsonNode request) throws IOException {
         DB db = new DB();
         // Parse HTML
@@ -123,6 +139,7 @@ public class ExecutionCoreHandler {
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(request, IP);
                 }
+                updateShare(request);
             }
 
             System.out.println("database write done" + System.currentTimeMillis());
@@ -130,9 +147,11 @@ public class ExecutionCoreHandler {
             System.out.println("Responsequeue sent" + System.currentTimeMillis());
 
             NetworkUtil.releaseLock(ServerState.requestQueueIP,fileName);
-        }
-        else if(requestType.equalsIgnoreCase("SHARE")){
+
+        } else if(requestType.equalsIgnoreCase("SHARE")){
+            System.out.println("SHARING WITH: " + request.get("shareWith").toString());
             NetworkUtil.sendShare(request);
+            updateShare(request);
         } else if(requestType.equalsIgnoreCase("DELETE")){
 
             String deleteList = NetworkUtil.sendDelete(request);
