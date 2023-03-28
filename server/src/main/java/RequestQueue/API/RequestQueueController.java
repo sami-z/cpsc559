@@ -35,9 +35,9 @@ public class RequestQueueController {
     public String getHead(@PathVariable String filename){
         HeadItem hi = fileQueue.getHead(filename);
 
-        if(System.currentTimeMillis()-hi.currTime > 20 * 1000){
-            fileQueue.removeHead(filename);
-        }
+//        if(System.currentTimeMillis()-hi.currTime > 20 * 1000){
+//            fileQueue.removeHead(filename);
+//        }
 
         return Integer.toString(hi.orderValue);
     }

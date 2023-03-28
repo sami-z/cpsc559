@@ -46,6 +46,6 @@ public class ReplicationRunner implements Runnable{
         } else {
             db.deleteFile(TSList, userName,true);
         }
-
+        db.closeMongoClients();
     }
 }

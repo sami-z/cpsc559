@@ -15,21 +15,21 @@ import java.util.ArrayList;
 @RequestMapping("/api/dbmanager")
 public class DatabaseController {
     private final DatabaseHandler databaseHandler;
-    private final DB db;
 
     @Autowired
     public DatabaseController(DatabaseHandler databaseHandler) {
         this.databaseHandler = databaseHandler;
-        this.db = new DB();
     }
 
     @PostMapping("/upload")
     public String uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
+        DB db = new DB();
         System.out.println("hello i am here: " + requestModel.fileName);
         long timestamp = System.currentTimeMillis();
         databaseHandler.updateTimestamp(requestModel.userName, requestModel.fileName, timestamp);
         ArrayList<Document> docs = db.uploadFile(requestModel, timestamp);
         new Thread(new ReplicationRunner(docs.get(0), null, null, null,0,null, true, false, false)).start();
+        db.closeMongoClients();
         if (docs.get(1) == null) {
             return Boolean.toString(false);
         } else {
@@ -39,6 +39,7 @@ public class DatabaseController {
 
     @PostMapping("/delete")
     public String deleteFromDatabase(@RequestBody JsonNode deleteRequest) {
+        DB db = new DB();
         ArrayList<String> filesToDelete = new ObjectMapper().convertValue(deleteRequest.get("filesToDelete"), ArrayList.class);
         String userName = deleteRequest.get("userName").asText();
         ArrayList<ArrayList<String>> tsList = new ArrayList<>();
@@ -53,11 +54,13 @@ public class DatabaseController {
         }
         String deletedFiles = db.deleteFile(filesToDelete, userName);
         new Thread(new ReplicationRunner(null, null, null, userName,0, tsList, false, false, false)).start();
+        db.closeMongoClients();
         return deletedFiles;
     }
 
     @PostMapping("/share")
     public void editShare(@RequestBody JsonNode shareRequest) {
+        DB db = new DB();
         String fileName = shareRequest.get("fileName").asText();
         String userName = shareRequest.get("userName").asText();
         ArrayList<String> shareList = new ObjectMapper().convertValue(shareRequest.get("sharedWith"), ArrayList.class);
@@ -65,6 +68,7 @@ public class DatabaseController {
         databaseHandler.updateTimestamp(userName, fileName, timestamp);
         db.editSharedWith(fileName, userName, shareList);
         new Thread(new ReplicationRunner(null, shareList, fileName, userName,0,null, false, false, true)).start();
+        db.closeMongoClients();
     }
 
     @GetMapping("/get-head/{key}")
@@ -76,11 +80,13 @@ public class DatabaseController {
    @PostMapping("/register")
    @ResponseBody
    public String registerUser(@RequestBody ClientRequestModel requestModel) {
+        DB db = new DB();
         Document replicatedEntry = db.registerUser(requestModel);
         if (replicatedEntry == null) {
             return Boolean.toString(false);
         }
         new Thread(new ReplicationRunner(replicatedEntry, null, null, null,0, null,false, true, false)).start();
-       return Boolean.toString(true);
+        db.closeMongoClients();
+        return Boolean.toString(true);
     }
 }

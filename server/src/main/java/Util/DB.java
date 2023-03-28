@@ -52,6 +52,16 @@ public class DB {
 		return MongoClients.create(clientSettings);
 	}
 
+	public void closeMongoClients() {
+		if (this.mongoClient1 != null) {
+			this.mongoClient1.close();
+		}
+
+		if (this.mongoClient2 != null) {
+			this.mongoClient2.close();
+		}
+	}
+
 	public MongoClient getMongoClient(boolean shouldGetPrimary) {
 		if (shouldGetPrimary) {
 			return (isFirstClusterPrimary) ? this.mongoClient1 : this.mongoClient2;
@@ -124,7 +134,7 @@ public class DB {
 		return new Document("$or",
 				Arrays.asList(
 						new Document("userName", userName),
-						new Document("shareWith", new Document("$regex", ".*" + userName + ".*"))
+						new Document("shared", new Document("$regex", ".*" + userName + ".*"))
 				))
 				.append("fileName", fileName);
 	}
@@ -241,7 +251,7 @@ public class DB {
 		Document query = new Document("$or",
 				Arrays.asList(
 						new Document("userName", userName),
-						new Document("shareWith", new Document("$regex", ".*" + userName + ".*"))
+						new Document("shared", new Document("$regex", ".*" + userName + ".*"))
 				));
 		try {
 			docs = getReplica(true).find(query);
