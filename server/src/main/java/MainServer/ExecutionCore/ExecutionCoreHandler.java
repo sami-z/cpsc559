@@ -29,7 +29,7 @@ public class ExecutionCoreHandler {
 
     public static void updateShare(JsonNode request) throws IOException {
         DB db = new DB();
-        JsonNode file = db.loadFile(request.get("fileName").asText());
+        JsonNode file = db.loadFile(request.get("userName").asText(), request.get("fileName").asText());
         ((ObjectNode)file).put("responseType", "SINGLE");
 
         String usernames = request.get("shareWith").asText();
@@ -83,7 +83,7 @@ public class ExecutionCoreHandler {
             System.out.println("database blah" + System.currentTimeMillis());
         }else if(requestType.equalsIgnoreCase("READ")){
             System.out.println("DATABASE SINGLE BEFORE" + System.currentTimeMillis());
-            JsonNode singleFile = db.loadFile(request.get("fileName").asText());
+            JsonNode singleFile = db.loadFile(request.get("userName").asText(), request.get("fileName").asText());
             System.out.println("DATABASE SINGLE AFTER LOAD" + System.currentTimeMillis());
 
             ((ObjectNode)singleFile).put("responseType", "SINGLE");
