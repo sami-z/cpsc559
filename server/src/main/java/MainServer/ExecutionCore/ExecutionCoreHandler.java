@@ -32,10 +32,9 @@ public class ExecutionCoreHandler {
         JsonNode file = db.loadFile(request.get("fileName").asText());
         ((ObjectNode)file).put("responseType", "SINGLE");
 
-        JsonNode usernames = request.get("shareWith");
-        String username;
-        for (int i = 0; i < usernames.size(); i++) {
-            username = usernames.get(i).asText();
+        String usernames = request.get("shareWith").asText();
+        String[] users = usernames.split(",");
+        for (String username : users) {
             ((ObjectNode)file).put("userName", username);
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 NetworkUtil.sendToResponseQueue(file, IP);

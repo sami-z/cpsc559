@@ -16,8 +16,9 @@ public class ReplicationRunner implements Runnable{
     private final ArrayList<String> shareList;
     private final String fileName;
     private final long timestamp;
+    private final String userName;
 
-    public ReplicationRunner(Document replicatedEntry, ArrayList<String> shareList, String fileName, long timestamp, ArrayList<ArrayList<String>> TSList, boolean shouldReplicateFile, boolean shouldReplicateLogin, boolean shouldReplicateShare) {
+    public ReplicationRunner(Document replicatedEntry, ArrayList<String> shareList, String fileName, String userName, long timestamp, ArrayList<ArrayList<String>> TSList, boolean shouldReplicateFile, boolean shouldReplicateLogin, boolean shouldReplicateShare) {
         this.replicatedEntry = replicatedEntry;
         this.TSList = TSList;
         this.shouldReplicateFile = shouldReplicateFile;
@@ -26,6 +27,7 @@ public class ReplicationRunner implements Runnable{
         this.shareList = shareList;
         this.fileName = fileName;
         this.timestamp = timestamp;
+        this.userName = userName;
     }
 
     @Override
@@ -40,9 +42,9 @@ public class ReplicationRunner implements Runnable{
         } else if (shouldReplicateLogin) {
             db.registerUser(replicatedEntry);
         } else if (shouldReplicateShare) {
-            db.editSharedWith(fileName, shareList, timestamp, true);
+            db.editSharedWith(fileName, userName, shareList, timestamp, true);
         } else {
-            db.deleteFile(TSList, true);
+            db.deleteFile(TSList, userName,true);
         }
 
     }

@@ -14,11 +14,11 @@ public class DatabaseHandler {
         this.databaseTimestamps = databaseTimestamps;
     }
 
-    public void updateTimestamp(String fileName, long timestamp) {
-        databaseTimestamps.updateLatestTimestamp(fileName, timestamp);
+    public void updateTimestamp(String userName, String fileName, long timestamp) {
+        databaseTimestamps.updateLatestTimestamp(userName, fileName, timestamp);
     }
 
-    public long getTimestamp(String fileName) {
-        return databaseTimestamps.getLatestTimestamp(fileName);
+    public long getTimestamp(String key) {
+        return databaseTimestamps.getLatestTimestamp(key);
     }
 }

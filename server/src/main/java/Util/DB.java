@@ -120,15 +120,25 @@ public class DB {
 		}
 	}
 
+	public Document createUploadQuery(String userName, String shareWith, String fileName) {
+		return new Document("$or",
+				Arrays.asList(
+						new Document("userName", userName),
+						new Document("shareWith", new Document("$in", Arrays.asList(shareWith.split(","))))
+				))
+				.append("fileName", fileName);
+	}
+
 	public ArrayList<Document> uploadFile(ClientRequestModel model, long timestamp) {
 		ArrayList<Document> ret = new ArrayList<>();
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		String formattedDate = currentDate.format(formatter);
 
-		Document query = new Document("fileName", model.fileName);
-		Document queryResult = getReplica(true).find(query).first();
 		Document entry;
+		Document query = createUploadQuery(model.userName, model.shareWith, model.fileName);
+
+		Document queryResult = getReplica(true).find(query).first();
 		boolean wasReplaced = false;
 
 		if (queryResult == null) {
@@ -165,11 +175,15 @@ public class DB {
 
 	public void uploadFile(Document entry) throws IOException {
 		String fileName = entry.getString("fileName");
+		String userName = entry.getString("userName");
+		String shareWith = entry.getString("shareWith");
 		long entryTimestamp = entry.getLong("timestamp");
-		long latestTimestamp = NetworkUtil.getTimestamp(fileName);
+		String key = String.join(",", userName, fileName);
+		long latestTimestamp = NetworkUtil.getTimestamp(key);
 
 		if (entryTimestamp >= latestTimestamp) {
-			Document query = new Document("fileName", entry.getString("fileName"));
+			Document query = createUploadQuery(userName, shareWith, fileName);
+
 			Document queryResult = getReplica(false).find(query).first();
 			if (queryResult == null) {
 				getReplica(false).insertOne(entry);
@@ -271,9 +285,20 @@ public class DB {
         }
         return null;
 	}
-	public void editSharedWith(String fileName, ArrayList<String> sharedList){
-		Bson filter = eq("fileName", fileName);
-		Bson updateOperation = set("shared", sharedList);
+
+	public Bson createShareFilter(String fileName, String userName) {
+		return and(
+				eq("fileName", fileName),
+				eq("userName", userName));
+	}
+
+	public Bson createShareOperation(ArrayList<String> sharedList) {
+		return set("shared", sharedList);
+	}
+
+	public void editSharedWith(String fileName, String userName, ArrayList<String> sharedList){
+		Bson filter = createShareFilter(fileName, userName);
+		Bson updateOperation = createShareOperation(sharedList);
 		UpdateResult updateResult;
 		try {
 			updateResult = getReplica(true).updateOne(filter, updateOperation);
@@ -286,13 +311,14 @@ public class DB {
 		System.out.println(updateResult);
 	}
 
-	public void editSharedWith(String fileName, ArrayList<String> sharedList, long timestamp, boolean isReplicating) {
+	public void editSharedWith(String fileName, String userName, ArrayList<String> sharedList, long timestamp, boolean isReplicating) {
 		if (isReplicating) {
-			long latestTimestamp = NetworkUtil.getTimestamp(fileName);
+			String key = String.join(",", userName, fileName);
+			long latestTimestamp = NetworkUtil.getTimestamp(key);
 
 			if (timestamp >= latestTimestamp) {
-				Bson filter = eq("fileName", fileName);
-				Bson updateOperation = set("shared", sharedList);
+				Bson filter = createShareFilter(fileName, userName);
+				Bson updateOperation = createShareOperation(sharedList);
 				try {
 					getReplica(false).updateOne(filter, updateOperation);
 				} catch (Exception e) {
@@ -302,18 +328,19 @@ public class DB {
 		}
 	}
 
-	public String deleteFile(ArrayList<String> files) {
+	public String deleteFile(ArrayList<String> files, String userName) {
 		ArrayList<String> deletedFiles = new ArrayList<>();
-		DeleteResult updateResult;
+		DeleteResult deleteResult;
 		for (String fileName : files) {
+			Bson filter = and(eq("fileName", fileName), eq("userName", userName));
 			try {
-				updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
+				deleteResult = getReplica(true).deleteOne(filter);
 			} catch (Exception e) {
 				recoverFromDatabaseFailure();
-				updateResult = getReplica(true).deleteOne(eq("fileName", fileName));
+				deleteResult = getReplica(true).deleteOne(filter);
 			}
 
-			if (updateResult.getDeletedCount() == 1){
+			if (deleteResult.getDeletedCount() == 1){
 				deletedFiles.add(fileName);
 			}
 		}
@@ -321,16 +348,18 @@ public class DB {
 		return String.join(",", deletedFiles);
 	}
 
-	public void deleteFile(ArrayList<ArrayList<String>> files, boolean isReplicating) {
+	public void deleteFile(ArrayList<ArrayList<String>> files, String userName, boolean isReplicating) {
 		if (isReplicating) {
 			for (ArrayList<String> innerTSList : files) {
 				String fileName = innerTSList.get(0);
+				String key = String.join(",", userName, fileName);
 				long entryTimestamp = Long.parseLong(innerTSList.get(1));
-				long latestTimestamp = NetworkUtil.getTimestamp(fileName);
+				long latestTimestamp = NetworkUtil.getTimestamp(key);
 
 				if (entryTimestamp >= latestTimestamp) {
+					Bson filter = and(eq("fileName", fileName), eq("userName", userName));
 					try {
-						getReplica(false).deleteOne(eq("fileName", fileName));
+						getReplica(false).deleteOne(filter);
 					} catch (Exception e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
