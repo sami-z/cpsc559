@@ -40,6 +40,7 @@ public class ExecutionCoreHandler {
                 NetworkUtil.sendToResponseQueue(file, IP);
             }
         }
+        db.closeMongoClients();
     }
 
     public static void processEvent(JsonNode request) throws IOException {
@@ -192,7 +193,7 @@ public class ExecutionCoreHandler {
             System.out.println("invalid request type");
             return;
         }
-
+        db.closeMongoClients();
     }
 
 

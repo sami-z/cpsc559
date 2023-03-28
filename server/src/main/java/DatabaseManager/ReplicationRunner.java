@@ -17,6 +17,7 @@ public class ReplicationRunner implements Runnable{
     private final String fileName;
     private final long timestamp;
     private final String userName;
+    private static int numExec = 0;
 
     public ReplicationRunner(Document replicatedEntry, ArrayList<String> shareList, String fileName, String userName, long timestamp, ArrayList<ArrayList<String>> TSList, boolean shouldReplicateFile, boolean shouldReplicateLogin, boolean shouldReplicateShare) {
         this.replicatedEntry = replicatedEntry;
@@ -35,6 +36,14 @@ public class ReplicationRunner implements Runnable{
         DB db = new DB();
         if (shouldReplicateFile) {
             try {
+                if (numExec == 0) {
+                    numExec++;
+                    try {
+                        Thread.sleep(25000);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 db.uploadFile(replicatedEntry);
             } catch (IOException e) {
                 throw new RuntimeException(e);
