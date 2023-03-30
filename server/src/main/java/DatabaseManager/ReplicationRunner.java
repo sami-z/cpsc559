@@ -42,7 +42,7 @@ public class ReplicationRunner implements Runnable{
         } else if (shouldReplicateLogin) {
             db.registerUser(replicatedEntry);
         } else if (shouldReplicateShare) {
-            db.editSharedWith(TSList, userName, shareList, timestamp, true);
+            db.editSharedWith(TSList, userName, shareList, true);
         } else {
             db.deleteFile(TSList, userName,true);
         }

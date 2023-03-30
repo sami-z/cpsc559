@@ -150,7 +150,7 @@ public class ExecutionCoreHandler {
 
         } else if(requestType.equalsIgnoreCase("SHARE")){
             System.out.println("SHARING WITH: " + request.get("shareWith").toString());
-            String s= NetworkUtil.sendShare(request);
+            NetworkUtil.sendShare(request);
             updateShare(request);
         } else if(requestType.equalsIgnoreCase("DELETE")){
 

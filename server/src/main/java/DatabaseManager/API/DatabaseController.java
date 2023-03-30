@@ -60,13 +60,11 @@ public class DatabaseController {
     }
 
     @PostMapping("/share")
-    public String editShare(@RequestBody JsonNode shareRequest) {
+    public void editShare(@RequestBody JsonNode shareRequest) {
         DB db = new DB();
-        String commaSeparated = shareRequest.get("filesToShare").asText();
-        String[] elements = commaSeparated.split(",");
-        ArrayList<String>filesToShare = (ArrayList<String>) Arrays.asList(elements);
         String userName = shareRequest.get("userName").asText();
         ArrayList<String> shareList = new ObjectMapper().convertValue(shareRequest.get("shareWith"), ArrayList.class);
+        ArrayList<String> filesToShare = new ObjectMapper().convertValue(shareRequest.get("filesToShare"), ArrayList.class);
         ArrayList<ArrayList<String>> tsList = new ArrayList<>();
         for (String fileName:filesToShare){
             long timestamp = System.currentTimeMillis();
@@ -75,12 +73,10 @@ public class DatabaseController {
             innerTSList.add(fileName);
             innerTSList.add(Long.toString(timestamp));
             tsList.add(innerTSList);
-
         }
         db.editSharedWith(filesToShare, userName, shareList);
-        new Thread(new ReplicationRunner(null, shareList, filesToShare, userName,0,tsList, false, false, true)).start();
+        new Thread(new ReplicationRunner(null, shareList, filesToShare, userName,0, tsList, false, false, true)).start();
         db.closeMongoClients();
-        return "s";
     }
 
     @GetMapping("/get-head/{key}")
