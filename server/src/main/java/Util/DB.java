@@ -305,16 +305,18 @@ public class DB {
         return null;
 	}
 
-	public Bson createShareOperation(ArrayList<String> sharedList) {
+	public Bson createShareOperation(String prevSharedList, ArrayList<String> sharedList) {
 		String shareString = String.join(",", sharedList);
-		return set("shared", shareString);
+		return set("shared", prevSharedList + "," + shareString);
 	}
 
 	public void editSharedWith(ArrayList<String> filesToShare, String userName, ArrayList<String> sharedList){
 		for(String fileName: filesToShare)
 		{
 			Bson filter = createUsernameFilenameFilter(userName, fileName);
-			Bson updateOperation = createShareOperation(sharedList);
+			Document queryResult = getReplica(true).find(filter).first();
+			String prevSharedList = queryResult.getString("shared");
+			Bson updateOperation = createShareOperation(prevSharedList, sharedList);
 			UpdateResult updateResult;
 
 			try {
@@ -337,7 +339,9 @@ public class DB {
 				long latestTimestamp = NetworkUtil.getTimestamp(key);
 				if (entryTimestamp >= latestTimestamp) {
 					Bson filter = createUsernameFilenameFilter(userName, fileName);
-					Bson updateOperation = createShareOperation(sharedList);
+					Document queryResult = getReplica(true).find(filter).first();
+					String prevSharedList = queryResult.getString("shared");
+					Bson updateOperation = createShareOperation(prevSharedList, sharedList);
 					UpdateResult updateResult;
 
 					try {
