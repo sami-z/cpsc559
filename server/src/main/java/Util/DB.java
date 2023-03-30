@@ -10,6 +10,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -304,37 +305,52 @@ public class DB {
         return null;
 	}
 
-	public Bson createShareOperation(ArrayList<String> sharedList) {
-		return set("shared", sharedList);
+	public Bson createShareOperation(String userName) {
+		return Updates.push("shared", userName);
+		//		return set("shared", sharedList);
 	}
 
-	public void editSharedWith(String fileName, String userName, ArrayList<String> sharedList){
-		Bson filter = createUsernameFilenameFilter(userName, fileName);
-		Bson updateOperation = createShareOperation(sharedList);
-		UpdateResult updateResult;
-		try {
-			updateResult = getReplica(true).updateOne(filter, updateOperation);
-		} catch (Exception e) {
-			recoverFromDatabaseFailure();
-			updateResult = getReplica(true).updateOne(filter, updateOperation);
-		}
-
-		System.out.println(getReplica(true).find(filter).first().toJson());
-		System.out.println(updateResult);
-	}
-
-	public void editSharedWith(String fileName, String userName, ArrayList<String> sharedList, long timestamp, boolean isReplicating) {
-		if (isReplicating) {
-			String key = String.join(",", userName, fileName);
-			long latestTimestamp = NetworkUtil.getTimestamp(key);
-
-			if (timestamp >= latestTimestamp) {
-				Bson filter = createUsernameFilenameFilter(userName, fileName);
-				Bson updateOperation = createShareOperation(sharedList);
+	public void editSharedWith(ArrayList<String> filesToShare, String userName, ArrayList<String> sharedList){
+		for(String fileName: filesToShare)
+		{
+			Bson filter = createUsernameFilenameFilter(userName, fileName);
+			for(String shareName: sharedList) {
+				Bson updateOperation = createShareOperation(shareName);
+				getReplica(false).findOneAndUpdate(filter, updateOperation);
+				Document updateResult;
 				try {
-					getReplica(false).updateOne(filter, updateOperation);
+					updateResult = getReplica(true).findOneAndUpdate(filter, updateOperation);
 				} catch (Exception e) {
-					System.out.println("Secondary cluster is currently down in DB");
+					recoverFromDatabaseFailure();
+					updateResult = getReplica(true).findOneAndUpdate(filter, updateOperation);
+				}
+				System.out.println(getReplica(true).find(filter).first().toJson());
+				System.out.println(updateResult);
+			}
+
+		}
+	}
+
+	public void editSharedWith(ArrayList<ArrayList<String>> files, String userName, ArrayList<String> sharedList, long timestamp, boolean isReplicating) {
+		if (isReplicating) {
+			for (ArrayList<String> innerTSList : files) {
+				String fileName = innerTSList.get(0);
+				String key = String.join(",", userName, fileName);
+				long entryTimestamp = Long.parseLong(innerTSList.get(1));
+				long latestTimestamp = NetworkUtil.getTimestamp(key);
+				if (entryTimestamp >= latestTimestamp) {
+					Bson filter = createUsernameFilenameFilter(userName, fileName);
+
+					try {
+						for(String shareName: sharedList) {
+							Bson updateOperation = createShareOperation(shareName);
+							getReplica(false).findOneAndUpdate(filter, updateOperation);
+						}
+
+					} catch (Exception e) {
+						System.out.println("Secondary cluster is currently down in DB");
+						return;
+					}
 				}
 			}
 		}

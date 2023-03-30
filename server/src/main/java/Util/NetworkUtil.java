@@ -67,13 +67,14 @@ public class NetworkUtil {
         return deleteList.getBody();
     }
 
-    public static void sendShare(JsonNode rq) {
+    public static String sendShare(JsonNode rq) {
         RestTemplate rt = new RestTemplate();
         String URI = NetworkConstants.getDBManagerShareURI();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> deleteRq = new HttpEntity<String>(rq.toString(), headers);
-        rt.postForEntity(URI, deleteRq, String.class);
+        HttpEntity<String> shareRq = new HttpEntity<String>(rq.toString(), headers);
+        ResponseEntity<String> shareList = rt.postForEntity(URI, shareRq, String.class);
+        return shareList.getBody();
     }
 
     public static boolean sendRegister(JsonNode rq){

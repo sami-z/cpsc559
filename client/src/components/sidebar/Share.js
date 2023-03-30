@@ -27,13 +27,13 @@ const useStyles = makeStyles({
 
 function ShareButton(props) {
     const classes = useStyles();
-    const [name, setName] = useState('');
+    const [names, setNames] = useState('');
     const [open, setOpen] = useState(false);
     const [modalStyle] = useState(getModalStyle);
     const [sharing, setUploading] = useState(false);
 
     const handleNameChange = (event) => {
-        setName(event.target.value);
+        setNames(event.target.value);
     };
 
     const handleClose = () => {
@@ -53,7 +53,8 @@ function ShareButton(props) {
     const handleSharePermission = () => {
         const newWebSocket = createWebSocket();
         // Send a JSON payload through the WebSocket connection to share the permission with the specified user
-        const payload = { requestType: "SHARE", userName: props.userName, fileName: "samiSmart.jpg", shareWith: name };
+        //const shareWithArr = names.trim().split(",");
+        const payload = { requestType: "SHARE", userName: props.userName, filesToShare: props.selectedFiles, shareWith: names };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -104,7 +105,7 @@ function ShareButton(props) {
                             <p>Sharing...</p>
                         ) : (
                             <>
-                                <input type="text" placeholder="Enter username" value={name} onChange={handleNameChange} />
+                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} />
                                 <button onClick={handleSharePermission}>Share File</button>
                                 {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
                                 {/* {fileData && <p>{fileData}</p>} */}

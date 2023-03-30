@@ -28,7 +28,7 @@ public class RequestQueueServerMain {
         System.out.println(ip);
 
         LeaderState.serverIP = ip;
-
+        LeaderState.leaderIP = ip;
         SpringApplication app = new SpringApplication(RequestQueueServerMain.class);
         app.setDefaultProperties(Collections
                 .singletonMap("server.port", Integer.toString(NetworkConstants.REQUEST_QUEUE_PORT)));
