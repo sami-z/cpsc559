@@ -46,7 +46,7 @@ function Upload(props) {
 
         console.log("BEGINING HANDLE SEND")
 
-        if (fileData == null){
+        if (fileData == null) {
             return;
         }
 
@@ -55,8 +55,10 @@ function Upload(props) {
         setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
         console.log("THIS IS THE USERNAME IS DELETE: " + props.userName)
-        const payload = { requestType: "WRITE", userName: props.userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: null};
-        
+        const shareWith = []
+
+        const payload = { requestType: "WRITE", userName: props.userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shareWith: [] };
+
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
 
@@ -111,7 +113,7 @@ function Upload(props) {
 
             reader.readAsDataURL(file);
         }
-       
+
     }
 
     function handleBlur() {
@@ -119,9 +121,9 @@ function Upload(props) {
         setFileData(null);
         handleClose();
         // reset any other values as needed
-      }
+    }
 
-    
+
     return (
         <div className='upload'>
             <div className='upload__container' onClick={handleOpen}>
@@ -156,7 +158,7 @@ function Upload(props) {
                                 <input type="file" onChange={handleChange} />
                                 <button onClick={handleSend}>Upload to DFS  </button>
                             </>
-                        ) 
+                        )
                     }
                 </div>
             </Modal>

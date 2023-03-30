@@ -8,7 +8,7 @@ public class ClientRequestModel {
     public String fileName;
     public String fileType;
     public String bytes;
-    public String shareWith;
+    public ArrayList<String> shareWith;
 
     public String password;
 }

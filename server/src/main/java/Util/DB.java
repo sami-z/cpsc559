@@ -117,7 +117,7 @@ public class DB {
 				.append("bytes", model.bytes)
 				.append("userName", model.userName)
 				.append("created", formattedDate)
-				.append("shared", model.shareWith)
+				.append("shared", String.join(",",model.shareWith))
 				.append("timestamp", timestamp);
 
 		return entry;
@@ -307,6 +307,10 @@ public class DB {
 
 	public Bson createShareOperation(String prevSharedList, ArrayList<String> sharedList) {
 		String shareString = String.join(",", sharedList);
+		if (prevSharedList.isEmpty())
+		{
+			return set("shared", shareString);
+		}
 		return set("shared", prevSharedList + "," + shareString);
 	}
 
@@ -320,10 +324,10 @@ public class DB {
 			UpdateResult updateResult;
 
 			try {
-				updateResult = getReplica(true).updateOne(filter, updateOperation);
+				updateResult = getReplica(true).updateOne(queryResult, updateOperation);
 			} catch (Exception e) {
 				recoverFromDatabaseFailure();
-				updateResult = getReplica(true).updateOne(filter, updateOperation);
+				updateResult = getReplica(true).updateOne(queryResult, updateOperation);
 			}
 
 			System.out.println(updateResult);
@@ -339,13 +343,13 @@ public class DB {
 				long latestTimestamp = NetworkUtil.getTimestamp(key);
 				if (entryTimestamp >= latestTimestamp) {
 					Bson filter = createUsernameFilenameFilter(userName, fileName);
-					Document queryResult = getReplica(true).find(filter).first();
+					Document queryResult = getReplica(false).find(filter).first();
 					String prevSharedList = queryResult.getString("shared");
 					Bson updateOperation = createShareOperation(prevSharedList, sharedList);
 					UpdateResult updateResult;
 
 					try {
-						updateResult = getReplica(false).updateOne(filter, updateOperation);
+						updateResult = getReplica(false).updateOne(queryResult, updateOperation);
 					} catch (Exception e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
