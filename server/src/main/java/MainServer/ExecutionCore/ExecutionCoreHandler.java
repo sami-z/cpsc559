@@ -1,6 +1,7 @@
 package MainServer.ExecutionCore;
 
-import DatabaseManager.ReplicationRunner;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.gson.Gson;
 import MainServer.ServerState;
 import Util.DB;
 import Util.NetworkConstants;
@@ -34,7 +35,7 @@ public class ExecutionCoreHandler {
             for (String fileName : filesToShare) {
                 System.out.println("inupdateSHARE " + fileName + " " + request.get("userName").asText());
                 JsonNode file = db.loadFile(request.get("userName").asText(), fileName);
-                ((ObjectNode) file).put("responseType", "SINGLE");
+                ((ObjectNode) file).put("responseType", "UPDATE");
 
                 ArrayList<String> users = new ObjectMapper().convertValue(request.get("shareWith"), ArrayList.class);
                 for (String username : users) {
@@ -48,7 +49,7 @@ public class ExecutionCoreHandler {
         else {
             String fileName = request.get("fileName").asText();
             JsonNode file = db.loadFile(request.get("userName").asText(), fileName);
-            ((ObjectNode) file).put("responseType", "SINGLE");
+            ((ObjectNode) file).put("responseType", "UPDATE");
             ArrayList<String> users = new ObjectMapper().convertValue(request.get("shareWith"), ArrayList.class);
             for (String username : users) {
                 ((ObjectNode) file).put("userName", username);
@@ -75,13 +76,16 @@ public class ExecutionCoreHandler {
 
         if(requestType.equalsIgnoreCase("READ_ALL_FILES")){
             System.out.println("database requestType" + System.currentTimeMillis());
-            ArrayList<JsonNode> files = db.findFiles(request.get("userName").asText());
-
+            ArrayNode files = db.findFiles(request.get("userName").asText());
             JsonNode response;
 
             ObjectMapper objectMapper = new ObjectMapper();
             if (!files.isEmpty()){
-                response = objectMapper.valueToTree(files);
+                //response = objectMapper.valueToTree(files);
+                response = objectMapper.createObjectNode();
+                ((ObjectNode)response).put("userName", request.get("userName").asText());
+                ((ObjectNode)response).put("responseType", "LOADALLFILES");
+                ((ObjectNode)response).set("files", files);
             }
             else{
                 response = objectMapper.createObjectNode();
@@ -90,13 +94,7 @@ public class ExecutionCoreHandler {
             }
 
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-//                    for (JsonNode file : files) {
-//                        System.out.println("the actual file"+file);
-//                        sendToResponseQueue(file, IP);
-//                    }
                 NetworkUtil.sendToResponseQueue(response, IP);
-
-//                    sendToResponseQueue(response, IP);
             }
             System.out.println("database blah" + System.currentTimeMillis());
         }else if(requestType.equalsIgnoreCase("READ")){
@@ -106,10 +104,6 @@ public class ExecutionCoreHandler {
 
             ((ObjectNode)singleFile).put("responseType", "SINGLE");
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
-//                    for (JsonNode file : files) {
-//                        System.out.println("the actual file"+file);
-//                        sendToResponseQueue(file, IP);
-//                    }
                 NetworkUtil.sendToResponseQueue(singleFile, IP);
             }
             System.out.println("DATABASE SINGLE FOR LOOP" + System.currentTimeMillis());
@@ -156,7 +150,7 @@ public class ExecutionCoreHandler {
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(request, IP);
                 }
-                updateShare(request,false);
+                //updateShare(request,false);
             }
 
             System.out.println("database write done" + System.currentTimeMillis());
@@ -168,7 +162,7 @@ public class ExecutionCoreHandler {
         } else if(requestType.equalsIgnoreCase("SHARE")){
             System.out.println("SHARING WITH: " + request.get("shareWith").toString());
             NetworkUtil.sendShare(request);
-            updateShare(request, true);
+            //updateShare(request, true);
         } else if(requestType.equalsIgnoreCase("DELETE")){
 
             String deleteList = NetworkUtil.sendDelete(request);

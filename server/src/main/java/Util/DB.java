@@ -6,11 +6,11 @@ import MainServer.Models.ClientRequestModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -19,7 +19,7 @@ import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import com.mongodb.client.result.UpdateResult;
-import org.springframework.web.client.RestTemplate;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -246,8 +246,13 @@ public class DB {
 		}
 	}
 
-	public ArrayList<JsonNode> findFiles(String userName) throws JsonProcessingException {
+	public ArrayNode findFiles(String userName) throws JsonProcessingException {
 		ArrayList<JsonNode> ret = new ArrayList<>();
+
+
+// create a new ArrayNode
+		ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+
 		FindIterable<Document> docs;
 		Document query = new Document("$or",
 				Arrays.asList(
@@ -268,13 +273,14 @@ public class DB {
 			System.out.println("Found files for " + userName + "!");
 			for(Document d: docs) {
 				JsonNode tempJson = (JsonNode) mapper.readTree(d.toJson());
-				ret.add(tempJson);
+				//ret.add(tempJson);
+				arrayNode.add(tempJson);
 				System.out.println(">" + tempJson.get("filename"));
 			}
 		} else {
 			System.out.println("No match");
 		}
-		return ret;
+		return arrayNode;
 	}
 
 	public Bson createUsernameFilenameFilter(String userName, String fileName) {
@@ -283,7 +289,7 @@ public class DB {
 
 	public JsonNode loadFile(String userName, String fileName) throws IOException {
 		Document doc;
-		Bson filter = createUsernameFilenameFilter(userName, fileName);
+		Bson filter = createUploadQuery(userName, fileName);
 		try {
 			doc = getReplica(true).find(filter).first();
 		} catch (Exception e) {
