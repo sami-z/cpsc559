@@ -10,7 +10,7 @@ public final class NetworkConstants {
     public static int DATABASE_MANAGER_PORT = 8080;
     public static String[] REQUEST_QUEUE_IPS = new String[] {"18.189.196.143","3.136.94.117"};
     public static String[] RESPONSE_QUEUE_IPS = new String[] {"18.224.111.143","18.216.20.109"};
-    public static String DB_MANAGER_IP = "172.31.14.172";
+    public static String[] DB_MANAGER_IP = new String[]{"172.31.14.172"};
 
     public static String getRequestQueueURI(String IP){
         return String.format("http://%s:%s/api/request/fetch",IP,REQUEST_QUEUE_PORT);
@@ -49,24 +49,36 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/api/request/leader",IP,RESPONSE_QUEUE_PORT);
     }
 
-    public static String getDBManagerURI(){
-        return String.format("http://%s:%s/api/dbmanager/upload",DB_MANAGER_IP,DATABASE_MANAGER_PORT);
+    public static String getDBManagerURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/upload",IP,DATABASE_MANAGER_PORT);
     }
 
-    public static String getDBManagerDeleteURI(){
-        return String.format("http://%s:%s/api/dbmanager/delete",DB_MANAGER_IP,DATABASE_MANAGER_PORT);
+    public static String getDBManagerDeleteURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/delete",IP,DATABASE_MANAGER_PORT);
     }
 
-    public static String getDBManagerShareURI(){
-        return String.format("http://%s:%s/api/dbmanager/share",DB_MANAGER_IP,DATABASE_MANAGER_PORT);
+    public static String getDBManagerShareURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/share",IP,DATABASE_MANAGER_PORT);
     }
 
     public static String getDBManagerGetHeadURI(String key) {
         return String.format("http://%s:%s/api/dbmanager/get-head/%s", DB_MANAGER_IP,DATABASE_MANAGER_PORT, key);
     }
 
-    public static String getDBManagerRegisterURI() {
-        return String.format("http://%s:%s/api/dbmanager/register",DB_MANAGER_IP, DATABASE_MANAGER_PORT);
+    public static String getDBManagerRegisterURI(String IP) {
+        return String.format("http://%s:%s/api/dbmanager/register",IP, DATABASE_MANAGER_PORT);
+    }
+
+    public static String getDBManagerLeaderURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/leader",IP, DATABASE_MANAGER_PORT);
+    }
+
+    public static String setDBManagerLeaderURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/leader",IP, DATABASE_MANAGER_PORT);
+    }
+
+    public static String getDBManagerPingURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/ping",IP, DATABASE_MANAGER_PORT);
     }
 
     public static String getRequestQueueHeadURI(String IP, String fileName){

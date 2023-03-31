@@ -1,8 +1,10 @@
 package DatabaseManager.API;
 
+import DatabaseManager.DBManagerState;
 import DatabaseManager.ReplicationRunner;
 import DatabaseManager.Service.DatabaseHandler;
 import MainServer.Models.ClientRequestModel;
+import RequestQueue.Leader.LeaderState;
 import Util.DB;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -89,4 +91,21 @@ public class DatabaseController {
         db.closeMongoClients();
         return Boolean.toString(true);
     }
+
+    @GetMapping("/ping")
+    public void ping(){
+        return;
+    }
+
+    @GetMapping("leader")
+    public String getLeader(){
+        return DBManagerState.DBLeaderIP;
+    }
+
+    @PostMapping("/leader")
+    public void setLeader(@RequestBody JsonNode node){
+        String leaderIP = node.get("leaderIP").asText();
+        DBManagerState.DBLeaderIP = leaderIP;
+    }
+
 }
