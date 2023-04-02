@@ -54,7 +54,8 @@ public class DBManagerMonitor implements Runnable{
             String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
             try {
                 restTemplate.getForEntity(ping_uri, String.class);
-                String DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
+                System.out.println("PING SUCCEED");
+                String DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri,String.class);
                 System.out.println(DBManagerLeaderIP);
 
                 if(!DBManagerIP.isEmpty()) return DBManagerLeaderIP;
@@ -72,7 +73,7 @@ public class DBManagerMonitor implements Runnable{
 
         if(ServerState.DBManagerIP.isEmpty()){
             String newLeader = getRunningDBManager();
-            System.out.println("New DB LEADER IS: " + newLeader);
+            System.out.println("New DB LEADER IS: 1" + newLeader);
             sendDBManagerLeader(newLeader);
         }
 
@@ -82,7 +83,7 @@ public class DBManagerMonitor implements Runnable{
                 restTemplate.getForEntity(ping_uri,String.class);
             }catch (RestClientException e){
                 String newLeader = getRunningDBManager();
-                System.out.println("New DB LEADER IS: " + newLeader);
+                System.out.println("New DB LEADER IS: 2" + newLeader);
                 sendDBManagerLeader(newLeader);
             }
 

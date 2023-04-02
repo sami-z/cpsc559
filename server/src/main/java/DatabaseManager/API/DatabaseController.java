@@ -1,5 +1,6 @@
 package DatabaseManager.API;
 
+import DatabaseManager.DBMain;
 import DatabaseManager.DBManagerState;
 import DatabaseManager.ReplicationRunner;
 import DatabaseManager.Service.DatabaseHandler;
@@ -21,6 +22,7 @@ public class DatabaseController {
     @Autowired
     public DatabaseController(DatabaseHandler databaseHandler) {
         this.databaseHandler = databaseHandler;
+        DBManagerState.DBLeaderIP = "";
     }
 
     @PostMapping("/upload")
@@ -97,13 +99,15 @@ public class DatabaseController {
         return;
     }
 
-    @GetMapping("leader")
+    @GetMapping("/get-leader")
+    @ResponseBody
     public String getLeader(){
         System.out.println("TRYING TO GET LEADER");
-        return DBManagerState.DBLeaderIP;
+        return DBManagerState.DBLeaderIP == null ? "" : DBManagerState.DBLeaderIP;
     }
 
     @PostMapping("/leader")
+    @ResponseBody
     public void setLeader(@RequestBody JsonNode node){
         String leaderIP = node.get("leaderIP").asText();
         DBManagerState.DBLeaderIP = leaderIP;
