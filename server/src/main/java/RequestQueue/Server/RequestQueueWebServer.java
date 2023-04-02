@@ -3,7 +3,6 @@ package RequestQueue.Server;
 import RequestQueue.DataAccessObject.FileQueue;
 import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
-import Util.NetworkConstants;
 import Util.NetworkUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,14 +10,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.net.InetSocketAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
 
 public class RequestQueueWebServer extends WebSocketServer{
@@ -68,7 +62,7 @@ public class RequestQueueWebServer extends WebSocketServer{
         }
         if (request != null && !request.isEmpty()) {
             if(request.get("requestType").asText().equalsIgnoreCase("WRITE")) {
-                fileQueue.increaseHead(request);
+                fileQueue.addTail(request);
             }
             requestQueueHandler.produceRequest(request);
         }

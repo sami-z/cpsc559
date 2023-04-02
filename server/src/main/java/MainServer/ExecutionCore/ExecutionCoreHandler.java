@@ -63,7 +63,6 @@ public class ExecutionCoreHandler {
     }
 
     public static void processEvent(JsonNode request) throws IOException {
-        DB db = new DB();
         // Parse HTML
         try {
             Thread.sleep(1000);
@@ -76,8 +75,11 @@ public class ExecutionCoreHandler {
         String requestType = request.get("requestType").asText();
 
         if(requestType.equalsIgnoreCase("READ_ALL_FILES")){
+            DB db = new DB();
             System.out.println("database requestType" + System.currentTimeMillis());
+
             ArrayNode files = db.findFiles(request.get("userName").asText());
+
             JsonNode response;
 
             ObjectMapper objectMapper = new ObjectMapper();
@@ -100,7 +102,11 @@ public class ExecutionCoreHandler {
             System.out.println("database blah" + System.currentTimeMillis());
         }else if(requestType.equalsIgnoreCase("DOWNLOAD")){
             System.out.println("DATABASE SINGLE BEFORE" + System.currentTimeMillis());
+
+            DB db = new DB();
             JsonNode singleFile = db.loadFile(request.get("userName").asText(), request.get("fileName").asText());
+            db.closeMongoClients();
+
             System.out.println("DATABASE SINGLE AFTER LOAD" + System.currentTimeMillis());
 
             ((ObjectNode)singleFile).put("responseType", "DOWNLOAD");
@@ -110,7 +116,10 @@ public class ExecutionCoreHandler {
             }
             System.out.println("DATABASE SINGLE FOR LOOP" + System.currentTimeMillis());
         } else if(requestType.equalsIgnoreCase("LOGIN")){
+
+            DB db = new DB();
             FindIterable<Document> entry = db.getLoginReplica(true).find(eq("userName", request.get("userName").asText()));
+            db.closeMongoClients();
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode response = mapper.createObjectNode();
@@ -210,7 +219,6 @@ public class ExecutionCoreHandler {
             System.out.println("invalid request type");
             return;
         }
-        db.closeMongoClients();
     }
 
 

@@ -14,6 +14,8 @@ import org.springframework.web.client.RestTemplate;
 import java.net.InetAddress;
 import java.time.Duration;
 
+import static Util.NetworkConstants.DB_MANAGER_IP;
+
 public class NetworkUtil {
 
     public static boolean isGreater(InetAddress ip1, InetAddress ip2){
@@ -44,11 +46,56 @@ public class NetworkUtil {
         }
     }
 
-    public static boolean sendWrite(JsonNode rq){
+    public static void setIsFirstClusterPrimary(boolean newIsFirstPrimaryCluster) {
+        RestTemplate restTemplate = new RestTemplate();
+        String DBManagerLeaderIP = "";
+        for (String DBManagerIP : DB_MANAGER_IP){
+            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
+            DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri, String.class);
+
+            if (!DBManagerLeaderIP.isEmpty()) {
+                break;
+            }
+        }
+        String set_primary_uri = NetworkConstants.getDBManagerSetPrimaryURI(DBManagerLeaderIP, String.valueOf(newIsFirstPrimaryCluster));
+        restTemplate.getForObject(set_primary_uri, String.class);
+    }
+
+    public static boolean getIsFirstClusterPrimary() {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String uri = NetworkConstants.getDBManagerURI();
+        String DBManagerLeaderIP = "";
+
+        for (String DBManagerIP : DB_MANAGER_IP){
+            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
+            DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri, String.class);
+
+            if (!DBManagerLeaderIP.isEmpty()) {
+                break;
+            }
+        }
+
+        String uri = NetworkConstants.getDBManagerPrimaryURI(DBManagerLeaderIP);
+        ResponseEntity<Boolean> isFirstClusterPrimary = restTemplate.getForEntity(uri, Boolean.class);
+        return isFirstClusterPrimary.getBody();
+    }
+
+    public static boolean sendWrite(JsonNode rq){
+        for(String IP : NetworkConstants.DB_MANAGER_IP){
+            try{
+                return sendWrite(rq,IP);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+    private static boolean sendWrite(JsonNode rq, String IP){
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String uri = NetworkConstants.getDBManagerURI(IP);
 
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);
@@ -58,8 +105,19 @@ public class NetworkUtil {
     }
 
     public static String sendDelete(JsonNode rq){
+        for(String IP : NetworkConstants.DB_MANAGER_IP){
+            try{
+                return sendDelete(rq,IP);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    private static String sendDelete(JsonNode rq, String IP){
         RestTemplate rt = new RestTemplate();
-        String URI = NetworkConstants.getDBManagerDeleteURI();
+        String URI = NetworkConstants.getDBManagerDeleteURI(IP);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> deleteRq = new HttpEntity<String>(rq.toString(), headers);
@@ -67,20 +125,44 @@ public class NetworkUtil {
         return deleteList.getBody();
     }
 
-    public static void sendShare(JsonNode rq) {
+    public static void sendShare(JsonNode rq){
+        for(String IP : NetworkConstants.DB_MANAGER_IP){
+            try{
+                sendShare(rq,IP);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return;
+    }
+
+    private static void sendShare(JsonNode rq, String IP) {
         RestTemplate rt = new RestTemplate();
-        String URI = NetworkConstants.getDBManagerShareURI();
+        String URI = NetworkConstants.getDBManagerShareURI(IP);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> shareRq = new HttpEntity<String>(rq.toString(), headers);
         rt.postForEntity(URI, shareRq, String.class);
     }
 
+
     public static boolean sendRegister(JsonNode rq){
+        for(String IP : NetworkConstants.DB_MANAGER_IP){
+            try{
+                return sendRegister(rq,IP);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+
+    public static boolean sendRegister(JsonNode rq, String IP){
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String uri = NetworkConstants.getDBManagerRegisterURI();
+        String uri = NetworkConstants.getDBManagerRegisterURI(IP);
 
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);
