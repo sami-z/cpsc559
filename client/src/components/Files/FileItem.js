@@ -11,7 +11,7 @@ function createWebSocket(port) {
   return new WebSocket(port);
 }
 
-const FileItem = ({ id, caption, timestamp, size, onSelectFile, userName}) => {
+const FileItem = ({ id, currentUser, caption, timestamp, size, onSelectFile, userName }) => {
   console.log("id, caption, timestamp, fireurl, size", size)
   const [isSelected, setIsSelected] = useState(false);
 
@@ -23,9 +23,9 @@ const FileItem = ({ id, caption, timestamp, size, onSelectFile, userName}) => {
 
       if (socket && socket.readyState === WebSocket.OPEN) {
 
-        const payload = {requestType: "READ", readType: "SINGLE", userName: userName, fileName: caption}
+        const payload = { requestType: "DOWNLOAD", userName: currentUser, fileName: caption }
         console.log("FILE I WANT TO DOWNLOAD: " + JSON.stringify(payload));
-        socket.send(JSON.stringify(payload));          
+        socket.send(JSON.stringify(payload));
       }
 
     });
@@ -38,10 +38,10 @@ const FileItem = ({ id, caption, timestamp, size, onSelectFile, userName}) => {
 
       const blob = event.data;
       const reader = new FileReader();
-      reader.onload = function() {
+      reader.onload = function () {
         const message = reader.result;
-        console.log("just receieved msg from rspoonseQ",message);
-  
+        console.log("just receieved msg from rspoonseQ", message);
+
         if (!message) {
           return;
         }
@@ -54,13 +54,13 @@ const FileItem = ({ id, caption, timestamp, size, onSelectFile, userName}) => {
         a.href = url;
         a.target = '_blank';
         a.click();
-        URL.revokeObjectURL(url); 
+        URL.revokeObjectURL(url);
         console.log("I BE IN HERE");
-        }
-      });
+      }
+    });
   };
 
-     
+
 
   let fileType = caption.split('.')[1]
   // let fileUrl = `data:application/${fileType};base64,${fileData}`
@@ -100,8 +100,8 @@ const FileItem = ({ id, caption, timestamp, size, onSelectFile, userName}) => {
       <a>
         {/* <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} /> */}
         <input type="checkbox" checked={isSelected} onChange={() => {
-            setIsSelected(prevState => !prevState);
-            onSelectFile(caption, !isSelected);
+          setIsSelected(prevState => !prevState);
+          onSelectFile(caption, !isSelected);
         }} />
         <div className="fileItem--left" onClick={handleFileClick}>
           {getIconByExtension(fileExtension)}
@@ -111,7 +111,7 @@ const FileItem = ({ id, caption, timestamp, size, onSelectFile, userName}) => {
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(size)}</p>
         </div>
-        </a>
+      </a>
     </div>
   )
 }

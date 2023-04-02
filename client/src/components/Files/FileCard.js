@@ -32,7 +32,7 @@ const FileCard = (props) => {
 
   // const rqstSocket = createWebSocket(WEBSOCKET_URL)
   // const payload = { requestType: "READ", userName: "manbir", readType: "allFiles" };
-  
+
 
   // rqstSocket.addEventListener('open', () => {
   //     console.log('RqstQ connection established!');
@@ -44,7 +44,7 @@ const FileCard = (props) => {
   //           rqstSocket.send(JSON.stringify(payload));
   //           flager = true
   //       }
-        
+
   //     }
 
 
@@ -54,7 +54,7 @@ const FileCard = (props) => {
 
 
   //     rqstSocket.close();
-      
+
   // });
 
   const handleCardClick = () => {
@@ -64,9 +64,9 @@ const FileCard = (props) => {
 
       if (socket && socket.readyState === WebSocket.OPEN) {
 
-        const payload = {requestType: "READ", readType: "SINGLE", userName: props.userName, fileName: props.name}
-        console.log("FILE I WANT TO DOWNLOAD: " + props.name);
-        socket.send(JSON.stringify(payload));          
+        const payload = { requestType: "DOWNLOAD", userName: props.currentUser, fileName: props.name }
+        console.log(payload);
+        socket.send(JSON.stringify(payload));
       }
 
     });
@@ -79,10 +79,10 @@ const FileCard = (props) => {
 
       const blob = event.data;
       const reader = new FileReader();
-      reader.onload = function() {
+      reader.onload = function () {
         const message = reader.result;
-        console.log("just receieved msg from rspoonseQ",message);
-  
+        console.log("just receieved msg from rspoonseQ", message);
+
         if (!message) {
           return;
         }
@@ -95,10 +95,10 @@ const FileCard = (props) => {
         a.href = url;
         a.target = '_blank';
         a.click();
-        URL.revokeObjectURL(url); 
+        URL.revokeObjectURL(url);
         console.log("I BE IN HERE");
-        }
-      });
+      }
+    });
   };
 
 

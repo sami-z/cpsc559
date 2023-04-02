@@ -30,7 +30,7 @@ public class ExecutionCoreHandler {
 
     public static void updateShare(JsonNode request, Boolean updateShare) throws IOException {
         DB db = new DB();
-        if (updateShare) {
+        if (updateShare) { //file(s) shared with new user(s)
             ArrayList<String> filesToShare = new ObjectMapper().convertValue(request.get("filesToShare"), ArrayList.class);
             for (String fileName : filesToShare) {
                 System.out.println("inupdateSHARE " + fileName + " " + request.get("userName").asText());
@@ -46,11 +46,12 @@ public class ExecutionCoreHandler {
                 }
             }
         }
-        else {
+        else { //existing file replaced
             String fileName = request.get("fileName").asText();
             JsonNode file = db.loadFile(request.get("userName").asText(), fileName);
             ((ObjectNode) file).put("responseType", "UPDATE");
             ArrayList<String> users = new ObjectMapper().convertValue(request.get("shareWith"), ArrayList.class);
+            users.add(request.get("userName").asText()); //requesting client also gets response to update file
             for (String username : users) {
                 ((ObjectNode) file).put("userName", username);
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
@@ -97,12 +98,13 @@ public class ExecutionCoreHandler {
                 NetworkUtil.sendToResponseQueue(response, IP);
             }
             System.out.println("database blah" + System.currentTimeMillis());
-        }else if(requestType.equalsIgnoreCase("READ")){
+        }else if(requestType.equalsIgnoreCase("DOWNLOAD")){
             System.out.println("DATABASE SINGLE BEFORE" + System.currentTimeMillis());
             JsonNode singleFile = db.loadFile(request.get("userName").asText(), request.get("fileName").asText());
             System.out.println("DATABASE SINGLE AFTER LOAD" + System.currentTimeMillis());
 
-            ((ObjectNode)singleFile).put("responseType", "SINGLE");
+            ((ObjectNode)singleFile).put("responseType", "DOWNLOAD");
+            ((ObjectNode)singleFile).put("userName", request.get("userName").asText()); //overwrite with client's userName
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 NetworkUtil.sendToResponseQueue(singleFile, IP);
             }
@@ -146,12 +148,16 @@ public class ExecutionCoreHandler {
 
             boolean wasReplaced = NetworkUtil.sendWrite(request);
 
-            if (!wasReplaced) {
+            if (wasReplaced) {
+                updateShare(request,false);
+            }
+            else{
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(request, IP);
                 }
-                //updateShare(request,false);
             }
+
+
 
             System.out.println("database write done" + System.currentTimeMillis());
 
@@ -162,7 +168,7 @@ public class ExecutionCoreHandler {
         } else if(requestType.equalsIgnoreCase("SHARE")){
             System.out.println("SHARING WITH: " + request.get("shareWith").toString());
             NetworkUtil.sendShare(request);
-            //updateShare(request, true);
+            updateShare(request, true);
         } else if(requestType.equalsIgnoreCase("DELETE")){
 
             String deleteList = NetworkUtil.sendDelete(request);

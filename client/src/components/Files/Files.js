@@ -3,7 +3,7 @@ import FileItem from './FileItem'
 import FileCard from './FileCard'
 import './styles.css'
 
-const Files = ({ files, searchTerm, handleSelectFile, userName }) => {
+const Files = ({ files, searchTerm, handleSelectFile, currentUser }) => {
     const [dynamicFiles, setDynamicFiles] = useState(files);
 
     useEffect(() => {
@@ -21,7 +21,7 @@ const Files = ({ files, searchTerm, handleSelectFile, userName }) => {
             <div className='fileView_row'>
                 {
                     files.slice(0, 6).map((item, index) => (
-                        <FileCard key={index} name={item.fileName} userName={userName} className="fileCard" />
+                        <FileCard key={index} name={item.fileName} currentUser={currentUser} className="fileCard" />
                     ))
                 }
 
@@ -37,7 +37,7 @@ const Files = ({ files, searchTerm, handleSelectFile, userName }) => {
             </div>
             {
                 filteredFiles.map((item, index) => (
-                    <FileItem key={index} caption={item.fileName} userName={item.userName} timestamp={0} size={0} onSelectFile={handleSelectFile} />
+                    <FileItem key={index} currentUser={currentUser} caption={item.fileName} userName={item.userName} timestamp={0} size={0} onSelectFile={handleSelectFile} />
                 ))
             }
 

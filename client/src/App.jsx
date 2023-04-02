@@ -23,10 +23,6 @@ function App() {
   const [loginStatus, setLoginStatus] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateUser = (newUser) => {
-    setUsername(newUser);
-  };
-
   // Get the current title of the document
   const currentTitle = document.title;
 
@@ -38,6 +34,9 @@ function App() {
     document.title = "Welcome to the DFS!";
   }
   
+  const updateUser=(u)=>{
+    setUsername(u);
+  }
 
   // Remove an array of files
   const removeFiles = (filesToRemove) => {
@@ -79,15 +78,9 @@ function App() {
 
       rqstSocket.addEventListener('open', () => {
         console.log('RqstQ connection established!');
-
-        // if(!flager){
         if (rqstSocket && rqstSocket.readyState === WebSocket.OPEN) {
             rqstSocket.send(JSON.stringify(payload));
-            // flager = true
         }
-          
-        //}
-
         else {
             console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
         }
@@ -118,109 +111,101 @@ function App() {
         const reader = new FileReader();
         reader.onload = function() {
           const message = reader.result;
-          console.log("just receieved msg from rspoonseQ",message);
 
           if (!message) {
             return;
           }
-
           // const jsonString = JSON.stringify(message);
-          const newFiles = JSON.parse(message);
-          console.log("newfiles: ", typeof(newFiles));
-
-          if(newFiles.responseType === "LOADALLFILES")
+          const response = JSON.parse(message);
+          console.log(response)
+          if(response.responseType === "LOADALLFILES")
           {
-            console.log("ARRAY");
-            newFiles.files.forEach((item) => {
-              console.log("the item is: ", item)
-              setFiles(prevFiles=>[...prevFiles, item])
+            setFiles(prevFiles => {
+              const updatedFiles = prevFiles.map(oldFile => {
+                const newFile = response.files.find(f => f.fileName === oldFile.fileName);
+                return newFile || oldFile;
+              });
+          
+              response.files.forEach(newFile => {
+                if (!prevFiles.some(oldFile => oldFile.fileName === newFile.fileName)) {
+                  updatedFiles.push(newFile);
+                }
+              });
+          
+              return updatedFiles;
             });
             setIsLoading(false);
           }
-          else{
-            if (newFiles.responseType === "ALLFILESEMPTY"){
+          else if (response.responseType === "ALLFILESEMPTY"){
               setIsLoading(false);
-            }
-            else if (newFiles.responseType === "SINGLE"){
-             
-              const updatedFiles = files.map((file) => {
-                console.log("FILE NAME 1: " + file.fileName);
-                console.log("FILE NAME 2: " + newFiles.fileName);
-
-
-                if (file.fileName === newFiles.fileName) {
-                  return { ...file, bytes: newFiles.bytes };
+          }
+          else if (response.responseType === "DOWNLOAD" || response.responseType === "UPDATE"){
+            setFiles(prevFiles => {
+              const updatedFiles = prevFiles.map(oldFile => {
+                if (oldFile.fileName === response.fileName) {
+                  return response;
                 } else {
-                  return file;
+                  return oldFile;
                 }
               });
-
-              console.log("Updated files: " + updatedFiles);
-              setFiles(updatedFiles); 
-
+              
+              if (!prevFiles.some(oldFile => oldFile.fileName === response.fileName)) {
+                updatedFiles.push(response);
+              }
+              return updatedFiles;
+            });
+            
+            if(response.responseType === "DOWNLOAD"){
               var fileURL = document.createElement("a"); //Create <a>
-              let fileType = newFiles.fileName.split('.')[1]
-              fileURL.href = `data:application/${fileType};base64,${newFiles.bytes}`
-              fileURL.download = newFiles.fileName; //File name Here
+              let fileType = response.fileName.split('.')[1]
+              fileURL.href = `data:application/${fileType};base64,${response.bytes}`
+              fileURL.download = response.fileName; //File name Here
               fileURL.click(); //Downloaded file
             }
-            
-            else if(newFiles.responseType === "DELETE"){
-                console.log("received files to delete: " + newFiles.delete);
-                const myArray = newFiles.delete.split(",");
-                console.log("MY ARRAY: " + myArray[1]);
-
-                removeFiles(myArray);
-
-                // setDeletePressed(false);
-
+          }
+          else if(response.responseType === "DELETE"){
+              const myArray = response.delete.split(",");
+              removeFiles(myArray);
+              // setDeletePressed(false);
+          }
+          else if (response.responseType === "REGISTER"){
+            if (response.registered === "SUCCESS"){
+              setUsername(response.userName);
+              setLoginStatus('success');
+              setIsLoggedIn(true);
+              setIsLoading(false);
             }
-
-            else if (newFiles.responseType === "REGISTER"){
-
-              if (newFiles.registered === "SUCCESS"){
-                setLoginStatus('success');
-                setIsLoggedIn(true);
-                setIsLoading(false);
-              }
-
-              else{
-                setLoginStatus('failed');
-                setIsLoggedIn(false);
-                setIsLoading(false);
-              }
-            }
-
-            else if (newFiles.responseType === "LOGIN"){
-              if (newFiles.loggedIn === "SUCCESS"){
-                setLoginStatus('success');
-                setIsLoggedIn(true);
-                // setIsLoading(false);
-              }
-
-              else{
-                setLoginStatus('failed');
-                setIsLoggedIn(false);
-                setIsLoading(false);
-              }
-
-            }
-
             else{
-              setFiles(prevFiles => [...prevFiles, newFiles]);
+              setLoginStatus('failed');
+              setIsLoggedIn(false);
+              setIsLoading(false);
             }
           }
-          newWebSocket.close();
-        }
-        reader.readAsText(blob);
-      };
-
-      // Send the file then close
-      // handleFileUpload();
-      // handleClose();
-
+          else if (response.responseType === "LOGIN"){
+            if (response.loggedIn === "SUCCESS"){
+              setUsername(response.userName);
+              setLoginStatus('success');
+              setIsLoggedIn(true);
+              // setIsLoading(false);
+            }
+            else{
+              setLoginStatus('failed');
+              setIsLoggedIn(false);
+              setIsLoading(false);
+            }
+          }
+          else{
+            setFiles(prevFiles => [...prevFiles, response]);
+          }
         
-    }, MINUTE_MS);
+        newWebSocket.close();
+      }
+      reader.readAsText(blob);
+    };
+    // Send the file then close
+    // handleFileUpload();
+    // handleClose();
+  }, MINUTE_MS);
 
     return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
   }, useEffect(() => console.log("BLEH",files), [files]));
@@ -233,8 +218,8 @@ function App() {
         <div className='app_main'>
           <Navbar setSearchTerm={setSearchTerm}/>
           <div className='main_content'>
-          <Sidebar selectedFiles={selectedFiles} userName={userName} files={files}/>
-          <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} userName={userName} />
+          <Sidebar selectedFiles={selectedFiles} currentUser={userName} files={files}/>
+          <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} currentUser={userName} />
           </div>
         </div>
       ) : isLoading ? (

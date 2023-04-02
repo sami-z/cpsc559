@@ -21,6 +21,7 @@ function Login(props) {
         props.setIsLoading(true);
         const enteredUsername = username.trim();
         const enteredPass = password.trim()
+        props.updateUser(enteredUsername);
         console.log("Entered username for login: ", enteredUsername);
         console.log("Entered password for login ", enteredPass);
 
@@ -51,6 +52,7 @@ function Login(props) {
         props.setIsLoading(true);
         const enteredUsername = username.trim();
         const enteredPass = password.trim()
+        props.updateUser(enteredUsername);
         console.log("Entered username for login: ", enteredUsername);
         console.log("Entered password for login ", enteredPass);
 
@@ -92,7 +94,6 @@ function Login(props) {
                         value={username}
                         onChange={(e) => {
                             setUsername(e.target.value);
-                            props.updateUser(e.target.value);
                         }}
                         startAdornment={
                             <InputAdornment position="start">
