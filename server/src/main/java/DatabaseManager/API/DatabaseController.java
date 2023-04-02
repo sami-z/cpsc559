@@ -99,6 +99,7 @@ public class DatabaseController {
 
     @GetMapping("leader")
     public String getLeader(){
+        System.out.println("TRYING TO GET LEADER");
         return DBManagerState.DBLeaderIP;
     }
 
