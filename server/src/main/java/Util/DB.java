@@ -10,6 +10,7 @@ import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -26,7 +27,7 @@ public class DB {
 	public MongoClient mongoClient1;
 	public MongoClient mongoClient2;
 	private ObjectMapper mapper;
-	public static boolean isFirstClusterPrimary = true;
+	public static Boolean isFirstClusterPrimary;
 	public static boolean shouldRecover = false;
 
 	public DB() {
@@ -37,10 +38,11 @@ public class DB {
 
 	public MongoClient createMongoClient(boolean shouldGetPrimary) {
 		String URI;
+		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
 		if (shouldGetPrimary) {
-			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER1 : DBConstants.MONGO_URI_CLUSTER2;
+			URI = (isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER1 : DBConstants.MONGO_URI_CLUSTER2;
 		} else {
-			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER2 : DBConstants.MONGO_URI_CLUSTER1;
+			URI = (isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER2 : DBConstants.MONGO_URI_CLUSTER1;
 		}
 		MongoClientSettings clientSettings = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString(URI))
@@ -63,6 +65,7 @@ public class DB {
 	}
 
 	public MongoClient getMongoClient(boolean shouldGetPrimary) {
+		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
 		if (shouldGetPrimary) {
 			return (isFirstClusterPrimary) ? this.mongoClient1 : this.mongoClient2;
 		} else {
@@ -83,6 +86,43 @@ public class DB {
 			return getMongoClient(true).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.LOGIN_COLLECTION_NAME);
 		} else {
 			return getMongoClient(false).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.LOGIN_COLLECTION_NAME);
+		}
+	}
+
+	public MongoCollection<Document> getIsFirstClusterPrimaryReplica() {
+		return getMongoClient(false).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.PRIMARY_COLLECTION_NAME);
+	}
+
+	public Document getAdminPrimaryQuery() {
+		return new Document("userName", "admin");
+	}
+
+	public void setIsFirstClusterPrimary() {
+		MongoCollection<Document> mc = getIsFirstClusterPrimaryReplica();
+		Document queryResult = mc.find(getAdminPrimaryQuery()).first();
+
+		if (queryResult == null) {
+			Document recordPrimaryDoc = new Document("_id", new ObjectId())
+					.append("userName", "admin")
+					.append("isFirstClusterPrimary", true);
+			mc.insertOne(recordPrimaryDoc);
+		} else {
+			DB.isFirstClusterPrimary = queryResult.getBoolean("isFirstClusterPrimary");
+		}
+	}
+
+	public void updateIsFirstClusterPrimary(boolean newIsFirstClusterPrimary) {
+		MongoCollection<Document> mc = getIsFirstClusterPrimaryReplica();
+		Document queryResult = mc.find(getAdminPrimaryQuery()).first();
+
+		UpdateResult result = mc.updateOne(
+				queryResult,
+				Updates.set("isFirstClusterPrimary", newIsFirstClusterPrimary)
+		);
+		System.out.println(result);
+
+		if (DB.isFirstClusterPrimary) {
+			DB.isFirstClusterPrimary = newIsFirstClusterPrimary;
 		}
 	}
 
@@ -126,7 +166,7 @@ public class DB {
 		System.out.println("MongoDB Atlas Primary Cluster is down in DB");
 		DB.shouldRecover = true;
 		if (DB.isFirstClusterPrimary) {
-			DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
+			NetworkUtil.setIsFirstClusterPrimary(!DB.isFirstClusterPrimary);
 		}
 	}
 

@@ -2,16 +2,21 @@ package DatabaseManager.API;
 
 import DatabaseManager.DBMain;
 import DatabaseManager.DBManagerState;
+import DatabaseManager.DatabaseClusterMonitor;
 import DatabaseManager.ReplicationRunner;
 import DatabaseManager.Service.DatabaseHandler;
 import MainServer.Models.ClientRequestModel;
 import RequestQueue.Leader.LeaderState;
 import Util.DB;
+import Util.DBConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 @RestController
@@ -87,6 +92,7 @@ public class DatabaseController {
         DB db = new DB();
         Document replicatedEntry = db.registerUser(requestModel);
         if (replicatedEntry == null) {
+            db.closeMongoClients();
             return Boolean.toString(false);
         }
         new Thread(new ReplicationRunner(replicatedEntry, null, null, null,0, null,false, true, false)).start();
@@ -111,6 +117,32 @@ public class DatabaseController {
     public void setLeader(@RequestBody JsonNode node){
         String leaderIP = node.get("leaderIP").asText();
         DBManagerState.DBLeaderIP = leaderIP;
+        InetAddress address = null;
+        try {
+            address = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        String ip = address.getHostAddress();
+        if (ip.equals(DBManagerState.DBLeaderIP)) {
+            new Thread(new DatabaseClusterMonitor()).start();
+        }
+    }
+
+    @GetMapping("/get-primary")
+    public String getPrimary() {
+        DB db = new DB();
+        if (DB.isFirstClusterPrimary == null) {
+            db.setIsFirstClusterPrimary();
+        }
+
+        return Boolean.toString(DB.isFirstClusterPrimary);
+    }
+
+    @GetMapping("/set-primary/{newIsFirstClusterPrimary}")
+    public void setPrimary(@PathVariable String newIsFirstClusterPrimary) {
+        DB db = new DB();
+        db.updateIsFirstClusterPrimary(Boolean.parseBoolean(newIsFirstClusterPrimary));
     }
 
 }

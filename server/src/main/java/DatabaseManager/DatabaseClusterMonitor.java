@@ -19,6 +19,8 @@ public class DatabaseClusterMonitor implements Runnable{
         mongoLogger.setLevel(Level.WARNING);
         Logger.getLogger("com.mongodb").setLevel(Level.WARNING);
 
+        DB db = new DB();
+
         while (true) {
             try {
                 MongoClient primaryMongoClient = DBInstance.createMongoClient(true);
@@ -26,8 +28,7 @@ public class DatabaseClusterMonitor implements Runnable{
             } catch (Exception e) {
                 System.out.println("MongoDB Atlas Primary Cluster is down in DB Cluster Monitor");
 
-                DB.shouldRecover = true;
-                DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
+                db.recoverFromDatabaseFailure();
             }
 
             if (DB.shouldRecover) {

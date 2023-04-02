@@ -14,6 +14,8 @@ import org.springframework.web.client.RestTemplate;
 import java.net.InetAddress;
 import java.time.Duration;
 
+import static Util.NetworkConstants.DB_MANAGER_IP;
+
 public class NetworkUtil {
 
     public static boolean isGreater(InetAddress ip1, InetAddress ip2){
@@ -42,6 +44,41 @@ public class NetworkUtil {
             restTemplate.postForEntity(uri, request, String.class);
         } catch(RestClientException e){
         }
+    }
+
+    public static void setIsFirstClusterPrimary(boolean newIsFirstPrimaryCluster) {
+        RestTemplate restTemplate = new RestTemplate();
+        String DBManagerLeaderIP = "";
+        for (String DBManagerIP : DB_MANAGER_IP){
+            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
+            DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri, String.class);
+
+            if (!DBManagerLeaderIP.isEmpty()) {
+                break;
+            }
+        }
+        String set_primary_uri = NetworkConstants.getDBManagerSetPrimaryURI(DBManagerLeaderIP, String.valueOf(newIsFirstPrimaryCluster));
+        restTemplate.getForObject(set_primary_uri, String.class);
+    }
+
+    public static boolean getIsFirstClusterPrimary() {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String DBManagerLeaderIP = "";
+
+        for (String DBManagerIP : DB_MANAGER_IP){
+            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
+            DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri, String.class);
+
+            if (!DBManagerLeaderIP.isEmpty()) {
+                break;
+            }
+        }
+
+        String uri = NetworkConstants.getDBManagerPrimaryURI(DBManagerLeaderIP);
+        ResponseEntity<Boolean> isFirstClusterPrimary = restTemplate.getForEntity(uri, Boolean.class);
+        return isFirstClusterPrimary.getBody();
     }
 
     public static boolean sendWrite(JsonNode rq){

@@ -1,5 +1,6 @@
 package MainServer.Monitor;
 
+import DatabaseManager.DatabaseClusterMonitor;
 import MainServer.ServerState;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -36,8 +37,8 @@ public class DBManagerMonitor implements Runnable{
         HttpEntity<String> rqUpdate =
                 new HttpEntity<String>(rqNode.toString(), headers);
 
-        for (String requestQueueIP: DB_MANAGER_IP) {
-            String DB_Manager_URI = NetworkConstants.setDBManagerLeaderURI(requestQueueIP);
+        for (String DBManagerIP: DB_MANAGER_IP) {
+            String DB_Manager_URI = NetworkConstants.setDBManagerLeaderURI(DBManagerIP);
             try {
                 restTemplate.postForEntity(DB_Manager_URI, rqUpdate, String.class);
             } catch(RestClientException e){
@@ -58,7 +59,7 @@ public class DBManagerMonitor implements Runnable{
                 String DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri,String.class);
                 System.out.println(DBManagerLeaderIP);
 
-                if(!DBManagerIP.isEmpty()) return DBManagerLeaderIP;
+                if (!DBManagerLeaderIP.isEmpty()) return DBManagerLeaderIP;
 
                 return DBManagerIP;
             } catch(RestClientException e){
