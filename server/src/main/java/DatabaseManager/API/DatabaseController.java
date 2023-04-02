@@ -26,9 +26,19 @@ public class DatabaseController {
     public String uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
         DB db = new DB();
         System.out.println("hello i am here: " + requestModel.fileName);
+        Document query = db.createUploadQuery(requestModel.userName, requestModel.fileName);
+        Document queryResult = db.getReplica(true).find(query).first();
+        String ownerName;
+
+        if (queryResult == null) {
+            ownerName = requestModel.userName;
+        } else {
+            ownerName = queryResult.getString("userName");
+        }
+
         long timestamp = System.currentTimeMillis();
-        databaseHandler.updateTimestamp(requestModel.userName, requestModel.fileName, timestamp);
-        ArrayList<Document> docs = db.uploadFile(requestModel, timestamp);
+        databaseHandler.updateTimestamp(ownerName, requestModel.fileName, timestamp);
+        ArrayList<Document> docs = db.uploadFile(requestModel, timestamp, queryResult);
         new Thread(new ReplicationRunner(docs.get(0), null, null, null,0,null, true, false, false)).start();
         db.closeMongoClients();
         if (docs.get(1) == null) {

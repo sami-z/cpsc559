@@ -105,7 +105,7 @@ public class DB {
 		}
 	}
 
-	public Document createEntry(ClientRequestModel model, long timestamp, ObjectId id, String formattedDate) {
+	public Document createEntry(ClientRequestModel model, long timestamp, ObjectId id, String formattedDate, String ownerName) {
 		Document entry;
 		if (id == null) {
 			entry = new Document("_id", new ObjectId());
@@ -115,7 +115,7 @@ public class DB {
 
 		entry.append("fileName", model.fileName)
 				.append("bytes", model.bytes)
-				.append("userName", model.userName)
+				.append("userName", ownerName)
 				.append("created", formattedDate)
 				.append("shared", String.join(",",model.shareWith))
 				.append("timestamp", timestamp);
@@ -140,20 +140,17 @@ public class DB {
 				.append("fileName", fileName);
 	}
 
-	public ArrayList<Document> uploadFile(ClientRequestModel model, long timestamp) {
+	public ArrayList<Document> uploadFile(ClientRequestModel model, long timestamp, Document queryResult) {
 		ArrayList<Document> ret = new ArrayList<>();
 		LocalDate currentDate = LocalDate.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 		String formattedDate = currentDate.format(formatter);
 
 		Document entry;
-		Document query = createUploadQuery(model.userName, model.fileName);
-
-		Document queryResult = getReplica(true).find(query).first();
 		boolean wasReplaced = false;
 
 		if (queryResult == null) {
-			entry = createEntry(model, timestamp, null, formattedDate);
+			entry = createEntry(model, timestamp, null, formattedDate, model.userName);
 		} else {
 			ObjectId existingObjectId = queryResult.getObjectId("_id");
 			Bson deleteFilter = Filters.eq("_id", existingObjectId);
@@ -163,7 +160,7 @@ public class DB {
 				recoverFromDatabaseFailure();
 				getReplica(true).deleteOne(deleteFilter);
 			}
-			entry = createEntry(model, timestamp, existingObjectId, formattedDate);
+			entry = createEntry(model, timestamp, existingObjectId, formattedDate, queryResult.getString("userName"));
 			wasReplaced = true;
 		}
 
