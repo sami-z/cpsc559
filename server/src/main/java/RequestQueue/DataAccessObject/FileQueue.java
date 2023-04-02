@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.stereotype.Repository;
 
-import java.time.Duration;
 import java.util.HashMap;
 
 @Repository("fileQueue")
@@ -26,7 +25,7 @@ public class FileQueue {
         fq.put(fileName,new HeadItem(nextOrder,System.currentTimeMillis()));
     }
 
-    public synchronized void increaseHead(JsonNode request){
+    public synchronized void addTail(JsonNode request){
         String fileName = request.get("fileName").asText();
 
         if(!fq.containsKey(fileName)) fq.put(fileName,new HeadItem(0,System.currentTimeMillis()));

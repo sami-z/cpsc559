@@ -71,6 +71,7 @@ public class DBManagerMonitor implements Runnable{
 
         if(ServerState.requestQueueIP.isEmpty()){
             String newLeader = getRunningDBManager();
+            System.out.println("New DB LEADER IS: " + newLeader);
             sendDBManagerLeader(newLeader);
         }
 
@@ -80,6 +81,7 @@ public class DBManagerMonitor implements Runnable{
                 restTemplate.getForEntity(ping_uri,String.class);
             }catch (RestClientException e){
                 String newLeader = getRunningDBManager();
+                System.out.println("New DB LEADER IS: " + newLeader);
                 sendDBManagerLeader(newLeader);
             }
 

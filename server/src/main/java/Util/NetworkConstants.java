@@ -10,7 +10,7 @@ public final class NetworkConstants {
     public static int DATABASE_MANAGER_PORT = 8080;
     public static String[] REQUEST_QUEUE_IPS = new String[] {"18.189.196.143","3.136.94.117"};
     public static String[] RESPONSE_QUEUE_IPS = new String[] {"18.224.111.143","18.216.20.109"};
-    public static String[] DB_MANAGER_IP = new String[]{"172.31.14.172"};
+    public static String[] DB_MANAGER_IP = new String[]{"172.31.7.157","172.31.11.255"};
 
     public static String getRequestQueueURI(String IP){
         return String.format("http://%s:%s/api/request/fetch",IP,REQUEST_QUEUE_PORT);

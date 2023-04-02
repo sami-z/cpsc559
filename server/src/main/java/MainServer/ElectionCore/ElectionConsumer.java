@@ -1,5 +1,6 @@
 package MainServer.ElectionCore;
 
+import MainServer.Monitor.DBManagerMonitor;
 import MainServer.Monitor.RequestQueueMonitor;
 import MainServer.ServerState;
 import Util.NetworkConstants;
@@ -118,6 +119,7 @@ public class ElectionConsumer {
                 sendLeader(IP);
         }
         new Thread(new RequestQueueMonitor()).start();
+        new Thread(new DBManagerMonitor()).start();
     }
 
 }
