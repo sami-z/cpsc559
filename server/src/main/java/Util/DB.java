@@ -28,7 +28,7 @@ public class DB {
 	public MongoClient mongoClient1;
 	public MongoClient mongoClient2;
 	private ObjectMapper mapper;
-	public static Boolean isFirstClusterPrimary;
+	public static Boolean isFirstClusterPrimary = true;
 	public static boolean shouldRecover = false;
 
 	public DB() {
