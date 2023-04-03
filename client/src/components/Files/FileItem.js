@@ -11,7 +11,7 @@ function createWebSocket(port) {
   return new WebSocket(port);
 }
 
-const FileItem = ({ id, currentUser, caption, timestamp, size, onSelectFile, userName }) => {
+const FileItem = ({ id, currentUser, caption, date, size, onSelectFile, userName }) => {
   console.log("id, caption, timestamp, fireurl, size", size)
   const [isSelected, setIsSelected] = useState(false);
 
@@ -62,11 +62,17 @@ const FileItem = ({ id, currentUser, caption, timestamp, size, onSelectFile, use
 
   let fileType = caption.split('.')[1]
   // let fileUrl = `data:application/${fileType};base64,${fileData}`
-  console.log("In FileItem.js, ", caption, timestamp, size);
+  console.log("In FileItem.js, ", caption, date, size);
   const fileExtension = caption.split('.').pop();
-  //const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
-  const fileDate = "04/04/2023"
-  const getReadableFileSizeString = (fileSizeInBytes) => {
+  // const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
+  const dateParts = date.split('/');
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const fileDate = `${monthNames[dateParts[1] - 1]} ${parseInt(dateParts[0])}, ${dateParts[2]}`;
+
+  const getReadableFileSizeString = (base64String) => {
+    console.log("SAMIBYTES", base64String)
+    const binaryData = atob(base64String);
+    let fileSizeInBytes = binaryData.length;
     let i = -1;
     const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
     do {

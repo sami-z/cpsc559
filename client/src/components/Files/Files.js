@@ -38,7 +38,7 @@ const Files = ({ files, searchTerm, handleSelectFile, currentUser }) => {
             </div>
             {
                 filteredFiles.map((item, index) => (
-                    <FileItem key={index} currentUser={currentUser} caption={item.fileName} userName={item.userName} timestamp={0} size={0} onSelectFile={handleSelectFile} />
+                    <FileItem key={index} currentUser={currentUser} caption={item.fileName} userName={item.userName} date={item.created} size={item.bytes} onSelectFile={handleSelectFile} />
                 ))
             }
 
