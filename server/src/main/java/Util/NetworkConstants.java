@@ -11,7 +11,7 @@ public final class NetworkConstants {
     public static int DATABASE_MANAGER_PORT = 8083;
     public static String[] REQUEST_QUEUE_IPS = new String[] {"localhost"};
     public static String[] RESPONSE_QUEUE_IPS = new String[] {"localhost"};
-    public static String DB_MANAGER_IP = "localhost";
+    public static String[] DB_MANAGER_IP = {"localhost"};
 
 
     public static String getRequestQueueURI(String IP){
