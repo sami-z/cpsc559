@@ -12,6 +12,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Duration;
 
 import static Util.NetworkConstants.DB_MANAGER_IP;
@@ -182,7 +183,14 @@ public class NetworkUtil {
 
     public static long getTimestamp(String fileName) {
         RestTemplate restTemplate = new RestTemplate();
-        String getHeadURI = NetworkConstants.getDBManagerGetHeadURI(fileName);
+        InetAddress address = null;
+        try {
+            address = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+        String ip = address.getHostAddress();
+        String getHeadURI = NetworkConstants.getDBManagerGetHeadURI(ip, fileName);
         ResponseEntity<Long> timestamp = restTemplate.getForEntity(getHeadURI, Long.class);
         return timestamp.getBody();
     }
