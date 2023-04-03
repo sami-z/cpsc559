@@ -83,13 +83,17 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/api/dbmanager/ping",IP, DATABASE_MANAGER_PORT);
     }
 
-    public static String getDBManagerPrimaryURI(String IP){
-        return String.format("http://%s:%s/api/dbmanager/get-primary", IP, DATABASE_MANAGER_PORT);
+    public static String getDBManagerBroadcastPrimaryURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/broadcast-primary", IP, DATABASE_MANAGER_PORT);
     }
 
-    public static String getDBManagerSetPrimaryURI(String IP, String newIsFirstPrimaryCluster){
-        return String.format("http://%s:%s/api/dbmanager/set-primary/%s", IP, DATABASE_MANAGER_PORT, newIsFirstPrimaryCluster);
-    }
+//    public static String getDBManagerPrimaryURI(String IP){
+//        return String.format("http://%s:%s/api/dbmanager/get-primary", IP, DATABASE_MANAGER_PORT);
+//    }
+//
+//    public static String getDBManagerSetPrimaryURI(String IP, String newIsFirstPrimaryCluster){
+//        return String.format("http://%s:%s/api/dbmanager/set-primary/%s", IP, DATABASE_MANAGER_PORT, newIsFirstPrimaryCluster);
+//    }
 
     public static String getRequestQueueHeadURI(String IP, String fileName){
         return String.format("http://%s:%s/api/request/get-head/%s",IP,REQUEST_QUEUE_PORT,fileName);

@@ -39,11 +39,11 @@ public class DB {
 
 	public MongoClient createMongoClient(boolean shouldGetPrimary) {
 		String URI;
-		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
+//		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
 		if (shouldGetPrimary) {
-			URI = (isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER1 : DBConstants.MONGO_URI_CLUSTER2;
+			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER1 : DBConstants.MONGO_URI_CLUSTER2;
 		} else {
-			URI = (isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER2 : DBConstants.MONGO_URI_CLUSTER1;
+			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER2 : DBConstants.MONGO_URI_CLUSTER1;
 		}
 		MongoClientSettings clientSettings = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString(URI))
@@ -66,11 +66,11 @@ public class DB {
 	}
 
 	public MongoClient getMongoClient(boolean shouldGetPrimary) {
-		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
+//		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
 		if (shouldGetPrimary) {
-			return (isFirstClusterPrimary) ? this.mongoClient1 : this.mongoClient2;
+			return (DB.isFirstClusterPrimary) ? this.mongoClient1 : this.mongoClient2;
 		} else {
-			return (isFirstClusterPrimary) ? this.mongoClient2 : this.mongoClient1;
+			return (DB.isFirstClusterPrimary) ? this.mongoClient2 : this.mongoClient1;
 		}
 	}
 
@@ -90,42 +90,42 @@ public class DB {
 		}
 	}
 
-	public MongoCollection<Document> getIsFirstClusterPrimaryReplica() {
-		return getMongoClient(false).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.PRIMARY_COLLECTION_NAME);
-	}
+//	public MongoCollection<Document> getIsFirstClusterPrimaryReplica() {
+//		return getMongoClient(false).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.PRIMARY_COLLECTION_NAME);
+//	}
 
-	public Document getAdminPrimaryQuery() {
-		return new Document("userName", "admin");
-	}
+//	public Document getAdminPrimaryQuery() {
+//		return new Document("userName", "admin");
+//	}
 
-	public void setIsFirstClusterPrimary() {
-		MongoCollection<Document> mc = getIsFirstClusterPrimaryReplica();
-		Document queryResult = mc.find(getAdminPrimaryQuery()).first();
+//	public void setIsFirstClusterPrimary() {
+//		MongoCollection<Document> mc = getIsFirstClusterPrimaryReplica();
+//		Document queryResult = mc.find(getAdminPrimaryQuery()).first();
+//
+//		if (queryResult == null) {
+//			Document recordPrimaryDoc = new Document("_id", new ObjectId())
+//					.append("userName", "admin")
+//					.append("isFirstClusterPrimary", true);
+//			mc.insertOne(recordPrimaryDoc);
+//		} else {
+//			DB.isFirstClusterPrimary = queryResult.getBoolean("isFirstClusterPrimary");
+//		}
+//	}
 
-		if (queryResult == null) {
-			Document recordPrimaryDoc = new Document("_id", new ObjectId())
-					.append("userName", "admin")
-					.append("isFirstClusterPrimary", true);
-			mc.insertOne(recordPrimaryDoc);
-		} else {
-			DB.isFirstClusterPrimary = queryResult.getBoolean("isFirstClusterPrimary");
-		}
-	}
-
-	public void updateIsFirstClusterPrimary(boolean newIsFirstClusterPrimary) {
-		MongoCollection<Document> mc = getIsFirstClusterPrimaryReplica();
-		Document queryResult = mc.find(getAdminPrimaryQuery()).first();
-
-		UpdateResult result = mc.updateOne(
-				queryResult,
-				Updates.set("isFirstClusterPrimary", newIsFirstClusterPrimary)
-		);
-		System.out.println(result);
-
-		if (DB.isFirstClusterPrimary) {
-			DB.isFirstClusterPrimary = newIsFirstClusterPrimary;
-		}
-	}
+//	public void updateIsFirstClusterPrimary(boolean newIsFirstClusterPrimary) {
+//		MongoCollection<Document> mc = getIsFirstClusterPrimaryReplica();
+//		Document queryResult = mc.find(getAdminPrimaryQuery()).first();
+//
+//		UpdateResult result = mc.updateOne(
+//				queryResult,
+//				Updates.set("isFirstClusterPrimary", newIsFirstClusterPrimary)
+//		);
+//		System.out.println(result);
+//
+//		if (DB.isFirstClusterPrimary) {
+//			DB.isFirstClusterPrimary = newIsFirstClusterPrimary;
+//		}
+//	}
 
 	public void replicateDatabase() {
 		List<Document> primaryDocs = getReplica(true).find().into(new ArrayList<>());
@@ -167,7 +167,8 @@ public class DB {
 		System.out.println("MongoDB Atlas Primary Cluster is down in DB");
 		DB.shouldRecover = true;
 		if (DB.isFirstClusterPrimary) {
-			NetworkUtil.setIsFirstClusterPrimary(!DB.isFirstClusterPrimary);
+//			NetworkUtil.setIsFirstClusterPrimary(!DB.isFirstClusterPrimary);
+			DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
 		}
 	}
 

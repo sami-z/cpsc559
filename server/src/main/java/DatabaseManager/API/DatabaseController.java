@@ -9,8 +9,11 @@ import MainServer.Models.ClientRequestModel;
 import RequestQueue.Leader.LeaderState;
 import Util.DB;
 import Util.DBConstants;
+import Util.NetworkUtil;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -144,23 +147,33 @@ public class DatabaseController {
         String ip = address.getHostAddress();
         if (ip.equals(DBManagerState.DBLeaderIP)) {
             new Thread(new DatabaseClusterMonitor()).start();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rq = objectMapper.createObjectNode();
+            ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
+            NetworkUtil.broadcastPrimaryReplica(rq, ip);
         }
     }
 
-    @GetMapping("/get-primary")
-    public String getPrimary() {
-        DB db = new DB();
-        if (DB.isFirstClusterPrimary == null) {
-            db.setIsFirstClusterPrimary();
-        }
-
-        return Boolean.toString(DB.isFirstClusterPrimary);
+    @PostMapping("/broadcast-primary")
+    public void broadcastPrimary(@RequestBody JsonNode node) {
+        DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
     }
 
-    @GetMapping("/set-primary/{newIsFirstClusterPrimary}")
-    public void setPrimary(@PathVariable String newIsFirstClusterPrimary) {
-        DB db = new DB();
-        db.updateIsFirstClusterPrimary(Boolean.parseBoolean(newIsFirstClusterPrimary));
-    }
+//    @GetMapping("/get-primary")
+//    public String getPrimary() {
+//        DB db = new DB();
+//        if (DB.isFirstClusterPrimary == null) {
+//            db.setIsFirstClusterPrimary();
+//        }
+//
+//        return Boolean.toString(DB.isFirstClusterPrimary);
+//    }
+//
+//    @GetMapping("/set-primary/{newIsFirstClusterPrimary}")
+//    public void setPrimary(@PathVariable String newIsFirstClusterPrimary) {
+//        DB db = new DB();
+//        db.updateIsFirstClusterPrimary(Boolean.parseBoolean(newIsFirstClusterPrimary));
+//    }
 
 }

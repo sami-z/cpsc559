@@ -3,6 +3,7 @@ package Util;
 import MainServer.ServerState;
 import RequestQueue.Leader.LeaderState;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -47,40 +48,54 @@ public class NetworkUtil {
         }
     }
 
-    public static void setIsFirstClusterPrimary(boolean newIsFirstPrimaryCluster) {
-        RestTemplate restTemplate = new RestTemplate();
-        String DBManagerLeaderIP = "";
-        for (String DBManagerIP : DB_MANAGER_IP){
-            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
-            DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri, String.class);
-
-            if (!DBManagerLeaderIP.isEmpty()) {
-                break;
-            }
-        }
-        String set_primary_uri = NetworkConstants.getDBManagerSetPrimaryURI(DBManagerLeaderIP, String.valueOf(newIsFirstPrimaryCluster));
-        restTemplate.getForObject(set_primary_uri, String.class);
-    }
-
-    public static boolean getIsFirstClusterPrimary() {
+    public static void broadcastPrimaryReplica(JsonNode rq, String leaderIP){
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        String DBManagerLeaderIP = "";
-
-        for (String DBManagerIP : DB_MANAGER_IP){
-            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
-            DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri, String.class);
-
-            if (!DBManagerLeaderIP.isEmpty()) {
-                break;
+        HttpEntity<String> request =
+                new HttpEntity<String>(rq.toString(), headers);
+        for (String DBManagerIP : DB_MANAGER_IP) {
+            if (!DBManagerIP.equals(leaderIP)) {
+                String uri = NetworkConstants.getDBManagerBroadcastPrimaryURI(DBManagerIP);
+                restTemplate.postForEntity(uri, request, String.class);
             }
         }
-
-        String uri = NetworkConstants.getDBManagerPrimaryURI(DBManagerLeaderIP);
-        ResponseEntity<Boolean> isFirstClusterPrimary = restTemplate.getForEntity(uri, Boolean.class);
-        return isFirstClusterPrimary.getBody();
     }
+
+//    public static void setIsFirstClusterPrimary(boolean newIsFirstPrimaryCluster) {
+//        RestTemplate restTemplate = new RestTemplate();
+//        String DBManagerLeaderIP = "";
+//        for (String DBManagerIP : DB_MANAGER_IP){
+//            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
+//            DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri, String.class);
+//
+//            if (!DBManagerLeaderIP.isEmpty()) {
+//                break;
+//            }
+//        }
+//        String set_primary_uri = NetworkConstants.getDBManagerSetPrimaryURI(DBManagerLeaderIP, String.valueOf(newIsFirstPrimaryCluster));
+//        restTemplate.getForObject(set_primary_uri, String.class);
+//    }
+//
+//    public static boolean getIsFirstClusterPrimary() {
+//        RestTemplate restTemplate = new RestTemplate();
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        String DBManagerLeaderIP = "";
+//
+//        for (String DBManagerIP : DB_MANAGER_IP){
+//            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
+//            DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri, String.class);
+//
+//            if (!DBManagerLeaderIP.isEmpty()) {
+//                break;
+//            }
+//        }
+//
+//        String uri = NetworkConstants.getDBManagerPrimaryURI(DBManagerLeaderIP);
+//        ResponseEntity<Boolean> isFirstClusterPrimary = restTemplate.getForEntity(uri, Boolean.class);
+//        return isFirstClusterPrimary.getBody();
+//    }
 
     public static boolean sendWrite(JsonNode rq){
         for(String IP : NetworkConstants.DB_MANAGER_IP){
