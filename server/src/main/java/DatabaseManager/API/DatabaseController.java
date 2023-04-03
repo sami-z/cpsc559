@@ -28,7 +28,7 @@ public class DatabaseController {
     @Autowired
     public DatabaseController(DatabaseHandler databaseHandler) {
         this.databaseHandler = databaseHandler;
-        DBManagerState.DBLeaderIP = "";
+        DBManagerState.DBLeaderIP = "localhost";
     }
 
     @PostMapping("/upload")
