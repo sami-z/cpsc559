@@ -31,6 +31,7 @@ const Files = ({ files, searchTerm, handleSelectFile, currentUser }) => {
                     <p>Name</p>
                 </div>
                 <div className='fileView_title_right'>
+                    <p>Owner</p>
                     <p>Last Modified</p>
                     <p>File Size</p>
                 </div>

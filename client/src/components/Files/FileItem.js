@@ -40,7 +40,6 @@ const FileItem = ({ id, currentUser, caption, timestamp, size, onSelectFile, use
       const reader = new FileReader();
       reader.onload = function () {
         const message = reader.result;
-        console.log("just receieved msg from rspoonseQ", message);
 
         if (!message) {
           return;
@@ -55,7 +54,6 @@ const FileItem = ({ id, currentUser, caption, timestamp, size, onSelectFile, use
         a.target = '_blank';
         a.click();
         URL.revokeObjectURL(url);
-        console.log("I BE IN HERE");
       }
     });
   };
@@ -67,7 +65,7 @@ const FileItem = ({ id, currentUser, caption, timestamp, size, onSelectFile, use
   console.log("In FileItem.js, ", caption, timestamp, size);
   const fileExtension = caption.split('.').pop();
   //const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
-  const fileDate = "09/03/2023"
+  const fileDate = "04/04/2023"
   const getReadableFileSizeString = (fileSizeInBytes) => {
     let i = -1;
     const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -108,6 +106,7 @@ const FileItem = ({ id, currentUser, caption, timestamp, size, onSelectFile, use
           <p>{caption}</p>
         </div>
         <div className="fileItem--right" onClick={handleFileClick}>
+          <p>{userName == currentUser ? "me" : userName}</p>
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(size)}</p>
         </div>

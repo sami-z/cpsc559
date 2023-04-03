@@ -218,7 +218,7 @@ function App() {
         <div className='app_main'>
           <Navbar setSearchTerm={setSearchTerm}/>
           <div className='main_content'>
-          <Sidebar selectedFiles={selectedFiles} currentUser={userName} files={files}/>
+          <Sidebar selectedFiles={selectedFiles} userName={userName} files={files}/>
           <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} currentUser={userName} />
           </div>
         </div>

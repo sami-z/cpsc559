@@ -28,6 +28,24 @@ public class ExecutionCoreHandler {
 
     }
 
+    public static void updateDelete(JsonNode request) throws IOException {
+        DB db = new DB();
+
+        ArrayList<String> filesToDelete = new ObjectMapper().convertValue(request.get("filesToDelete"), ArrayList.class);
+        for (String fileName : filesToDelete) {
+            JsonNode file = new ObjectMapper().createObjectNode();
+            ((ObjectNode) file).put("responseType", "DELETE");
+
+            ArrayList<String> users = new ObjectMapper().convertValue(request.get("shareWith"), ArrayList.class);
+            for (String username : users) {
+                ((ObjectNode) file).put("userName", username);
+                for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
+                    NetworkUtil.sendToResponseQueue(file, IP);
+                }
+            }
+        }
+
+    }
     public static void updateShare(JsonNode request, Boolean updateShare) throws IOException {
         DB db = new DB();
         if (updateShare) { //file(s) shared with new user(s)
@@ -105,7 +123,6 @@ public class ExecutionCoreHandler {
 
             DB db = new DB();
             JsonNode singleFile = db.loadFile(request.get("userName").asText(), request.get("fileName").asText());
-            db.closeMongoClients();
 
             System.out.println("DATABASE SINGLE AFTER LOAD" + System.currentTimeMillis());
 
@@ -115,11 +132,11 @@ public class ExecutionCoreHandler {
                 NetworkUtil.sendToResponseQueue(singleFile, IP);
             }
             System.out.println("DATABASE SINGLE FOR LOOP" + System.currentTimeMillis());
+            db.closeMongoClients();
         } else if(requestType.equalsIgnoreCase("LOGIN")){
 
             DB db = new DB();
             FindIterable<Document> entry = db.getLoginReplica(true).find(eq("userName", request.get("userName").asText()));
-            db.closeMongoClients();
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode response = mapper.createObjectNode();
@@ -146,6 +163,7 @@ public class ExecutionCoreHandler {
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 NetworkUtil.sendToResponseQueue(response, IP);
             }
+            db.closeMongoClients();
         } else if(requestType.equalsIgnoreCase("WRITE")){
             String fileName = request.get("fileName").asText();
             obtainLock(ServerState.requestQueueIP,request);
