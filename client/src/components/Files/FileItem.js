@@ -64,12 +64,10 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   // let fileUrl = `data:application/${fileType};base64,${fileData}`
   const fileExtension = caption.split('.').pop();
   // const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
-  let date = '04/04/2023'
-  const dateParts = date.split('/');
+  const dateParts = file.date.split('/');
   const fileDate = `${monthNames[dateParts[1] - 1]} ${parseInt(dateParts[0])}, ${dateParts[2]}`;
 
   const getReadableFileSizeString = (base64String) => {
-    console.log("SAMIBYTES", base64String)
     const binaryData = atob(base64String);
     let fileSizeInBytes = binaryData.length;
     let i = -1;
@@ -112,7 +110,7 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
         </div>
         <div className="fileItem--right" onClick={handleFileClick}>
           <p>{file.shared}</p>
-          <p>{file.ownerName === currentUser ? "me" : file.ownerName}</p>
+          <p>{file.userName === currentUser ? "me" : file.userName}</p>
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(file.bytes)}</p>
         </div>

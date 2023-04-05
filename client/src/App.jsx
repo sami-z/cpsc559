@@ -57,17 +57,14 @@ function App() {
 
 
   const handleSelectFile = (fileName, ownerName, shared, isSelected) => {
+    console.log("IN IFFFFFFFFFFFFFF", fileName, ownerName, shared, isSelected);
     let newFile = {fileName: fileName, ownerName:ownerName ,shared: shared}
     if (isSelected) {
       setSelectedFiles([...selectedFiles, newFile]);
     } else {
-      setSelectedFiles(selectedFiles.filter(file => file !== newFile));
+      setSelectedFiles(selectedFiles.filter(file => file.fileName !== fileName));
     }
   };
-
-  useEffect(() => {
-    console.log("RAGOD: " + selectedFiles);
-  }, [selectedFiles]);
 
 
   useEffect(() => {

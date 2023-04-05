@@ -12,7 +12,6 @@ const Files = ({ files, searchTerm, handleSelectFile, currentUser }) => {
 
     // Filter the files array based on whether the caption property includes the searchTerm
     const filteredFiles = dynamicFiles.filter((item) => item.fileName?.toLowerCase().includes(searchTerm?.toLowerCase()));
-    console.log(files);
 
     return (
         <div className="fileView">
