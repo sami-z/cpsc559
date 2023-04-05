@@ -29,22 +29,18 @@ public class ExecutionCoreHandler {
     }
 
     public static void updateDelete(JsonNode request) throws IOException {
-        DB db = new DB();
-
-        ArrayList<String> filesToDelete = new ObjectMapper().convertValue(request.get("filesToDelete"), ArrayList.class);
-        for (String fileName : filesToDelete) {
-            JsonNode file = new ObjectMapper().createObjectNode();
-            ((ObjectNode) file).put("responseType", "DELETE");
-
-            ArrayList<String> users = new ObjectMapper().convertValue(request.get("shareWith"), ArrayList.class);
-            for (String username : users) {
-                ((ObjectNode) file).put("userName", username);
+        JsonNode files = request.get("filesToDelete");
+        for (JsonNode file: files) {
+            JsonNode response = new ObjectMapper().createObjectNode();
+            ((ObjectNode) response).put("responseType", "DELETE");
+            ArrayList<String> shared = new ObjectMapper().convertValue(file.get("shared"), ArrayList.class);
+            for (String username : shared) {
+                ((ObjectNode) response).put("userName", username);
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
-                    NetworkUtil.sendToResponseQueue(file, IP);
+                    NetworkUtil.sendToResponseQueue(response, IP);
                 }
             }
         }
-
     }
     public static void updateShare(JsonNode request, Boolean updateShare) throws IOException {
         DB db = new DB();
@@ -55,7 +51,8 @@ public class ExecutionCoreHandler {
                 JsonNode file = db.loadFile(request.get("userName").asText(), fileName);
                 ((ObjectNode) file).put("responseType", "UPDATE");
 
-                ArrayList<String> users = new ObjectMapper().convertValue(request.get("shareWith"), ArrayList.class);
+                ArrayList<String> users = new ObjectMapper().convertValue(request.get("shared"), ArrayList.class);
+                users.add(request.get("userName").asText());
                 for (String username : users) {
                     ((ObjectNode) file).put("userName", username);
                     for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
@@ -68,7 +65,7 @@ public class ExecutionCoreHandler {
             String fileName = request.get("fileName").asText();
             JsonNode file = db.loadFile(request.get("userName").asText(), fileName);
             ((ObjectNode) file).put("responseType", "UPDATE");
-            ArrayList<String> users = new ObjectMapper().convertValue(request.get("shareWith"), ArrayList.class);
+            ArrayList<String> users = new ObjectMapper().convertValue(request.get("shared"), ArrayList.class);
             users.add(request.get("userName").asText()); //requesting client also gets response to update file
             for (String username : users) {
                 ((ObjectNode) file).put("userName", username);
@@ -193,7 +190,7 @@ public class ExecutionCoreHandler {
             NetworkUtil.releaseLock(ServerState.requestQueueIP,fileName);
 
         } else if(requestType.equalsIgnoreCase("SHARE")){
-            System.out.println("SHARING WITH: " + request.get("shareWith").toString());
+            System.out.println("SHARING WITH: " + request.get("shared").toString());
             NetworkUtil.sendShare(request);
             updateShare(request, true);
         } else if(requestType.equalsIgnoreCase("DELETE")){
@@ -215,6 +212,7 @@ public class ExecutionCoreHandler {
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 NetworkUtil.sendToResponseQueue(response, IP);
             }
+            updateDelete(request);
         } else if (requestType.equals("REGISTER")){
             boolean wasSuccessful = NetworkUtil.sendRegister(request);
 

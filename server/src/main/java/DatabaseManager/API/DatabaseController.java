@@ -10,9 +10,11 @@ import RequestQueue.Leader.LeaderState;
 import Util.DB;
 import Util.DBConstants;
 import Util.NetworkUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 @RestController
 @RequestMapping("/api/dbmanager")
@@ -38,12 +41,12 @@ public class DatabaseController {
     public String uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
         DB db = new DB();
         System.out.println("hello i am here: " + requestModel.fileName);
-        Document query = db.createUploadQuery(requestModel.userName, requestModel.fileName);
+        Document query = db.createUploadQuery(requestModel.ownerName, requestModel.fileName);
         Document queryResult = db.getReplica(true).find(query).first();
         String ownerName;
 
         if (queryResult == null) {
-            ownerName = requestModel.userName;
+            ownerName = requestModel.ownerName;
         } else {
             ownerName = queryResult.getString("userName");
         }
@@ -63,7 +66,11 @@ public class DatabaseController {
     @PostMapping("/delete")
     public String deleteFromDatabase(@RequestBody JsonNode deleteRequest) {
         DB db = new DB();
-        ArrayList<String> filesToDelete = new ObjectMapper().convertValue(deleteRequest.get("filesToDelete"), ArrayList.class);
+        ArrayList<String> filesToDelete = new ArrayList<>();
+        for (final JsonNode file : deleteRequest.get("filesToDelete")) {
+            filesToDelete.add(file.get("fileName").asText());
+        }
+
         String userName = deleteRequest.get("userName").asText();
         ArrayList<ArrayList<String>> tsList = new ArrayList<>();
         for (String fileName : filesToDelete) {
@@ -85,7 +92,7 @@ public class DatabaseController {
     public void editShare(@RequestBody JsonNode shareRequest) {
         DB db = new DB();
         String userName = shareRequest.get("userName").asText();
-        ArrayList<String> shareList = new ObjectMapper().convertValue(shareRequest.get("shareWith"), ArrayList.class);
+        ArrayList<String> shareList = new ObjectMapper().convertValue(shareRequest.get("shared"), ArrayList.class);
         ArrayList<String> filesToShare = new ObjectMapper().convertValue(shareRequest.get("filesToShare"), ArrayList.class);
         ArrayList<ArrayList<String>> tsList = new ArrayList<>();
         for (String fileName:filesToShare){

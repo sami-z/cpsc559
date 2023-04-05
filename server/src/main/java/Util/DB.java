@@ -145,7 +145,7 @@ public class DB {
 		}
 	}
 
-	public Document createEntry(ClientRequestModel model, long timestamp, ObjectId id, String formattedDate, String ownerName) {
+	public Document createEntry(ClientRequestModel model, long timestamp, ObjectId id, String formattedDate, String ownerName, String userName) {
 		Document entry;
 		if (id == null) {
 			entry = new Document("_id", new ObjectId());
@@ -155,9 +155,10 @@ public class DB {
 
 		entry.append("fileName", model.fileName)
 				.append("bytes", model.bytes)
-				.append("userName", ownerName)
+				.append("ownerName",ownerName)
+				.append("userName", userName)
 				.append("created", formattedDate)
-				.append("shared", String.join(",",model.shareWith))
+				.append("shared", String.join(",",model.shared))
 				.append("timestamp", timestamp);
 
 		return entry;
@@ -191,7 +192,7 @@ public class DB {
 		boolean wasReplaced = false;
 
 		if (queryResult == null) {
-			entry = createEntry(model, timestamp, null, formattedDate, model.userName);
+			entry = createEntry(model, timestamp, null, formattedDate, model.ownerName, model.userName);
 		} else {
 			ObjectId existingObjectId = queryResult.getObjectId("_id");
 			Bson deleteFilter = Filters.eq("_id", existingObjectId);
@@ -201,7 +202,7 @@ public class DB {
 				recoverFromDatabaseFailure();
 				getReplica(true).deleteOne(deleteFilter);
 			}
-			entry = createEntry(model, timestamp, existingObjectId, formattedDate, queryResult.getString("userName"));
+			entry = createEntry(model, timestamp, existingObjectId, formattedDate, queryResult.getString("ownerName"), queryResult.getString("userName"));
 			wasReplaced = true;
 		}
 

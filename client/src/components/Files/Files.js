@@ -31,6 +31,7 @@ const Files = ({ files, searchTerm, handleSelectFile, currentUser }) => {
                     <p>Name</p>
                 </div>
                 <div className='fileView_title_right'>
+                    <p>Shared</p>
                     <p>Owner</p>
                     <p>Last Modified</p>
                     <p>File Size</p>
@@ -38,7 +39,7 @@ const Files = ({ files, searchTerm, handleSelectFile, currentUser }) => {
             </div>
             {
                 filteredFiles.map((item, index) => (
-                    <FileItem key={index} currentUser={currentUser} caption={item.fileName} userName={item.userName} date={item.created} size={item.bytes} onSelectFile={handleSelectFile} />
+                    <FileItem key={index} currentUser={currentUser} file={item} onSelectFile={handleSelectFile} />
                 ))
             }
 

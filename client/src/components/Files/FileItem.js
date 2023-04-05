@@ -5,14 +5,14 @@ import CropOriginalIcon from '@mui/icons-material/CropOriginal';
 import './styles.css'
 import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
 import { RESPONSE_QUEUE_SERVER_PORT } from '../WebSocket/WebSocket';
+import { ownerDocument } from '@mui/material';
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function createWebSocket(port) {
   return new WebSocket(port);
 }
 
-const FileItem = ({ id, currentUser, caption, date, size, onSelectFile, userName }) => {
-  console.log("id, caption, timestamp, fireurl, size", size)
+const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   const [isSelected, setIsSelected] = useState(false);
 
 
@@ -23,7 +23,7 @@ const FileItem = ({ id, currentUser, caption, date, size, onSelectFile, userName
 
       if (socket && socket.readyState === WebSocket.OPEN) {
 
-        const payload = { requestType: "DOWNLOAD", userName: currentUser, fileName: caption }
+        const payload = { requestType: "DOWNLOAD", userName: currentUser, fileName: file.fileName }
         console.log("FILE I WANT TO DOWNLOAD: " + JSON.stringify(payload));
         socket.send(JSON.stringify(payload));
       }
@@ -59,14 +59,13 @@ const FileItem = ({ id, currentUser, caption, date, size, onSelectFile, userName
   };
 
 
-
+  let caption = file.fileName
   let fileType = caption.split('.')[1]
   // let fileUrl = `data:application/${fileType};base64,${fileData}`
-  console.log("In FileItem.js, ", caption, date, size);
   const fileExtension = caption.split('.').pop();
   // const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
+  let date = '04/04/2023'
   const dateParts = date.split('/');
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   const fileDate = `${monthNames[dateParts[1] - 1]} ${parseInt(dateParts[0])}, ${dateParts[2]}`;
 
   const getReadableFileSizeString = (base64String) => {
@@ -105,16 +104,17 @@ const FileItem = ({ id, currentUser, caption, date, size, onSelectFile, userName
         {/* <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} /> */}
         <input type="checkbox" checked={isSelected} onChange={() => {
           setIsSelected(prevState => !prevState);
-          onSelectFile(caption, !isSelected);
+          onSelectFile(file.fileName, file.ownerName, file.shared, !isSelected);
         }} />
         <div className="fileItem--left" onClick={handleFileClick}>
           {getIconByExtension(fileExtension)}
           <p>{caption}</p>
         </div>
         <div className="fileItem--right" onClick={handleFileClick}>
-          <p>{userName == currentUser ? "me" : userName}</p>
+          <p>{file.shared}</p>
+          <p>{file.ownerName === currentUser ? "me" : file.ownerName}</p>
           <p>{fileDate}</p>
-          <p>{getReadableFileSizeString(size)}</p>
+          <p>{getReadableFileSizeString(file.bytes)}</p>
         </div>
       </a>
     </div>

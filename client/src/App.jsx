@@ -56,11 +56,12 @@ function App() {
   }, [files]);
 
 
-  const handleSelectFile = (id, isSelected) => {
+  const handleSelectFile = (fileName, ownerName, shared, isSelected) => {
+    let newFile = {fileName: fileName, ownerName:ownerName ,shared: shared}
     if (isSelected) {
-      setSelectedFiles([...selectedFiles, id]);
+      setSelectedFiles([...selectedFiles, newFile]);
     } else {
-      setSelectedFiles(selectedFiles.filter(fileId => fileId !== id));
+      setSelectedFiles(selectedFiles.filter(file => file !== newFile));
     }
   };
 
@@ -164,8 +165,13 @@ function App() {
             }
           }
           else if(response.responseType === "DELETE"){
-              const myArray = response.delete.split(",");
-              removeFiles(myArray);
+              if (response.delete !== null){
+                const myArray = response.delete.split(",");
+                removeFiles(myArray);
+              }
+              else{
+                alert("No Files were deleted!");
+              }
               // setDeletePressed(false);
           }
           else if (response.responseType === "REGISTER"){
