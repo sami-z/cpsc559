@@ -1,6 +1,7 @@
 package RequestQueue.Server;
 
 import RequestQueue.DataAccessObject.FileQueue;
+import RequestQueue.Leader.LeaderRunner;
 import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import Util.NetworkUtil;
@@ -54,11 +55,7 @@ public class RequestQueueWebServer extends WebSocketServer{
         webSocket.close();
 
         if(!LeaderState.serverIP.equals(LeaderState.leaderIP) && request != null && !request.isEmpty()){
-            try {
-                NetworkUtil.sendWriteToLeader(LeaderState.leaderIP,request);
-            } catch(RestClientException e){
-                System.out.println("Could not send to leader for " + request.asText());
-            }
+            new Thread(new LeaderRunner(request)).start();
         }
         if (request != null && !request.isEmpty()) {
             if(request.get("requestType").asText().equalsIgnoreCase("WRITE")) {

@@ -48,6 +48,14 @@ public class NetworkUtil {
         }
     }
 
+    public static String getRequestQueueLeader(String IP){
+        RestTemplate restTemplate = new RestTemplate();
+        String getHeadURI = NetworkConstants.getRequestQueueLeaderStateURI(IP);
+        ResponseEntity<String> currOrder = restTemplate.getForEntity(getHeadURI,String.class);
+        return currOrder.getBody();
+    }
+
+
     public static void broadcastPrimaryReplica(JsonNode rq, String leaderIP){
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();

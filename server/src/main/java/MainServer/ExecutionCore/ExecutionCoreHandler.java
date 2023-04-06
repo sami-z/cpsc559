@@ -21,10 +21,11 @@ public class ExecutionCoreHandler {
         int headOrder = -1;
         int currOrder = request.get("orderValue").asInt();
         while (headOrder != currOrder) {
-            headOrder = NetworkUtil.getRequestHead(IP, request.get("fileName").asText());
+            headOrder = NetworkUtil.getRequestHead(IP, request.get("keyValue").asText());
             System.out.println("headOrder: " + headOrder);
             System.out.println("Current order: " + currOrder);
         }
+        ServerState.requestQueueDown = false;
 
     }
 
@@ -162,7 +163,7 @@ public class ExecutionCoreHandler {
             }
             db.closeMongoClients();
         } else if(requestType.equalsIgnoreCase("WRITE")){
-            String fileName = request.get("fileName").asText();
+            String keyValue = request.get("keyValue").asText();
             obtainLock(ServerState.requestQueueIP,request);
 
             System.out.println("Send to database" + System.currentTimeMillis());
@@ -187,7 +188,7 @@ public class ExecutionCoreHandler {
 
             System.out.println("Responsequeue sent" + System.currentTimeMillis());
 
-            NetworkUtil.releaseLock(ServerState.requestQueueIP,fileName);
+            NetworkUtil.releaseLock(ServerState.requestQueueIP,keyValue);
 
         } else if(requestType.equalsIgnoreCase("SHARE")){
             System.out.println("SHARING WITH: " + request.get("shared").toString());

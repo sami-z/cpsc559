@@ -13,6 +13,8 @@ public final class NetworkConstants {
     public static String[] RESPONSE_QUEUE_IPS = new String[] {"localhost"};
     public static String[] DB_MANAGER_IP = {"localhost"};
 
+    public static int MAX_RETRY = 5;
+
 
     public static String getRequestQueueURI(String IP){
         return String.format("http://%s:%s/api/request/fetch",IP,REQUEST_QUEUE_PORT);
@@ -25,6 +27,7 @@ public final class NetworkConstants {
     public static String getRequestQueuePushURI(String IP) {
         return String.format("http://%s:%s/api/request/push", IP, REQUEST_QUEUE_PORT);
     }
+
 
     public static String getProcessingServerURIPing(String IP){
         return String.format("http://%s:%s/leader/ping",IP,MAIN_SERVER_PORT);
@@ -48,7 +51,11 @@ public final class NetworkConstants {
     }
 
     public static String getRequestQueueLeaderURI(String IP){
-        return String.format("http://%s:%s/api/request/leader",IP,RESPONSE_QUEUE_PORT);
+        return String.format("http://%s:%s/api/request/leader",IP,REQUEST_QUEUE_PORT);
+    }
+
+    public static String getRequestQueueLeaderStateURI(String IP){
+        return String.format("http://%s:%s/api/request/get-leader",IP,REQUEST_QUEUE_PORT);
     }
 
     public static String getDBManagerURI(String IP){

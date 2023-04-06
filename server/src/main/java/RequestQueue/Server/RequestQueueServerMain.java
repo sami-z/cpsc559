@@ -18,6 +18,11 @@ import java.util.Collections;
 @SpringBootApplication
 @ComponentScan({ "RequestQueue" })
 public class RequestQueueServerMain {
+
+    public static void getLeader(){
+
+    }
+
     public static void main(String[] args) throws IOException {
 
         URL whatismyip = new URL("http://checkip.amazonaws.com");
@@ -28,7 +33,7 @@ public class RequestQueueServerMain {
         System.out.println(ip);
 
         LeaderState.serverIP = ip;
-        LeaderState.leaderIP = ip;
+        LeaderState.leaderIP = "";
         SpringApplication app = new SpringApplication(RequestQueueServerMain.class);
         app.setDefaultProperties(Collections
                 .singletonMap("server.port", Integer.toString(NetworkConstants.REQUEST_QUEUE_PORT)));

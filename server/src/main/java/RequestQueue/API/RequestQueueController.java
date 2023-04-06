@@ -1,5 +1,6 @@
 package RequestQueue.API;
 
+import DatabaseManager.DBManagerState;
 import RequestQueue.DataAccessObject.FileQueue;
 import RequestQueue.DataAccessObject.HeadItem;
 import RequestQueue.Leader.LeaderState;
@@ -30,22 +31,22 @@ public class RequestQueueController {
         return;
     }
 
-    @GetMapping("/get-head/{filename}")
+    @GetMapping("/get-head/{key}")
     @ResponseBody
-    public String getHead(@PathVariable String filename){
-        HeadItem hi = fileQueue.getHead(filename);
+    public String getHead(@PathVariable String key){
+        HeadItem hi = fileQueue.getHead(key);
 
-//        if(System.currentTimeMillis()-hi.currTime > 20 * 1000){
-//            fileQueue.removeHead(filename);
-//        }
+        if(System.currentTimeMillis()-hi.currTime > 20 * 1000){
+            fileQueue.removeHead(key);
+        }
 
         return Integer.toString(hi.orderValue);
     }
 
-    @GetMapping("/remove-head/{filename}")
+    @GetMapping("/remove-head/{key}")
     @ResponseBody
-    public void removeHead(@PathVariable String filename){
-        fileQueue.removeHead(filename);
+    public void removeHead(@PathVariable String key){
+        fileQueue.removeHead(key);
     }
 
     @PostMapping("/push")
@@ -57,6 +58,13 @@ public class RequestQueueController {
     public void setLeader(@RequestBody JsonNode node){
         String leaderIP = node.get("leaderIP").asText();
         LeaderState.leaderIP = leaderIP;
+    }
+
+    @GetMapping("/get-leader")
+    @ResponseBody
+    public String getLeader(){
+        System.out.println("TRYING TO GET LEADER");
+        return LeaderState.leaderIP == null ? "" : LeaderState.leaderIP;
     }
 }
 
