@@ -8,21 +8,21 @@ import java.util.HashMap;
 
 @Repository("fileQueue")
 public class FileQueue {
-    HashMap<String, HeadItem> fq;
-    HashMap<String, HeadItem> fqTail;
+    HashMap<String, Integer> fq;
+    HashMap<String, Integer> fqTail;
 
     public FileQueue(){
         fq = new HashMap<>();
         fqTail = new HashMap<>();
     }
 
-    public synchronized HeadItem getHead(String key){
+    public synchronized Integer getHead(String key){
         return fq.get(key);
     }
 
     public synchronized void removeHead(String key){
-        int nextOrder = (fq.containsKey(key) ? fq.get(key).orderValue : 0)+1;
-        fq.put(key,new HeadItem(nextOrder,System.currentTimeMillis()));
+        int nextOrder = (fq.containsKey(key) ? fq.get(key) : 0)+1;
+        fq.put(key,nextOrder);
     }
 
     public synchronized void addTail(JsonNode request){
@@ -30,10 +30,10 @@ public class FileQueue {
         String ownerName = request.get("ownerName").asText();
         String key = ownerName+":"+fileName;
 
-        if(!fq.containsKey(key)) fq.put(key,new HeadItem(0,System.currentTimeMillis()));
-        if(!fqTail.containsKey(key)) fqTail.put(key,new HeadItem(0,System.currentTimeMillis()));
-        ((ObjectNode) request).put("orderValue",fqTail.get(key).orderValue);
+        if(!fq.containsKey(key)) fq.put(key,0);
+        if(!fqTail.containsKey(key)) fqTail.put(key,0);
+        ((ObjectNode) request).put("orderValue",fqTail.get(key));
         ((ObjectNode) request).put("keyValue",key);
-        fqTail.put(key,new HeadItem(fqTail.get(key).orderValue+1,System.currentTimeMillis()));
+        fqTail.put(key,fqTail.get(key)+1);
     }
 }

@@ -1,10 +1,9 @@
 package RequestQueue.API;
 
-import DatabaseManager.DBManagerState;
 import RequestQueue.DataAccessObject.FileQueue;
-import RequestQueue.DataAccessObject.HeadItem;
 import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
+import RequestQueue.Thread.DeadlockRunner;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -31,21 +30,21 @@ public class RequestQueueController {
         return;
     }
 
-    @GetMapping("/get-head/{key}")
+    @GetMapping("/get-head/{key}/{order}")
     @ResponseBody
-    public String getHead(@PathVariable String key){
-        HeadItem hi = fileQueue.getHead(key);
-
-        if(System.currentTimeMillis()-hi.currTime > 20 * 1000){
-            fileQueue.removeHead(key);
+    public String getHead(@PathVariable String key, @PathVariable int order){
+        int currOrder = fileQueue.getHead(key);
+        if(currOrder == order){
+            new Thread(new DeadlockRunner(currOrder,key,this.fileQueue));
         }
-
-        return Integer.toString(hi.orderValue);
+        return Integer.toString(fileQueue.getHead(key));
     }
 
-    @GetMapping("/remove-head/{key}")
+    @GetMapping("/remove-head/{key}/{order}")
     @ResponseBody
-    public void removeHead(@PathVariable String key){
+    public void removeHead(@PathVariable String key, @PathVariable int order){
+        int currOrder = fileQueue.getHead(key);
+        if(order<currOrder) return;
         fileQueue.removeHead(key);
     }
 

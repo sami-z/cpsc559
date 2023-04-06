@@ -218,16 +218,16 @@ public class NetworkUtil {
         return timestamp.getBody();
     }
 
-    public static int getRequestHead(String IP, String filename){
+    public static int getRequestHead(String IP, String key, int order){
         RestTemplate restTemplate = new RestTemplate();
-        String getHeadURI = NetworkConstants.getRequestQueueHeadURI(IP,filename);
+        String getHeadURI = NetworkConstants.getRequestQueueHeadURI(IP,key,order);
         ResponseEntity<Integer> currOrder = restTemplate.getForEntity(getHeadURI,Integer.class);
         return currOrder.getBody();
     }
 
-    public static void releaseLock(String IP, String filename){
+    public static void releaseLock(String IP, String key, int order){
         RestTemplate restTemplate = new RestTemplate();
-        String removeHeadURI = NetworkConstants.getRequestQueueRemoveHeadURI(IP,filename);
+        String removeHeadURI = NetworkConstants.getRequestQueueRemoveHeadURI(IP,key,order);
         restTemplate.getForEntity(removeHeadURI,String.class);
     }
 

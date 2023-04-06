@@ -102,11 +102,11 @@ public final class NetworkConstants {
 //        return String.format("http://%s:%s/api/dbmanager/set-primary/%s", IP, DATABASE_MANAGER_PORT, newIsFirstPrimaryCluster);
 //    }
 
-    public static String getRequestQueueHeadURI(String IP, String fileName){
-        return String.format("http://%s:%s/api/request/get-head/%s",IP,REQUEST_QUEUE_PORT,fileName);
+    public static String getRequestQueueHeadURI(String IP, String key, int order){
+        return String.format("http://%s:%s/api/request/get-head/%s/%s",IP,REQUEST_QUEUE_PORT,key,order);
     }
 
-    public static String getRequestQueueRemoveHeadURI(String IP, String fileName){
-        return String.format("http://%s:%s/api/request/remove-head/%s",IP,REQUEST_QUEUE_PORT,fileName);
+    public static String getRequestQueueRemoveHeadURI(String IP, String key, int order){
+        return String.format("http://%s:%s/api/request/remove-head/%s/%s",IP,REQUEST_QUEUE_PORT,key,order);
     }
 }
