@@ -15,7 +15,7 @@ import java.util.Collections;
 
 public class ServerMain {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
         URL whatismyip = new URL("http://checkip.amazonaws.com");
         BufferedReader in = new BufferedReader(new InputStreamReader(
                 whatismyip.openStream()));
@@ -23,8 +23,7 @@ public class ServerMain {
         String IP = in.readLine(); //you get the IP as a String
 
         ServerState.serverIP = IP;
-        ServerState.leaderIP = IP;
-        ServerState.requestQueueIP = "localhost";
+
         SpringApplication app = new SpringApplication(ElectionController.class);
         app.setDefaultProperties(Collections
                 .singletonMap("server.port", Integer.toString(NetworkConstants.MAIN_SERVER_PORT)));
@@ -32,7 +31,7 @@ public class ServerMain {
 
         System.out.println("MAIN SERVER IS RUNNING");
 
-        //new Thread(new LeaderMonitor()).start();
+        new Thread(new LeaderMonitor()).start();
         new Thread(new MultiThreadedServer()).start();
 
     }

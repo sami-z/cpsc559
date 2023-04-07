@@ -56,18 +56,24 @@ public class NetworkUtil {
     }
 
 
-    public static void broadcastPrimaryReplica(JsonNode rq, String leaderIP){
+    public static void broadcastPrimaryReplica(JsonNode rq){
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request =
                 new HttpEntity<String>(rq.toString(), headers);
         for (String DBManagerIP : DB_MANAGER_IP) {
-            if (!DBManagerIP.equals(leaderIP)) {
-                String uri = NetworkConstants.getDBManagerBroadcastPrimaryURI(DBManagerIP);
+            String uri = NetworkConstants.getDBManagerBroadcastPrimaryURI(DBManagerIP);
+            try {
                 restTemplate.postForEntity(uri, request, String.class);
-            }
+            } catch (RestClientException e){}
         }
+    }
+
+    public static void notifyDBManagerLeader(String leaderIP){
+        RestTemplate restTemplate = new RestTemplate();
+        String notifyURI = NetworkConstants.notifyDBManagerLeaderURI(leaderIP);
+        restTemplate.getForEntity(notifyURI,String.class);
     }
 
 //    public static void setIsFirstClusterPrimary(boolean newIsFirstPrimaryCluster) {

@@ -9,6 +9,7 @@ import MainServer.Models.ClientRequestModel;
 import RequestQueue.Leader.LeaderState;
 import Util.DB;
 import Util.DBConstants;
+import Util.NetworkConstants;
 import Util.NetworkUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -34,16 +35,18 @@ public class DatabaseController {
     @Autowired
     public DatabaseController(DatabaseHandler databaseHandler) {
         this.databaseHandler = databaseHandler;
-        DBManagerState.DBLeaderIP = "localhost";
+        DBManagerState.DBLeaderIP = "";
     }
 
     @PostMapping("/upload")
     public String uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
+        System.out.println("0");
         DB db = new DB();
-        System.out.println("hello i am here: " + requestModel.fileName);
+        System.out.println("1");
         Document query = db.createUploadQuery(requestModel.ownerName, requestModel.fileName);
         Document queryResult = db.getReplica(true).find(query).first();
         String ownerName;
+        System.out.println("2");
 
         if (queryResult == null) {
             ownerName = requestModel.ownerName;
@@ -51,11 +54,13 @@ public class DatabaseController {
             ownerName = queryResult.getString("userName");
         }
 
+        System.out.println("4");
         long timestamp = System.currentTimeMillis();
         databaseHandler.updateTimestamp(ownerName, requestModel.fileName, timestamp);
         ArrayList<Document> docs = db.uploadFile(requestModel, timestamp, queryResult);
-        new Thread(new ReplicationRunner(docs.get(0), null, null, null,0,null, true, false, false)).start();
         db.closeMongoClients();
+        System.out.println("5");
+        new Thread(new ReplicationRunner(docs.get(0), null, null, null,0,null, true, false, false)).start();
         if (docs.get(1) == null) {
             return Boolean.toString(false);
         } else {
@@ -137,7 +142,8 @@ public class DatabaseController {
     @ResponseBody
     public String getLeader(){
         System.out.println("TRYING TO GET LEADER");
-        return DBManagerState.DBLeaderIP == null ? "" : DBManagerState.DBLeaderIP;
+        if(DBManagerState.DBLeaderIP == null || DBManagerState.DBLeaderIP.isEmpty()) return NetworkConstants.EMPTY_DB_LEADER;
+        return DBManagerState.DBLeaderIP;
     }
 
     @PostMapping("/leader")
@@ -145,21 +151,19 @@ public class DatabaseController {
     public void setLeader(@RequestBody JsonNode node){
         String leaderIP = node.get("leaderIP").asText();
         DBManagerState.DBLeaderIP = leaderIP;
-        InetAddress address = null;
-        try {
-            address = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
-        String ip = address.getHostAddress();
-        if (ip.equals(DBManagerState.DBLeaderIP)) {
-            new Thread(new DatabaseClusterMonitor()).start();
+        return;
+    }
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode rq = objectMapper.createObjectNode();
-            ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
-            NetworkUtil.broadcastPrimaryReplica(rq, ip);
-        }
+    @GetMapping("/notify-leader")
+    @ResponseBody
+    public void notifyLeader(){
+        //new Thread(new DatabaseClusterMonitor()).start();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rq = objectMapper.createObjectNode();
+        ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
+        NetworkUtil.broadcastPrimaryReplica(rq);
+        return;
     }
 
     @PostMapping("/broadcast-primary")

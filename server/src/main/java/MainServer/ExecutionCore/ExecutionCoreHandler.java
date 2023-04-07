@@ -174,6 +174,8 @@ public class ExecutionCoreHandler {
 
             boolean wasReplaced = NetworkUtil.sendWrite(request);
 
+            System.out.println("database write done" + System.currentTimeMillis());
+
             if (wasReplaced) {
                 updateShare(request,false);
             }
@@ -184,8 +186,6 @@ public class ExecutionCoreHandler {
             }
 
 
-
-            System.out.println("database write done" + System.currentTimeMillis());
 
             System.out.println("Responsequeue sent" + System.currentTimeMillis());
 

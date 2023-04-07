@@ -1,8 +1,10 @@
 package MainServer.Monitor;
 
+import DatabaseManager.DBManagerState;
 import DatabaseManager.DatabaseClusterMonitor;
 import MainServer.ServerState;
 import Util.NetworkConstants;
+import Util.NetworkUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,6 +31,7 @@ public class DBManagerMonitor implements Runnable{
     }
 
     public static void sendDBManagerLeader(String IP){
+        ServerState.DBManagerIP = IP;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -56,19 +59,20 @@ public class DBManagerMonitor implements Runnable{
             try {
                 restTemplate.getForEntity(ping_uri, String.class);
                 System.out.println("PING SUCCEED");
-                String DBManagerLeaderIP = restTemplate.getForObject(get_leader_uri,String.class);
-                System.out.println(DBManagerLeaderIP);
+                String DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
 
-                if (!DBManagerLeaderIP.isEmpty()) return DBManagerLeaderIP;
+                if ( DBManagerLeaderIP.equals(EMPTY_DB_LEADER)){
+                    NetworkUtil.notifyDBManagerLeader(DBManagerIP);
+                    return DBManagerIP;
+                }
 
-                return DBManagerIP;
+                return DBManagerLeaderIP;
             } catch(RestClientException e){
                 System.out.println("DBManager did not respond to ping: " + DBManagerIP);
             }
         }
         return null;
     }
-
     @Override
     public void run() {
 
