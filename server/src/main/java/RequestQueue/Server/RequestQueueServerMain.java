@@ -38,8 +38,8 @@ public class RequestQueueServerMain {
         String ip = in.readLine(); //you get the IP as a String
         System.out.println(ip);
 
-        LeaderState.serverIP = ip;
-        LeaderState.leaderIP = "";
+        LeaderState.serverIP = "localhost";
+        LeaderState.leaderIP = "localhost";
         SpringApplication app = new SpringApplication(RequestQueueServerMain.class);
         app.setDefaultProperties(Collections
                 .singletonMap("server.port", Integer.toString(NetworkConstants.REQUEST_QUEUE_PORT)));

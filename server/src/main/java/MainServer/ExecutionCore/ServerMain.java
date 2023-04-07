@@ -22,7 +22,7 @@ public class ServerMain {
 
         String IP = in.readLine(); //you get the IP as a String
 
-        ServerState.serverIP = IP;
+        ServerState.serverIP = "localhost";
 
         SpringApplication app = new SpringApplication(ElectionController.class);
         app.setDefaultProperties(Collections
