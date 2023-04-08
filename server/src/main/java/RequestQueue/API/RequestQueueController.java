@@ -8,16 +8,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
 @RequestMapping("/api/request")
 @RestController
 public class RequestQueueController {
     private final RequestQueueHandler requestQueueHandler;
     private final FileQueue fileQueue;
 
+    private final Set<String> deadlockRunnerMap;
+
     @Autowired
     public RequestQueueController(RequestQueueHandler requestQueueHandler, FileQueue fileQueue) {
         this.requestQueueHandler = requestQueueHandler;
         this.fileQueue = fileQueue;
+        this.deadlockRunnerMap = new HashSet<>();
     }
 
     @GetMapping("/fetch")
@@ -34,8 +41,11 @@ public class RequestQueueController {
     @ResponseBody
     public String getHead(@PathVariable String key, @PathVariable int order){
         int currOrder = fileQueue.getHead(key);
-        if(currOrder == order){
-            new Thread(new DeadlockRunner(currOrder,key,this.fileQueue));
+        String dlrKey = key + ":"+currOrder;
+
+        if(!deadlockRunnerMap.contains(dlrKey)){
+            deadlockRunnerMap.add(dlrKey);
+            new Thread(new DeadlockRunner(currOrder,key,this.fileQueue)).start();
         }
         return Integer.toString(fileQueue.getHead(key));
     }
@@ -44,6 +54,8 @@ public class RequestQueueController {
     @ResponseBody
     public void removeHead(@PathVariable String key, @PathVariable int order){
         int currOrder = fileQueue.getHead(key);
+        String dlrKey = key + ":"+currOrder;
+        if(deadlockRunnerMap.contains(dlrKey)) deadlockRunnerMap.remove(dlrKey);
         if(order<currOrder) return;
         fileQueue.removeHead(key);
     }

@@ -5,7 +5,6 @@ import Util.NetworkConstants;
 import Util.NetworkUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.client.RestClientException;
-import sun.nio.ch.Net;
 
 import java.util.HashMap;
 
@@ -20,7 +19,8 @@ public class LeaderRunner implements Runnable{
        for(String IP : NetworkConstants.REQUEST_QUEUE_IPS){
            try{
                String leaderIP = NetworkUtil.getRequestQueueLeader(IP);
-               mapping.put(leaderIP, mapping.getOrDefault(leaderIP,0)+1);
+               if(leaderIP != null && !leaderIP.isEmpty())
+                   mapping.put(leaderIP, mapping.getOrDefault(leaderIP,0)+1);
            }catch (RestClientException e){
                System.out.println("Could not get Leader for IP: " + IP);
            }
@@ -30,11 +30,15 @@ public class LeaderRunner implements Runnable{
        String ret = "";
 
        for(String leaderIP : mapping.keySet()){
+           System.out.println("printing out leaderIP" + leaderIP);
            if(mapping.get(leaderIP)>currMax){
+               System.out.println("Setting ret");
                currMax = mapping.get(leaderIP);
                ret = leaderIP;
            }
        }
+
+       System.out.println("RET IS THIS: " + ret);
 
        return ret;
    }
@@ -51,14 +55,14 @@ public class LeaderRunner implements Runnable{
             try{
                 NetworkUtil.sendWriteToLeader(LeaderState.leaderIP,request);
                 this.requestSentToLeader = true;
-            } catch (RestClientException e){
-                System.out.println("Could not send to leader for " + request.asText());
+            } catch (Exception e){
+                System.out.println("Could not send to leader for " + request.toPrettyString());
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
-                ServerState.leaderIP = getLeader();
+                LeaderState.leaderIP = getLeader();
                 trys++;
             }
         }

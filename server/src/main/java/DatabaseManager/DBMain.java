@@ -1,12 +1,17 @@
 package DatabaseManager;
 
-import MainServer.Monitor.DBManagerMonitor;
 import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
+
 import java.util.Collections;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        MongoAutoConfiguration.class,
+        MongoDataAutoConfiguration.class
+})
 public class DBMain {
 
     public static void main(String[] args) {

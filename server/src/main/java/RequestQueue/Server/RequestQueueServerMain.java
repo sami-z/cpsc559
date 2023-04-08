@@ -5,7 +5,10 @@ import RequestQueue.Leader.LeaderState;
 import RequestQueue.Service.RequestQueueHandler;
 import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -15,7 +18,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Collections;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        MongoAutoConfiguration.class,
+        MongoDataAutoConfiguration.class
+})
 @ComponentScan({ "RequestQueue" })
 public class RequestQueueServerMain {
 

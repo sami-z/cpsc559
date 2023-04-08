@@ -4,14 +4,20 @@ import RequestQueue.Server.RequestQueueServerMain;
 import ResponseQueue.Service.ResponseQueueHandler;
 import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import java.net.UnknownHostException;
 import java.util.Collections;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        MongoAutoConfiguration.class,
+        MongoDataAutoConfiguration.class
+})
 @ComponentScan({ "ResponseQueue" })
 public class ResponseQueueServerMain {
     public static void main(String[] args) throws UnknownHostException {
