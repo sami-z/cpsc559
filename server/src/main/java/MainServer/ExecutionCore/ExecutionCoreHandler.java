@@ -35,8 +35,8 @@ public class ExecutionCoreHandler {
             JsonNode response = new ObjectMapper().createObjectNode();
             ((ObjectNode) response).put("responseType", "DELETE");
             ArrayList<String> shared = new ObjectMapper().convertValue(file.get("shared"), ArrayList.class);
-            for (String username : shared) {
-                ((ObjectNode) response).put("userName", username);
+            for (String user : shared) {
+                ((ObjectNode) response).put("userName", user);
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(response, IP);
                 }
@@ -48,12 +48,12 @@ public class ExecutionCoreHandler {
         if (updateShare) { //file(s) shared with new user(s)
             ArrayList<String> filesToShare = new ObjectMapper().convertValue(request.get("filesToShare"), ArrayList.class);
             for (String fileName : filesToShare) {
-                System.out.println("inupdateSHARE " + fileName + " " + request.get("userName").asText());
-                JsonNode file = db.loadFile(request.get("userName").asText(), fileName);
+                System.out.println("inupdateSHARE " + fileName + " " + request.get("currentUser").asText());
+                JsonNode file = db.loadFile(request.get("currentUser").asText(), fileName);
                 ((ObjectNode) file).put("responseType", "UPDATE");
 
                 ArrayList<String> users = new ObjectMapper().convertValue(request.get("shared"), ArrayList.class);
-                users.add(request.get("userName").asText());
+                users.add(request.get("currentUser").asText());
                 for (String username : users) {
                     ((ObjectNode) file).put("userName", username);
                     for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
@@ -64,10 +64,10 @@ public class ExecutionCoreHandler {
         }
         else { //existing file replaced
             String fileName = request.get("fileName").asText();
-            JsonNode file = db.loadFile(request.get("userName").asText(), fileName);
+            JsonNode file = db.loadFile(request.get("currentUser").asText(), fileName);
             ((ObjectNode) file).put("responseType", "UPDATE");
             ArrayList<String> users = new ObjectMapper().convertValue(request.get("shared"), ArrayList.class);
-            users.add(request.get("userName").asText()); //requesting client also gets response to update file
+            users.add(request.get("currentUser").asText()); //requesting client also gets response to update file
             for (String username : users) {
                 ((ObjectNode) file).put("userName", username);
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
@@ -94,7 +94,7 @@ public class ExecutionCoreHandler {
             DB db = new DB();
             System.out.println("database requestType" + System.currentTimeMillis());
 
-            ArrayNode files = db.findFiles(request.get("userName").asText());
+            ArrayNode files = db.findFiles(request.get("currentUser").asText());
 
             JsonNode response;
 
@@ -102,14 +102,14 @@ public class ExecutionCoreHandler {
             if (!files.isEmpty()){
                 //response = objectMapper.valueToTree(files);
                 response = objectMapper.createObjectNode();
-                ((ObjectNode)response).put("userName", request.get("userName").asText());
+                ((ObjectNode)response).put("currentUser", request.get("currentUser").asText());
                 ((ObjectNode)response).put("responseType", "LOADALLFILES");
                 ((ObjectNode)response).set("files", files);
             }
             else{
                 response = objectMapper.createObjectNode();
                 ((ObjectNode)response).put("responseType", "ALLFILESEMPTY");
-                ((ObjectNode)response).put("userName", request.get("userName").asText());
+                ((ObjectNode)response).put("currentUser", request.get("currentUser").asText());
             }
 
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
@@ -120,12 +120,12 @@ public class ExecutionCoreHandler {
             System.out.println("DATABASE SINGLE BEFORE" + System.currentTimeMillis());
 
             DB db = new DB();
-            JsonNode singleFile = db.loadFile(request.get("userName").asText(), request.get("fileName").asText());
+            JsonNode singleFile = db.loadFile(request.get("currentUser").asText(), request.get("fileName").asText());
 
             System.out.println("DATABASE SINGLE AFTER LOAD" + System.currentTimeMillis());
 
             ((ObjectNode)singleFile).put("responseType", "DOWNLOAD");
-            ((ObjectNode)singleFile).put("userName", request.get("userName").asText()); //overwrite with client's userName
+            ((ObjectNode)singleFile).put("currentUser", request.get("currentUser").asText()); //overwrite with client's userName
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 NetworkUtil.sendToResponseQueue(singleFile, IP);
             }
@@ -134,18 +134,18 @@ public class ExecutionCoreHandler {
         } else if(requestType.equalsIgnoreCase("LOGIN")){
 
             DB db = new DB();
-            FindIterable<Document> entry = db.getLoginReplica(true).find(eq("userName", request.get("userName").asText()));
+            FindIterable<Document> entry = db.getLoginReplica(true).find(eq("userName", request.get("currentUser").asText()));
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode response = mapper.createObjectNode();
-            ((ObjectNode)response).put("userName", request.get("userName").asText());
+            ((ObjectNode)response).put("currentUser", request.get("currentUser").asText());
             ((ObjectNode)response).put("responseType", "LOGIN");
 
             for (Document doc : entry) {
                 String actualUserName = doc.getString("userName");
                 String actualPassword = doc.getString("password");
 
-                if (request.get("userName").asText().equals(actualUserName) && request.get("password").asText().equals(actualPassword)) {
+                if (request.get("currentUser").asText().equals(actualUserName) && request.get("password").asText().equals(actualPassword)) {
                     ((ObjectNode) response).put("loggedIn", "SUCCESS");
                     break; // break the loop once a match is found
                 } else {
@@ -202,7 +202,7 @@ public class ExecutionCoreHandler {
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode response = mapper.createObjectNode();
-            ((ObjectNode)response).put("userName", request.get("userName").asText());
+            ((ObjectNode)response).put("currentUser", request.get("currentUser").asText());
             ((ObjectNode)response).put("responseType", "DELETE");
             ((ObjectNode)response).put("delete", deleteList);
 
@@ -220,7 +220,7 @@ public class ExecutionCoreHandler {
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode response = mapper.createObjectNode();
-            ((ObjectNode)response).put("userName", request.get("userName").asText());
+            ((ObjectNode)response).put("currentUser", request.get("currentUser").asText());
             ((ObjectNode)response).put("responseType", "REGISTER");
 
             if (wasSuccessful) {

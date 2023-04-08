@@ -145,7 +145,7 @@ public class DB {
 		}
 	}
 
-	public Document createEntry(ClientRequestModel model, long timestamp, ObjectId id, String formattedDate, String ownerName, String userName) {
+	public Document createEntry(ClientRequestModel model, long timestamp, ObjectId id, String formattedDate, String userName, String currentUser) {
 		Document entry;
 		if (id == null) {
 			entry = new Document("_id", new ObjectId());
@@ -155,7 +155,7 @@ public class DB {
 
 		entry.append("fileName", model.fileName)
 				.append("bytes", model.bytes)
-				.append("ownerName",ownerName)
+				.append("currentUser",currentUser)
 				.append("userName", userName)
 				.append("created", formattedDate)
 				.append("shared", String.join(",",model.shared))
@@ -192,7 +192,7 @@ public class DB {
 		boolean wasReplaced = false;
 
 		if (queryResult == null) {
-			entry = createEntry(model, timestamp, null, formattedDate, model.ownerName, model.userName);
+			entry = createEntry(model, timestamp, null, formattedDate, model.userName, model.currentUser);
 		} else {
 			ObjectId existingObjectId = queryResult.getObjectId("_id");
 			Bson deleteFilter = Filters.eq("_id", existingObjectId);
@@ -202,7 +202,7 @@ public class DB {
 				recoverFromDatabaseFailure();
 				getReplica(true).deleteOne(deleteFilter);
 			}
-			entry = createEntry(model, timestamp, existingObjectId, formattedDate, queryResult.getString("ownerName"), queryResult.getString("userName"));
+			entry = createEntry(model, timestamp, existingObjectId, formattedDate, queryResult.getString("userName"), queryResult.getString("currentUser"));
 			wasReplaced = true;
 		}
 
@@ -255,13 +255,13 @@ public class DB {
 	}
 
 	public Document registerUser(ClientRequestModel model) {
-		Document query = new Document("userName", model.userName);
+		Document query = new Document("userName", model.currentUser);
 		Document queryResult = getLoginReplica(true).find(query).first();
 		Document loginDoc;
 
 		if (queryResult == null) {
 			loginDoc = new Document("_id", new ObjectId())
-					.append("userName", model.userName)
+					.append("userName", model.currentUser)
 					.append("password", model.password);
 		} else {
 			return null;

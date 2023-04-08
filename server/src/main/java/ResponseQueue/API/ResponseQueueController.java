@@ -18,11 +18,11 @@ public class ResponseQueueController {
     @PostMapping("/post")
     public void postRequest(@RequestBody JsonNode response) {
         System.out.println(response.toPrettyString());
-        if(response.has("userName"))
+        if(response.has("currentUser"))
         {
-            responseQueueHandler.push(response.get("userName").asText(), response);
+            responseQueueHandler.push(response.get("currentUser").asText(), response);
         } else {
-            responseQueueHandler.push(response.get(0).get("userName").asText(), response);
+            responseQueueHandler.push(response.get(0).get("currentUser").asText(), response);
         }
 
 

@@ -50,7 +50,7 @@ function Delete(props) {
 
         setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
-        const payload = { requestType: "DELETE", userName: props.userName, writeType: "DELETE", filesToDelete: props.selectedFiles };
+        const payload = { requestType: "DELETE", currentUser: props.currentUser, writeType: "DELETE", filesToDelete: props.selectedFiles };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');

@@ -25,7 +25,7 @@ const useStyles = makeStyles({
     },
 });
 
-function ShareButton({ selectedFiles, userName }) {
+function ShareButton({ selectedFiles, currentUser }) {
     const classes = useStyles();
     const [names, setNames] = useState('');
     const [open, setOpen] = useState(false);
@@ -55,7 +55,7 @@ function ShareButton({ selectedFiles, userName }) {
         // Send a JSON payload through the WebSocket connection to share the permission with the specified user
         const shareWithArr = names.trim().split(",");
         const fileNames = selectedFiles.map(item => item.fileName);
-        const payload = { requestType: "SHARE", userName: userName, filesToShare: fileNames, shared: shareWithArr };
+        const payload = { requestType: "SHARE", currentUser: currentUser, filesToShare: fileNames, shared: shareWithArr };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');

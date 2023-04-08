@@ -64,7 +64,7 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   // let fileUrl = `data:application/${fileType};base64,${fileData}`
   const fileExtension = caption.split('.').pop();
   // const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
-  const dateParts = file.date.split('/');
+  const dateParts = file.created.split('/');
   const fileDate = `${monthNames[dateParts[1] - 1]} ${parseInt(dateParts[0])}, ${dateParts[2]}`;
 
   const getReadableFileSizeString = (base64String) => {
@@ -102,14 +102,14 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
         {/* <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} /> */}
         <input type="checkbox" checked={isSelected} onChange={() => {
           setIsSelected(prevState => !prevState);
-          onSelectFile(file.fileName, file.ownerName, file.shared, !isSelected);
+          onSelectFile(file.fileName, file.userName, file.shared, !isSelected);
         }} />
         <div className="fileItem--left" onClick={handleFileClick}>
           {getIconByExtension(fileExtension)}
           <p>{caption}</p>
         </div>
         <div className="fileItem--right" onClick={handleFileClick}>
-          <p>{file.shared}</p>
+          <p>{file.shared.length == 0 ? "None" : file.shared}</p>
           <p>{file.userName === currentUser ? "me" : file.userName}</p>
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(file.bytes)}</p>

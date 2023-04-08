@@ -41,12 +41,12 @@ public class DatabaseController {
     public String uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
         DB db = new DB();
         System.out.println("hello i am here: " + requestModel.fileName);
-        Document query = db.createUploadQuery(requestModel.ownerName, requestModel.fileName);
+        Document query = db.createUploadQuery(requestModel.userName, requestModel.fileName);
         Document queryResult = db.getReplica(true).find(query).first();
         String ownerName;
 
         if (queryResult == null) {
-            ownerName = requestModel.ownerName;
+            ownerName = requestModel.userName;
         } else {
             ownerName = queryResult.getString("userName");
         }
@@ -71,7 +71,7 @@ public class DatabaseController {
             filesToDelete.add(file.get("fileName").asText());
         }
 
-        String userName = deleteRequest.get("userName").asText();
+        String userName = deleteRequest.get("currentUser").asText();
         ArrayList<ArrayList<String>> tsList = new ArrayList<>();
         for (String fileName : filesToDelete) {
             long timestamp = System.currentTimeMillis();
@@ -91,7 +91,7 @@ public class DatabaseController {
     @PostMapping("/share")
     public void editShare(@RequestBody JsonNode shareRequest) {
         DB db = new DB();
-        String userName = shareRequest.get("userName").asText();
+        String userName = shareRequest.get("currentUser").asText();
         ArrayList<String> shareList = new ObjectMapper().convertValue(shareRequest.get("shared"), ArrayList.class);
         ArrayList<String> filesToShare = new ObjectMapper().convertValue(shareRequest.get("filesToShare"), ArrayList.class);
         ArrayList<ArrayList<String>> tsList = new ArrayList<>();

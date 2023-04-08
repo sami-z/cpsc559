@@ -19,6 +19,7 @@ function App() {
   const MINUTE_MS = 5000;
   const [files, setFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [currentUser, setCurrentUser] = useState('')
   const [userName, setUsername] = useState('');
   const [loginStatus, setLoginStatus] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,14 +29,14 @@ function App() {
 
   // Change the title of the document
   if (isLoggedIn){
-    document.title = "Welcome to the DFS "+ userName + "!";
+    document.title = "Welcome to the DFS "+ currentUser + "!";
   }
   else{
     document.title = "Welcome to the DFS!";
   }
   
   const updateUser=(u)=>{
-    setUsername(u);
+    setCurrentUser(u);
   }
 
   // Remove an array of files
@@ -56,9 +57,9 @@ function App() {
   }, [files]);
 
 
-  const handleSelectFile = (fileName, ownerName, shared, isSelected) => {
-    console.log("IN IFFFFFFFFFFFFFF", fileName, ownerName, shared, isSelected);
-    let newFile = {fileName: fileName, ownerName:ownerName ,shared: shared}
+  const handleSelectFile = (fileName, userName, shared, isSelected) => {
+    console.log("IN IFFFFFFFFFFFFFF", fileName, userName, shared, isSelected);
+    let newFile = {fileName: fileName, userName:userName ,shared: shared}
     if (isSelected) {
       setSelectedFiles([...selectedFiles, newFile]);
     } else {
@@ -71,7 +72,7 @@ function App() {
     if (isLoggedIn){
       // setIsLoading(true);
       const rqstSocket = createWebSocket(WEBSOCKET_URL)
-      const payload = { requestType: "READ_ALL_FILES", userName: userName };
+      const payload = { requestType: "READ_ALL_FILES", currentUser: currentUser };
   
 
       rqstSocket.addEventListener('open', () => {
@@ -101,7 +102,7 @@ function App() {
       newWebSocket.onopen = () => {
         console.log('WebSocket connection established!');
         
-        newWebSocket.send("{\"userName\":\"" + userName + "\"}");
+        newWebSocket.send("{\"currentUser\":\"" + currentUser + "\"}");
       };
 
       newWebSocket.onmessage = (event) => {
@@ -173,7 +174,7 @@ function App() {
           }
           else if (response.responseType === "REGISTER"){
             if (response.registered === "SUCCESS"){
-              setUsername(response.userName);
+              setUsername(response.currentUser);
               setLoginStatus('success');
               setIsLoggedIn(true);
               setIsLoading(false);
@@ -186,7 +187,7 @@ function App() {
           }
           else if (response.responseType === "LOGIN"){
             if (response.loggedIn === "SUCCESS"){
-              setUsername(response.userName);
+              setUsername(response.currentUser);
               setLoginStatus('success');
               setIsLoggedIn(true);
               // setIsLoading(false);
@@ -221,8 +222,8 @@ function App() {
         <div className='app_main'>
           <Navbar setSearchTerm={setSearchTerm}/>
           <div className='main_content'>
-          <Sidebar selectedFiles={selectedFiles} userName={userName} files={files}/>
-          <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} currentUser={userName} />
+          <Sidebar selectedFiles={selectedFiles} currentUser={currentUser} files={files}/>
+          <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} currentUser={currentUser} />
           </div>
         </div>
       ) : isLoading ? (

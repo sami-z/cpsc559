@@ -44,30 +44,27 @@ function Upload(props) {
 
     const handleSend = async () => {
 
-        console.log("BEGINING HANDLE SEND")
-
         if (fileData == null) {
             return;
         }
 
-        console.log("END HANDLE SEND")
-
         setUploadStatus('uploading');
         const newWebSocket = createWebSocket();
-        console.log("THIS IS THE USERNAME IS DELETE: " + props.userName)
         let shared = []
-        let userName = props.userName
-        console.log("INUPLOAD FILES", props.files);
         let file = props.files.find(p => p.fileName === fileData.name);
-        let ownerName = userName
+        let userName = props.currentUser
         if (file) {
-            console.log("FILE ALREADY EXISTS, KEEPING OLD SHAREWITH");
+            console.log("FILE ALREADY EXISTS, KEEPING OLD SHARED ARR");
             shared = file.shared.split(",");
-            ownerName = file.ownerName;
+            userName = file.userName;
 
         }
-
-        const payload = { requestType: "WRITE", ownerName: ownerName, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared };
+        let today = new Date();
+        let month = String(today.getMonth() + 1).padStart(2, '0');
+        let day = String(today.getDate()).padStart(2, '0');
+        let year = today.getFullYear();
+        let date = month + '/' + day + '/' + year;
+        const payload = { requestType: "WRITE", currentUser: props.currentUser, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared, created: date };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');

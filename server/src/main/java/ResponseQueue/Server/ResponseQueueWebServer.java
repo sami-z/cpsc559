@@ -41,7 +41,7 @@ public class ResponseQueueWebServer extends WebSocketServer {
         System.out.println(s);
         try {
             JsonNode currRequest = mapper.readTree(s);
-            String uName = currRequest.get("userName").asText();
+            String uName = currRequest.get("currentUser").asText();
 
             JsonNode currNode = responseQueueHandler.pop(uName);
 

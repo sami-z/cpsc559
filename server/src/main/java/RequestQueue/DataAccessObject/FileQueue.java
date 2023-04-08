@@ -27,7 +27,7 @@ public class FileQueue {
 
     public synchronized void addTail(JsonNode request){
         String fileName = request.get("fileName").asText();
-        String ownerName = request.get("ownerName").asText();
+        String ownerName = request.get("userName").asText();
         String key = ownerName+":"+fileName;
 
         if(!fq.containsKey(key)) fq.put(key,0);

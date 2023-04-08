@@ -26,7 +26,7 @@ function Login(props) {
         console.log("Entered password for login ", enteredPass);
 
         const newWebSocket = createWebSocket(WEBSOCKET_URL);
-        const payload = { requestType: "LOGIN", userName: enteredUsername, password: enteredPass };
+        const payload = { requestType: "LOGIN", currentUser: enteredUsername, password: enteredPass };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -57,7 +57,7 @@ function Login(props) {
         console.log("Entered password for login ", enteredPass);
 
         const newWebSocket = createWebSocket(WEBSOCKET_URL);
-        const payload = { requestType: "REGISTER", userName: enteredUsername, password: enteredPass };
+        const payload = { requestType: "REGISTER", currentUser: enteredUsername, password: enteredPass };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
