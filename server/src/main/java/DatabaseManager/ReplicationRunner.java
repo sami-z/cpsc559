@@ -14,11 +14,14 @@ public class ReplicationRunner implements Runnable{
     private final boolean shouldReplicateShare;
     private final ArrayList<ArrayList<String>> TSList;
     private final ArrayList<String> shareList;
+    private final ArrayList<String> unshareList;
     private final ArrayList<String> filesToShare;
     private final long timestamp;
     private final String userName;
+    private final boolean shouldReplicateUnshare;
+    private final ArrayList<String> filesToUnshare;
 
-    public ReplicationRunner(Document replicatedEntry, ArrayList<String> shareList, ArrayList<String> filesToShare, String userName, long timestamp, ArrayList<ArrayList<String>> TSList, boolean shouldReplicateFile, boolean shouldReplicateLogin, boolean shouldReplicateShare) {
+    public ReplicationRunner(Document replicatedEntry, ArrayList<String> shareList, ArrayList<String> filesToShare, ArrayList<String> unshareList, ArrayList<String> filesToUnshare, String userName, long timestamp, ArrayList<ArrayList<String>> TSList, boolean shouldReplicateFile, boolean shouldReplicateLogin, boolean shouldReplicateShare, boolean shouldReplicateUnshare) {
         this.replicatedEntry = replicatedEntry;
         this.TSList = TSList;
         this.shouldReplicateFile = shouldReplicateFile;
@@ -26,6 +29,9 @@ public class ReplicationRunner implements Runnable{
         this.shouldReplicateShare = shouldReplicateShare;
         this.shareList = shareList;
         this.filesToShare = filesToShare;
+        this.shouldReplicateUnshare = shouldReplicateUnshare;
+        this.unshareList = unshareList;
+        this.filesToUnshare = filesToUnshare;
         this.timestamp = timestamp;
         this.userName = userName;
     }
@@ -43,6 +49,8 @@ public class ReplicationRunner implements Runnable{
             db.registerUser(replicatedEntry);
         } else if (shouldReplicateShare) {
             db.editSharedWith(TSList, userName, shareList, true);
+        } else if (shouldReplicateUnshare) {
+            db.editUnsharedWith(TSList, userName, unshareList, true);
         } else {
             db.deleteFile(TSList, userName,true);
         }

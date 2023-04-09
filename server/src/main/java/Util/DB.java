@@ -406,6 +406,59 @@ public class DB {
 		}
 	}
 
+	public Bson createUnshareOperation(String prevSharedList, ArrayList<String> unsharedList) {
+		List<String> shared = Arrays.asList(prevSharedList.split("\\s*,\\s*"));
+		shared.removeAll(unsharedList);
+		return set("shared", shared);
+	}
+
+	public void editUnsharedWith(ArrayList<String> filesToUnShare, String userName, ArrayList<String> unshareList){
+		for(String fileName: filesToUnShare)
+		{
+			Bson filter = createUsernameFilenameFilter(userName, fileName);
+			Document queryResult = getReplica(true).find(filter).first();
+			String prevSharedList = queryResult.getString("shared");
+			Bson updateOperation = createUnshareOperation(prevSharedList, unshareList);
+			UpdateResult updateResult;
+
+			try {
+				updateResult = getReplica(true).updateOne(queryResult, updateOperation);
+			} catch (Exception e) {
+				recoverFromDatabaseFailure();
+				updateResult = getReplica(true).updateOne(queryResult, updateOperation);
+			}
+
+			System.out.println(updateResult);
+		}
+	}
+
+	public void editUnsharedWith(ArrayList<ArrayList<String>> files, String userName, ArrayList<String> unsharedList, boolean isReplicating) {
+		if (isReplicating) {
+			for (ArrayList<String> innerTSList : files) {
+				String fileName = innerTSList.get(0);
+				String key = String.join(",", userName, fileName);
+				long entryTimestamp = Long.parseLong(innerTSList.get(1));
+				long latestTimestamp = NetworkUtil.getTimestamp(key);
+				if (entryTimestamp >= latestTimestamp) {
+					Bson filter = createUsernameFilenameFilter(userName, fileName);
+					Document queryResult = getReplica(false).find(filter).first();
+					String prevSharedList = queryResult.getString("shared");
+					Bson updateOperation = createUnshareOperation(prevSharedList, unsharedList);
+					UpdateResult updateResult;
+
+					try {
+						updateResult = getReplica(false).updateOne(queryResult, updateOperation);
+					} catch (Exception e) {
+						System.out.println("Secondary cluster is currently down in DB");
+						return;
+					}
+
+					System.out.println(updateResult);
+				}
+			}
+		}
+	}
+
 	public String deleteFile(ArrayList<String> files, String userName) {
 		ArrayList<String> deletedFiles = new ArrayList<>();
 		DeleteResult deleteResult;

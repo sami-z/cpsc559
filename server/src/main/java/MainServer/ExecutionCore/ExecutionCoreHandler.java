@@ -43,6 +43,23 @@ public class ExecutionCoreHandler {
             }
         }
     }
+
+    public static void updateUnshare(JsonNode request) throws IOException {
+        DB db = new DB();
+        ArrayList<String> filesToUnshare = new ObjectMapper().convertValue(request.get("filesToUnshare"), ArrayList.class);
+        for (String fileName : filesToUnshare) {
+            JsonNode response = new ObjectMapper().createObjectNode();
+            ((ObjectNode) response).put("responseType", "DELETE");
+            JsonNode file = db.loadFile(request.get("currentUser").asText(), fileName);
+            ArrayList<String> shared = new ObjectMapper().convertValue(file.get("shared"), ArrayList.class);
+            for (String user : shared) {
+                ((ObjectNode) response).put("userName", user);
+                for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
+                    NetworkUtil.sendToResponseQueue(response, IP);
+                }
+            }
+        }
+    }
     public static void updateShare(JsonNode request, Boolean updateShare) throws IOException {
         DB db = new DB();
         if (updateShare) { //file(s) shared with new user(s)
@@ -195,6 +212,10 @@ public class ExecutionCoreHandler {
             System.out.println("SHARING WITH: " + request.get("shared").toString());
             NetworkUtil.sendShare(request);
             updateShare(request, true);
+        } else if(requestType.equalsIgnoreCase("UNSHARE")){
+            System.out.println("UNSHARING WITH: " + request.get("unshared").toString());
+            updateUnshare(request);
+            NetworkUtil.sendUnShare(request);
         } else if(requestType.equalsIgnoreCase("DELETE")){
 
             String deleteList = NetworkUtil.sendDelete(request);

@@ -175,6 +175,26 @@ public class NetworkUtil {
         rt.postForEntity(URI, shareRq, String.class);
     }
 
+    public static void sendUnShare(JsonNode rq){
+        for(String IP : NetworkConstants.DB_MANAGER_IP){
+            try{
+                sendUnshare(rq,IP);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+        return;
+    }
+
+    private static void sendUnshare(JsonNode rq, String IP) {
+        RestTemplate rt = new RestTemplate();
+        String URI = NetworkConstants.getDBManagerUnShareURI(IP);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> unshareRq = new HttpEntity<String>(rq.toString(), headers);
+        rt.postForEntity(URI, unshareRq, String.class);
+    }
+
 
     public static boolean sendRegister(JsonNode rq){
         for(String IP : NetworkConstants.DB_MANAGER_IP){

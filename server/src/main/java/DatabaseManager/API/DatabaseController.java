@@ -62,7 +62,7 @@ public class DatabaseController {
         ArrayList<Document> docs = db.uploadFile(requestModel, timestamp, queryResult);
         db.closeMongoClients();
         System.out.println("5");
-        new Thread(new ReplicationRunner(docs.get(0), null, null, null,0,null, true, false, false)).start();
+        new Thread(new ReplicationRunner(docs.get(0), null, null, null, null, null,0,null, true, false, false, false)).start();
         if (docs.get(1) == null) {
             return Boolean.toString(false);
         } else {
@@ -90,7 +90,7 @@ public class DatabaseController {
             tsList.add(innerTSList);
         }
         String deletedFiles = db.deleteFile(filesToDelete, userName);
-        new Thread(new ReplicationRunner(null, null, null, userName,0, tsList, false, false, false)).start();
+        new Thread(new ReplicationRunner(null, null, null, null, null,  userName,0, tsList, false, false, false, false)).start();
         db.closeMongoClients();
         return deletedFiles;
     }
@@ -111,7 +111,27 @@ public class DatabaseController {
             tsList.add(innerTSList);
         }
         db.editSharedWith(filesToShare, userName, shareList);
-        new Thread(new ReplicationRunner(null, shareList, filesToShare, userName,0, tsList, false, false, true)).start();
+        new Thread(new ReplicationRunner(null, shareList, filesToShare, null, null, userName,0, tsList, false, false, true, false)).start();
+        db.closeMongoClients();
+    }
+
+    @PostMapping("/unshare")
+    public void editUnshare(@RequestBody JsonNode unshareRequest) {
+        DB db = new DB();
+        String userName = unshareRequest.get("currentUser").asText();
+        ArrayList<String> unshareList = new ObjectMapper().convertValue(unshareRequest.get("unshared"), ArrayList.class);
+        ArrayList<String> filesToUnShare = new ObjectMapper().convertValue(unshareRequest.get("filesToUnshare"), ArrayList.class);
+        ArrayList<ArrayList<String>> tsList = new ArrayList<>();
+        for (String fileName:filesToUnShare){
+            long timestamp = System.currentTimeMillis();
+            databaseHandler.updateTimestamp(userName, fileName, timestamp);
+            ArrayList<String> innerTSList = new ArrayList<>();
+            innerTSList.add(fileName);
+            innerTSList.add(Long.toString(timestamp));
+            tsList.add(innerTSList);
+        }
+        db.editUnsharedWith(filesToUnShare, userName, unshareList);
+        new Thread(new ReplicationRunner(null, null, null, unshareList, filesToUnShare, userName,0, tsList, false, false, false, true)).start();
         db.closeMongoClients();
     }
 
@@ -130,7 +150,7 @@ public class DatabaseController {
             db.closeMongoClients();
             return Boolean.toString(false);
         }
-        new Thread(new ReplicationRunner(replicatedEntry, null, null, null,0, null,false, true, false)).start();
+        new Thread(new ReplicationRunner(replicatedEntry, null, null, null, null, null,0, null,false, true, false, false)).start();
         db.closeMongoClients();
         return Boolean.toString(true);
     }
