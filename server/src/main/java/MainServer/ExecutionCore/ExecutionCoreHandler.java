@@ -59,6 +59,7 @@ public class ExecutionCoreHandler {
                 }
             }
         }
+        db.closeMongoClients();
     }
     public static void updateShare(JsonNode request, Boolean updateShare) throws IOException {
         DB db = new DB();
