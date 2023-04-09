@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
 import './styles.css'
-import ScreenShareIcon from '@mui/icons-material/ScreenShare';
+import StopScreenShareIcon from '@mui/icons-material/StopScreenShare';
 import Modal from '@mui/material/Modal';
 import { makeStyles } from '@mui/styles';
 
@@ -85,8 +85,8 @@ function UnshareButton({ selectedFiles, userName }) {
     return (
         <div className='upload'>
             <div className='upload__container' onClick={handleOpen}>
-                <ScreenShareIcon />
-                <p className='side-button-container'>Share</p>
+                <StopScreenShareIcon />
+                <p className='side-button-container'>Unshare</p>
             </div>
 
             <Modal
@@ -99,7 +99,7 @@ function UnshareButton({ selectedFiles, userName }) {
                 {/* // {classes.paper} */}
                 <div style={modalStyle} className={classes.root}>
                     <center>
-                        <p>Enter user(s) to share with:</p>
+                        <p>Enter user(s) to un-share with:</p>
                     </center>
                     {
                         sharing ? (
@@ -107,7 +107,7 @@ function UnshareButton({ selectedFiles, userName }) {
                         ) : (
                             <>
                                 <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} />
-                                <button onClick={handleSharePermission}>Share File</button>
+                                <button onClick={handleSharePermission}>Unshare File</button>
                                 {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
                                 {/* {fileData && <p>{fileData}</p>} */}
                             </>

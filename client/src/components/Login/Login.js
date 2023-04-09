@@ -82,7 +82,7 @@ function Login(props) {
     return (
         <div className="login">
             <h1>Login or Register</h1>
-            <h4 className="subheading">to continue to Distributed File System</h4>
+            <h4 className="subheading">to continue to FileArc</h4>
             {props.loginStatus === 'failed' && <p className="error-message">Login or Registration failed. Please try again.</p>}
             <form>
                 <div className="form-group">

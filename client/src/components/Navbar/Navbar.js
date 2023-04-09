@@ -1,6 +1,6 @@
 import React from 'react'
 import './styles.css'
-import DFSLogo from '../../media/logo-black.png'
+import DFSLogo from '../../media/FileArc Logo.png'
 import { useState, useEffect } from 'react'
 
 import SearchIcon from '@mui/icons-material/Search';
