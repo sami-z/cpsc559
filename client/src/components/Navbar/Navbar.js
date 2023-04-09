@@ -21,7 +21,7 @@ const Navbar = ({ setSearchTerm }) => {
     <div className='header'>
       <div className="header__logo">
         <img src={DFSLogo} alt="DFS" />
-        <span>Distributed File System</span>
+        <span>FileArc</span>
       </div>
       <div className="header__searchContainer">
         <div className="header__searchBar">
