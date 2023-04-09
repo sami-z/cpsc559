@@ -29,10 +29,10 @@ function App() {
 
   // Change the title of the document
   if (isLoggedIn){
-    document.title = "Welcome to the DFS "+ currentUser + "!";
+    document.title = "Welcome to FileArc "+ currentUser + "!";
   }
   else{
-    document.title = "Welcome to the DFS!";
+    document.title = "Login to FileArc";
   }
   
   const updateUser=(u)=>{
