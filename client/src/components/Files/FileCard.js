@@ -64,7 +64,8 @@ const FileCard = (props) => {
 
       if (socket && socket.readyState === WebSocket.OPEN) {
 
-        const payload = { requestType: "DOWNLOAD", userName: props.currentUser, fileName: props.name }
+        // const payload = { requestType: "DOWNLOAD", userName: props.currentUser, fileName: props.name }
+        const payload = { requestType: "DOWNLOAD", ownerName: props.ownerName, fileName: props.name, currentUser: props.currentUser }
         console.log(payload);
         socket.send(JSON.stringify(payload));
       }

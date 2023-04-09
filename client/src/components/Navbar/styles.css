@@ -27,6 +27,10 @@
     margin-left: 16px;
 }
 
+.span{
+    white-space:pre-wrap;
+}
+
 .header__searchContainer {
     flex: 1;
     display: flex;

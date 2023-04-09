@@ -25,7 +25,7 @@ const useStyles = makeStyles({
     },
 });
 
-function UnshareButton({ selectedFiles, userName }) {
+function UnshareButton({ selectedFiles, currentUser }) {
     const classes = useStyles();
     const [names, setNames] = useState('');
     const [open, setOpen] = useState(false);
@@ -55,7 +55,7 @@ function UnshareButton({ selectedFiles, userName }) {
         // Send a JSON payload through the WebSocket connection to share the permission with the specified user
         const unshareWithArr = names.trim().split(",");
         const fileNames = selectedFiles.map(item => item.fileName);
-        const payload = { requestType: "UNSHARE", userName: userName, filesToUnshare: fileNames, unshared: unshareWithArr };
+        const payload = { requestType: "UNSHARE", currentUser: currentUser, filesToUnshare: fileNames, unshared: unshareWithArr  };
 
         newWebSocket.addEventListener('open', () => {
             console.log('WebSocket connection established!');
@@ -64,7 +64,7 @@ function UnshareButton({ selectedFiles, userName }) {
 
             if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
                 newWebSocket.send(JSON.stringify(payload));
-                alert('Permission shared successfully!');
+                alert('Permission unshared successfully!');
             }
 
             else {

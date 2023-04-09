@@ -20,7 +20,7 @@ const Files = ({ files, searchTerm, handleSelectFile, currentUser }) => {
             <div className='fileView_row'>
                 {
                     files.slice(0, 6).map((item, index) => (
-                        <FileCard key={index} name={item.fileName} currentUser={currentUser} className="fileCard" />
+                        <FileCard key={index} name={item.fileName} currentUser={currentUser} ownerName={item.userName} className="fileCard" />
                     ))
                 }
 

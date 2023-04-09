@@ -407,9 +407,17 @@ public class DB {
 	}
 
 	public Bson createUnshareOperation(String prevSharedList, ArrayList<String> unsharedList) {
-		List<String> shared = Arrays.asList(prevSharedList.split("\\s*,\\s*"));
-		shared.removeAll(unsharedList);
-		return set("shared", shared);
+
+		String[] shared = prevSharedList.split("\\s*,\\s*");
+		ArrayList<String> arrayList = new ArrayList<>();
+
+		for (int i = 0; i < shared.length; i++) {
+			arrayList.add(shared[i]);
+		}
+
+//		List<String> shared = Arrays.asList(prevSharedList.split("\\s*,\\s*"));
+		arrayList.removeAll(unsharedList);
+		return set("shared", arrayList.toString());
 	}
 
 	public void editUnsharedWith(ArrayList<String> filesToUnShare, String userName, ArrayList<String> unshareList){

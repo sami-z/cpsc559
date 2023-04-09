@@ -21,11 +21,12 @@ const Navbar = ({ setSearchTerm }) => {
     <div className='header'>
       <div className="header__logo">
         <img src={DFSLogo} alt="DFS" />
-        <span>FileArc</span>
+        <span className='span'>FileArc              </span> {/*tabs added for searchbar alginment*/}
       </div>
       <div className="header__searchContainer">
         <div className="header__searchBar">
           <SearchIcon />
+          <span></span>
           <input type="text" placeholder='Search in Distributed File System' onChange={(e) => setSearchTerm(e.target.value)} />
           <ExpandMoreIcon />
         </div>

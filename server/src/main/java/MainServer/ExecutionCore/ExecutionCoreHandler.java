@@ -12,6 +12,9 @@ import org.bson.Document;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import Util.NetworkUtil;
 import static com.mongodb.client.model.Filters.eq;
 
@@ -36,7 +39,7 @@ public class ExecutionCoreHandler {
             ((ObjectNode) response).put("responseType", "DELETE");
             ArrayList<String> shared = new ObjectMapper().convertValue(file.get("shared"), ArrayList.class);
             for (String user : shared) {
-                ((ObjectNode) response).put("userName", user);
+                ((ObjectNode) response).put("currentUser", user);
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(response, IP);
                 }
@@ -51,9 +54,12 @@ public class ExecutionCoreHandler {
             JsonNode response = new ObjectMapper().createObjectNode();
             ((ObjectNode) response).put("responseType", "DELETE");
             JsonNode file = db.loadFile(request.get("currentUser").asText(), fileName);
-            ArrayList<String> shared = new ObjectMapper().convertValue(file.get("shared"), ArrayList.class);
-            for (String user : shared) {
-                ((ObjectNode) response).put("userName", user);
+            String shared = new ObjectMapper().convertValue(file.get("shared"), String.class);
+            List<String> bigShared = Arrays.asList(shared.split("\\s*,\\s*"));
+
+            for (String user : bigShared) {
+                ((ObjectNode) response).put("currentUser", user);
+                ((ObjectNode)response).put("delete", fileName);
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(response, IP);
                 }
@@ -73,7 +79,7 @@ public class ExecutionCoreHandler {
                 ArrayList<String> users = new ObjectMapper().convertValue(request.get("shared"), ArrayList.class);
                 users.add(request.get("currentUser").asText());
                 for (String username : users) {
-                    ((ObjectNode) file).put("userName", username);
+                    ((ObjectNode) file).put("currentUser", username);
                     for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                         NetworkUtil.sendToResponseQueue(file, IP);
                     }
@@ -87,7 +93,7 @@ public class ExecutionCoreHandler {
             ArrayList<String> users = new ObjectMapper().convertValue(request.get("shared"), ArrayList.class);
             users.add(request.get("currentUser").asText()); //requesting client also gets response to update file
             for (String username : users) {
-                ((ObjectNode) file).put("userName", username);
+                ((ObjectNode) file).put("currentUser", username);
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(file, IP);
                 }
@@ -138,7 +144,7 @@ public class ExecutionCoreHandler {
             System.out.println("DATABASE SINGLE BEFORE" + System.currentTimeMillis());
 
             DB db = new DB();
-            JsonNode singleFile = db.loadFile(request.get("currentUser").asText(), request.get("fileName").asText());
+            JsonNode singleFile = db.loadFile(request.get("ownerName").asText(), request.get("fileName").asText());
 
             System.out.println("DATABASE SINGLE AFTER LOAD" + System.currentTimeMillis());
 
@@ -228,10 +234,7 @@ public class ExecutionCoreHandler {
             ((ObjectNode)response).put("responseType", "DELETE");
             ((ObjectNode)response).put("delete", deleteList);
 
-
-
             System.out.println("PRINITNG RESPONSE LIST: " + response);
-
 
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 NetworkUtil.sendToResponseQueue(response, IP);

@@ -23,7 +23,7 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
 
       if (socket && socket.readyState === WebSocket.OPEN) {
 
-        const payload = { requestType: "DOWNLOAD", userName: currentUser, fileName: file.fileName }
+        const payload = { requestType: "DOWNLOAD", ownerName: file.userName, fileName: file.fileName, currentUser: currentUser }
         console.log("FILE I WANT TO DOWNLOAD: " + JSON.stringify(payload));
         socket.send(JSON.stringify(payload));
       }
