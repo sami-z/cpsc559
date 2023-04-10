@@ -29,14 +29,14 @@ public class DatabaseClusterMonitor implements Runnable{
         DB db = new DB();
 
         while (true) {
-            try {
-                MongoClient primaryMongoClient = DBInstance.createMongoClient(true);
-                primaryMongoClient.close();
-            } catch (Exception e) {
-                System.out.println("MongoDB Atlas Primary Cluster is down in DB Cluster Monitor");
-
-                db.recoverFromDatabaseFailure();
-            }
+//            try {
+//                MongoClient primaryMongoClient = DBInstance.createMongoClient(true);
+//                primaryMongoClient.close();
+//            } catch (Exception e) {
+//                System.out.println("MongoDB Atlas Primary Cluster is down in DB Cluster Monitor");
+//
+//                db.recoverFromDatabaseFailure();
+//            }
 
             if (DB.shouldRecover) {
                 try {
