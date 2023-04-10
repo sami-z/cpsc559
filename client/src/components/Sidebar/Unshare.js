@@ -47,6 +47,13 @@ function UnshareButton({ selectedFiles, currentUser }) {
 
     const handleSharePermission = () => {
 
+        for (const file of selectedFiles) {
+            if (file.userName !== currentUser) {
+              alert('You cannot delete files you do not own!');
+              return;
+            }
+          }
+
         createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
         .then((ws) => {
             console.log('WebSocket connection established:', ws);
@@ -62,6 +69,10 @@ function UnshareButton({ selectedFiles, currentUser }) {
             console.error(`An error occurred while connecting to a WebSocket: ${error}`);
         });
     };
+
+    function handleBlur(event) {
+        event.target.value = null; 
+    }
 
     return (
         <div className='upload'>
@@ -87,7 +98,7 @@ function UnshareButton({ selectedFiles, currentUser }) {
                             <p>Sharing...</p>
                         ) : (
                             <>
-                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} />
+                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} onBlur={handleBlur} />
                                 <button onClick={handleSharePermission}>Unshare File</button>
                                 {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
                                 {/* {fileData && <p>{fileData}</p>} */}

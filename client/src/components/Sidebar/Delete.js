@@ -42,6 +42,13 @@ function Delete(props) {
 
     const handleDelete = async () => {
 
+        for (const file of props.selectedFiles) {
+            if (file.userName !== props.currentUser) {
+              alert('You cannot delete files you do not own!');
+              return;
+            }
+          }
+
 
         console.log("IN HANDLE DELETE: ", props.selectedFiles);
 
@@ -51,6 +58,8 @@ function Delete(props) {
         .then((ws) => {
             console.log('WebSocket connection established:', ws);
             const payload = { requestType: "DELETE", currentUser: props.currentUser, writeType: "DELETE", filesToDelete: props.selectedFiles };
+            console.log("TYPE", typeof filesToDelete)
+            console.log("DELETE PAYLOAD", payload)
             ws.send(JSON.stringify(payload));
             setTimeout(() => {
                 setUploadStatus('uploaded');
