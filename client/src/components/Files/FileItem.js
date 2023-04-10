@@ -3,59 +3,28 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CropOriginalIcon from '@mui/icons-material/CropOriginal';
 import './styles.css'
-import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
-import { RESPONSE_QUEUE_SERVER_PORT } from '../WebSocket/WebSocket';
-import { ownerDocument } from '@mui/material';
+import { REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT, createWebSocket } from '../WebSocket/WebSocket';
+
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-function createWebSocket(port) {
-  return new WebSocket(port);
-}
 
 const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   const [isSelected, setIsSelected] = useState(false);
 
 
   const handleFileClick = () => {
-    const socket = createWebSocket(WEBSOCKET_URL);
-    socket.addEventListener('open', () => {
-      console.log('RqstQ connection established!');
 
-      if (socket && socket.readyState === WebSocket.OPEN) {
+    createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
+        .then((ws) => {
+            console.log('WebSocket connection established:', ws);
+            const payload = { requestType: "DOWNLOAD", ownerName: file.userName, fileName: file.fileName, currentUser: currentUser }
+            ws.send(JSON.stringify(payload));
+            ws.close();
 
-        const payload = { requestType: "DOWNLOAD", ownerName: file.userName, fileName: file.fileName, currentUser: currentUser }
-        console.log("FILE I WANT TO DOWNLOAD: " + JSON.stringify(payload));
-        socket.send(JSON.stringify(payload));
-      }
-
-    });
-
-    const responseSocket = createWebSocket(RESPONSE_QUEUE_SERVER_PORT);
-    responseSocket.addEventListener('message', (event) => {
-      console.log("Logging event: " + event);
-      console.log("Logging event data: " + event.data);
-      const { responseType, data } = JSON.parse(event.data);
-
-      const blob = event.data;
-      const reader = new FileReader();
-      reader.onload = function () {
-        const message = reader.result;
-
-        if (!message) {
-          return;
-        }
-
-        const newFiles = JSON.parse(message);
-        const bytes = new Uint8Array(data);
-        const blob = new Blob([bytes]);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    });
+        })
+        .catch((error) => {
+            console.error(`An error occurred while connecting to a WebSocket: ${error}`);
+        });
   };
 
 
@@ -68,10 +37,13 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   const fileDate = `${monthNames[dateParts[1] - 1]} ${parseInt(dateParts[0])}, ${dateParts[2]}`;
 
   const getReadableFileSizeString = (base64String) => {
+    const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
+    if (base64String == null){
+      return 0 + byteUnits[0]
+    }
     const binaryData = atob(base64String);
     let fileSizeInBytes = binaryData.length;
     let i = -1;
-    const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
     do {
       fileSizeInBytes = fileSizeInBytes / 1024;
       i++;
@@ -104,7 +76,7 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
           setIsSelected(prevState => !prevState);
           onSelectFile(file.fileName, file.userName, file.shared, !isSelected);
         }} />
-        <div className="fileItem--left" onClick={handleFileClick}>
+        <div className="fileItem--left" onDoubleClick={handleFileClick}>
           {getIconByExtension(fileExtension)}
           <p>{caption}</p>
         </div>

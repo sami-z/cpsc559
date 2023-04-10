@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import DeleteIcon from '@mui/icons-material/Delete';
 import './styles.css'
-import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
+import { REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT, createWebSocket } from '../WebSocket/WebSocket';
+
 
 
 import { makeStyles } from '@mui/styles';
@@ -14,10 +15,6 @@ function getModalStyle() {
         transform: `translate(-50%, -50%)`,
 
     };
-}
-
-function createWebSocket() {
-    return new WebSocket(WEBSOCKET_URL);
 }
 
 const useStyles = makeStyles({
@@ -49,24 +46,12 @@ function Delete(props) {
         console.log("IN HANDLE DELETE: ", props.selectedFiles);
 
         setUploadStatus('uploading');
-        const newWebSocket = createWebSocket();
-        const payload = { requestType: "DELETE", currentUser: props.currentUser, writeType: "DELETE", filesToDelete: props.selectedFiles };
 
-        newWebSocket.addEventListener('open', () => {
-            console.log('WebSocket connection established!');
-
-            console.log(newWebSocket);
-
-
-            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
-                newWebSocket.send(JSON.stringify(payload));
-            }
-
-
-            else {
-                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-            }
-
+        createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
+        .then((ws) => {
+            console.log('WebSocket connection established:', ws);
+            const payload = { requestType: "DELETE", currentUser: props.currentUser, writeType: "DELETE", filesToDelete: props.selectedFiles };
+            ws.send(JSON.stringify(payload));
             setTimeout(() => {
                 setUploadStatus('uploaded');
                 setOpen(false);
@@ -74,13 +59,12 @@ function Delete(props) {
                 setFileBytes(null);
                 setUploadStatus('idle');
             }, 2500); // add a 2.5 second delay
+            ws.close();
 
-
-            newWebSocket.close();
-
+        })
+        .catch((error) => {
+            console.error(`An error occurred while connecting to a WebSocket: ${error}`);
         });
-
-
     };
 
     const handleOpen = () => {

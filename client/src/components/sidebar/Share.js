@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
+import { REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT, createWebSocket } from '../WebSocket/WebSocket';
 import './styles.css'
 import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import Modal from '@mui/material/Modal';
 import { makeStyles } from '@mui/styles';
+
 
 function getModalStyle() {
     return {
@@ -45,41 +46,22 @@ function ShareButton({ selectedFiles, currentUser }) {
         setOpen(true);
     };
 
-
-    function createWebSocket() {
-        return new WebSocket(WEBSOCKET_URL);
-    }
-
     const handleSharePermission = () => {
-        const newWebSocket = createWebSocket();
-        // Send a JSON payload through the WebSocket connection to share the permission with the specified user
-        const shareWithArr = names.trim().split(",");
-        const fileNames = selectedFiles.map(item => item.fileName);
-        const payload = { requestType: "SHARE", currentUser: currentUser, filesToShare: fileNames, shared: shareWithArr };
 
-        newWebSocket.addEventListener('open', () => {
-            console.log('WebSocket connection established!');
+        createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
+        .then((ws) => {
+            console.log('WebSocket connection established:', ws);
+            const shareWithArr = names.trim().split(",");
+            const fileNames = selectedFiles.map(item => item.fileName);
+            const payload = { requestType: "SHARE", currentUser: currentUser, filesToShare: fileNames, shared: shareWithArr };
+            ws.send(JSON.stringify(payload));
+            alert('Permission shared successfully!');
+            ws.close();
 
-            console.log(newWebSocket);
-
-            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
-                newWebSocket.send(JSON.stringify(payload));
-                alert('Permission shared successfully!');
-            }
-
-            else {
-                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-            }
-
-            newWebSocket.close()
-            console.log(newWebSocket);
-
-            // Send the file then close
-            // handleFileUpload();
-            // handleClose();
+        })
+        .catch((error) => {
+            console.error(`An error occurred while connecting to a WebSocket: ${error}`);
         });
-
-        console.log(JSON.stringify(payload))
     };
 
     return (
