@@ -110,6 +110,7 @@ public class ExecutionCoreHandler {
                 ((ObjectNode) file).put("responseType", "UPDATE");
 
                 ArrayList<String> users = new ObjectMapper().convertValue(request.get("shared"), ArrayList.class);
+
                 users.add(request.get("currentUser").asText());
                 for (String username : users) {
                     ((ObjectNode) file).put("currentUser", username);

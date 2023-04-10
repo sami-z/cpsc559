@@ -490,9 +490,11 @@ public class DB {
 			arrayList.add(shared[i]);
 		}
 
-//		List<String> shared = Arrays.asList(prevSharedList.split("\\s*,\\s*"));
 		arrayList.removeAll(unsharedList);
-		return set("shared", arrayList.toString());
+		if (arrayList.isEmpty()){
+			return set("shared", "");
+		}
+		return set("shared", String.join(",", arrayList));
 	}
 
 	/**
