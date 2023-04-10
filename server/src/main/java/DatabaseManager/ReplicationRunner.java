@@ -36,6 +36,21 @@ public class ReplicationRunner implements Runnable{
         this.userName = userName;
     }
 
+    /**
+
+     The Runnable class represents a task to be executed by a thread. This class implements the run method to
+     upload a file to the database, register a user, edit shared and unshared with lists, or delete a file from
+     the database based on the flags set. The task is executed by calling the run method from a new thread.
+     @param shouldReplicateFile a boolean flag indicating whether to replicate a file
+     @param shouldReplicateLogin a boolean flag indicating whether to replicate a user registration
+     @param shouldReplicateShare a boolean flag indicating whether to replicate shared with list edits
+     @param shouldReplicateUnshare a boolean flag indicating whether to replicate unshared with list edits
+     @param replicatedEntry the entry to be replicated
+     @param TSList the list of timestamps
+     @param userName the user's name
+     @param shareList the list of users to share with
+     @param unshareList the list of users to unshare with
+     */
     @Override
     public void run() {
         DB db = new DB();
