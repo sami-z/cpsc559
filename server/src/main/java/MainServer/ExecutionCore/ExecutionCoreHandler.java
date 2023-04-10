@@ -265,9 +265,6 @@ public class ExecutionCoreHandler {
 
             System.out.println("Send to database" + System.currentTimeMillis());
 
-            System.out.println("Request is: " + request);
-
-
             boolean wasReplaced = NetworkUtil.sendWrite(request);
 
             System.out.println("database write done" + System.currentTimeMillis());
