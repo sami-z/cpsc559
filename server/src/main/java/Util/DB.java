@@ -182,6 +182,7 @@ public class DB {
 	public Document createUploadQuery(String userName, String fileName) {
 		return new Document("$or",
 				Arrays.asList(
+						new Document("currentUser", userName),
 						new Document("userName", userName),
 						new Document("shared", new Document("$regex", ".*" + userName + ".*"))
 				))

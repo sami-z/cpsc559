@@ -62,6 +62,15 @@ public class RequestQueueController {
 
     @PostMapping("/push")
     public void pushRequest(@RequestBody JsonNode node){
+        if(node.get("requestType").asText().equalsIgnoreCase("WRITE")) {
+            fileQueue.addTail(node);
+        }
+        requestQueueHandler.produceRequest(node);
+    }
+
+
+    @PostMapping("/push-test")
+    public void pushRequestTest(@RequestBody JsonNode node){
         requestQueueHandler.produceRequest(node);
     }
 

@@ -5,17 +5,12 @@ public final class NetworkConstants {
     public static int  REQUEST_QUEUE_SOCKET_PORT = 80;
     public static int  RESPONSE_QUEUE_SERVER_PORT = 9090;
     public static int MAIN_SERVER_PORT = 8080;
-    public static int REQUEST_QUEUE_PORT = 8081;
-    public static int RESPONSE_QUEUE_PORT = 8082;
-    public static int DATABASE_MANAGER_PORT = 8083;
-//    public static String[] REQUEST_QUEUE_IPS = new String[] {"18.189.196.143","3.136.94.117"};
-//    public static String[] RESPONSE_QUEUE_IPS = new String[] {"172.31.7.43","172.31.11.39"};
-//    public static String[] DB_MANAGER_IP = {"172.31.14.243","172.31.3.16"};
-
-    public static String[] REQUEST_QUEUE_IPS = new String[] {"localhost"};
-    public static String[] RESPONSE_QUEUE_IPS = new String[] {"localhost"};
-    public static String[] DB_MANAGER_IP = {"localhost"};
-
+    public static int REQUEST_QUEUE_PORT = 8080;
+    public static int RESPONSE_QUEUE_PORT = 8080;
+    public static int DATABASE_MANAGER_PORT = 8080;
+    public static String[] REQUEST_QUEUE_IPS = new String[] {"18.189.196.143","3.136.94.117"};
+    public static String[] RESPONSE_QUEUE_IPS = new String[] {"18.224.111.143","18.216.20.109"};
+    public static String[] DB_MANAGER_IP = {"172.31.14.243","172.31.3.16"};
     public static String EMPTY_DB_LEADER = "EMPTY";
     public static int MAX_RETRY = 5;
 
