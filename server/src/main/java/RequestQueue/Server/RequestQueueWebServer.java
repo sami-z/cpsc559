@@ -65,7 +65,7 @@ public class RequestQueueWebServer extends WebSocketServer{
         if(!LeaderState.serverIP.equals(LeaderState.leaderIP) && request != null && !request.isEmpty()){
             new Thread(new LeaderRunner(request)).start();
         }
-        if (request != null && !request.isEmpty()) {
+        else if (request != null && !request.isEmpty()) {
             if(request.get("requestType").asText().equalsIgnoreCase("WRITE")) {
                 fileQueue.addTail(request);
             }
