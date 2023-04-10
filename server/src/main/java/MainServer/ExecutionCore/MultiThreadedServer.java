@@ -30,6 +30,7 @@ public class MultiThreadedServer implements Runnable{
         System.out.println("before request queeu");
 
         System.out.println("fetching request");
+        ExecutionCoreHandler.initDB();
         while(this.isRunning){
             RestTemplate restTemplate = new RestTemplate();
             String fetchRequestURI = NetworkConstants.getRequestQueueURI(ServerState.requestQueueIP);
@@ -42,6 +43,7 @@ public class MultiThreadedServer implements Runnable{
 
             try {
                 System.out.println("server got request" + System.currentTimeMillis());
+                System.out.println(request.toPrettyString());
                 ExecutionCoreHandler.processEvent(request);
             } catch (Exception e) {
                 e.printStackTrace();

@@ -19,6 +19,12 @@ import Util.NetworkUtil;
 import static com.mongodb.client.model.Filters.eq;
 
 public class ExecutionCoreHandler {
+    private static DB db;
+
+    public static void initDB(){
+        db = new DB();
+    }
+
     /**
 
      This method tries to obtain a lock for the given request by communicating with the process identified by the provided IP address.
@@ -73,7 +79,6 @@ public class ExecutionCoreHandler {
      @throws IOException If there is an issue with converting the JSON object to the required format.
      */
     public static void updateUnshare(JsonNode request) throws IOException {
-        DB db = new DB();
         ArrayList<String> filesToUnshare = new ObjectMapper().convertValue(request.get("filesToUnshare"), ArrayList.class);
         for (String fileName : filesToUnshare) {
             JsonNode response = new ObjectMapper().createObjectNode();
@@ -90,7 +95,6 @@ public class ExecutionCoreHandler {
                 }
             }
         }
-        db.closeMongoClients();
     }
 
     /**
@@ -101,7 +105,6 @@ public class ExecutionCoreHandler {
      @throws IOException If there is an error in the input or output.
      */
     public static void updateShare(JsonNode request, Boolean updateShare) throws IOException {
-        DB db = new DB();
         if (updateShare) { //file(s) shared with new user(s)
             ArrayList<String> filesToShare = new ObjectMapper().convertValue(request.get("filesToShare"), ArrayList.class);
             for (String fileName : filesToShare) {
@@ -133,7 +136,6 @@ public class ExecutionCoreHandler {
                 }
             }
         }
-        db.closeMongoClients();
     }
 
     public static void processEvent(JsonNode request) throws IOException {
@@ -158,7 +160,6 @@ public class ExecutionCoreHandler {
          @throws IOException if there is an issue with sending the response object to the response queue
          */
         if(requestType.equalsIgnoreCase("READ_ALL_FILES")){
-            DB db = new DB();
             System.out.println("database requestType" + System.currentTimeMillis());
 
             ArrayNode files = db.findFiles(request.get("currentUser").asText());
@@ -195,7 +196,6 @@ public class ExecutionCoreHandler {
         else if(requestType.equalsIgnoreCase("DOWNLOAD")){
             System.out.println("DATABASE SINGLE BEFORE" + System.currentTimeMillis());
 
-            DB db = new DB();
             JsonNode singleFile = db.loadFile(request.get("ownerName").asText(), request.get("fileName").asText());
 
             System.out.println("DATABASE SINGLE AFTER LOAD" + System.currentTimeMillis());
@@ -206,7 +206,6 @@ public class ExecutionCoreHandler {
                 NetworkUtil.sendToResponseQueue(singleFile, IP);
             }
             System.out.println("DATABASE SINGLE FOR LOOP" + System.currentTimeMillis());
-            db.closeMongoClients();
         }
 
         /**
@@ -218,7 +217,6 @@ public class ExecutionCoreHandler {
          */
         else if(requestType.equalsIgnoreCase("LOGIN")){
 
-            DB db = new DB();
             FindIterable<Document> entry = db.getLoginReplica(true).find(eq("userName", request.get("currentUser").asText()));
 
             ObjectMapper mapper = new ObjectMapper();
@@ -246,7 +244,6 @@ public class ExecutionCoreHandler {
             for(String IP : NetworkConstants.RESPONSE_QUEUE_IPS){
                 NetworkUtil.sendToResponseQueue(response, IP);
             }
-            db.closeMongoClients();
         }
 
         /**
