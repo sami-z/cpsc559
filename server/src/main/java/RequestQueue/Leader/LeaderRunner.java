@@ -13,7 +13,11 @@ public class LeaderRunner implements Runnable{
    private boolean requestSentToLeader = false;
    private JsonNode request;
 
-
+    /**
+     Returns the IP address of the current leader by querying each request queue IP address.
+     Keeps track of the number of times each IP address returned a leader and selects the IP address that returned the most leaders.
+     @return the IP address of the current leader as a String
+     */
    public static String getLeader(){
        HashMap<String, Integer> mapping = new HashMap<>();
        for(String IP : NetworkConstants.REQUEST_QUEUE_IPS){
@@ -48,6 +52,12 @@ public class LeaderRunner implements Runnable{
        this.request = req;
    }
 
+    /**
+
+     Overrides the run() method in the Runnable interface to send the request to the current leader using NetworkUtil.
+     Keeps trying to send the request to the leader until it is successful or the maximum number of retries is reached.
+     If sending the request to the leader fails, waits for a specified amount of time and gets the current leader again before trying again.
+     */
     @Override
     public void run() {
        int trys = 0;
@@ -66,7 +76,5 @@ public class LeaderRunner implements Runnable{
                 trys++;
             }
         }
-
-
     }
 }

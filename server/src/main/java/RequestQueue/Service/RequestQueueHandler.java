@@ -22,37 +22,4 @@ public class RequestQueueHandler{
     public void produceRequest(JsonNode request) {
         requestQueue.produceMessage(request);
     }
-
-//    private void closeClientSocket(Socket clientSocket) {
-//        try {
-//            clientSocket.close();
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-//
-//    private void waitForPing() throws IOException {
-//        DataInputStream In = new DataInputStream(clientSocket.getInputStream());
-//        while(In.available() == 0);
-//
-//        byte[] b = new byte[In.available()];
-//        In.read(b);
-//    }
-
-//        try {
-//            while (true) {
-//                waitForPing();
-//                JsonNode response = requestQueue.consumeMessage();
-//                DataOutputStream dout = new DataOutputStream(clientSocket.getOutputStream());
-//
-//                if(response != null)
-//                    dout.write(response.toPrettyString().getBytes(StandardCharsets.UTF_8));
-//                else
-//                    dout.write(NetworkConstants.EMPTY_QUEUE.getBytes(StandardCharsets.UTF_8));
-//
-//                System.out.println("RESPONSE SENT");
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
 }

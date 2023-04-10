@@ -2,6 +2,12 @@ package RequestQueue.Thread;
 
 import RequestQueue.DataAccessObject.FileQueue;
 
+/**
+
+ The DeadlockRunner class implements the Runnable interface to create a thread that is responsible for removing the head of the file queue for a specific key
+ in case of a deadlock. If a request with a higher order value to the current order value is not processed within a certain timeout time, the DeadlockRunner
+ removes the head from the queue so that other requests can proceed.
+ */
 public class DeadlockRunner implements Runnable{
 
     public static int  MAX_TIMEOUT = 20000;

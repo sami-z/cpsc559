@@ -7,6 +7,11 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 @Repository("requestQueue")
+
+/**
+ The RequestQueueImpl class implements the RequestQueue interface to create a request queue.
+ It uses a LinkedList to store the request queue.
+ */
 public class RequestQueueImpl implements RequestQueue{
     private static final Queue<JsonNode> requestQueue = new LinkedList<>();;
 
