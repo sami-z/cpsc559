@@ -31,7 +31,7 @@ public class RequestQueueWebServer extends WebSocketServer{
 
     @Override
     public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-
+        System.out.println("websocket opened: " + System.currentTimeMillis());
     }
 
     @Override
@@ -50,7 +50,6 @@ public class RequestQueueWebServer extends WebSocketServer{
     @Override
     public void onMessage(WebSocket webSocket, String s) {
         System.out.println(System.currentTimeMillis());
-        System.out.println(s);
 
         JsonNode request = null;
 

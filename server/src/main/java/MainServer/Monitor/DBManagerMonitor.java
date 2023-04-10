@@ -76,6 +76,7 @@ public class DBManagerMonitor implements Runnable{
                     return DBManagerIP;
                 }
 
+                restTemplate.getForEntity(NetworkConstants.getDBManagerPingURI(DBManagerLeaderIP),String.class);
                 return DBManagerLeaderIP;
             } catch(RestClientException e){
                 System.out.println("DBManager did not respond to ping: " + DBManagerIP);

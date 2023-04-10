@@ -68,6 +68,12 @@ public class RequestQueueController {
         requestQueueHandler.produceRequest(node);
     }
 
+
+    @PostMapping("/push-test")
+    public void pushRequestTest(@RequestBody JsonNode node){
+        requestQueueHandler.produceRequest(node);
+    }
+
     @PostMapping("/leader")
     public void setLeader(@RequestBody JsonNode node){
         String leaderIP = node.get("leaderIP").asText();
