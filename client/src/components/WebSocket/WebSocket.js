@@ -1,9 +1,9 @@
 export const REQUEST_QUEUE_PORT = 80;
 export const RESPONSE_QUEUE_PORT = 9090;
-// export const REQUEST_QUEUE_IPS = ["18.189.196.143","3.136.94.117"];
-// export const RESPONSE_QUEUE_IPS = ["172.31.7.43","172.31.11.39"];
-export const REQUEST_QUEUE_IPS = ["localhost"];
-export const RESPONSE_QUEUE_IPS = ["localhost"];
+export const REQUEST_QUEUE_IPS = ["18.189.196.143","3.136.94.117"];
+export const RESPONSE_QUEUE_IPS = ["18.224.111.143","18.216.20.109"];
+// export const REQUEST_QUEUE_IPS = ["localhost"];
+// export const RESPONSE_QUEUE_IPS = ["localhost"];
 
 
 export async function createWebSocket(ips, portNum) {
