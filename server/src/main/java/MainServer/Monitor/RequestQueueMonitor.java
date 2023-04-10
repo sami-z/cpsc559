@@ -27,6 +27,12 @@ public class RequestQueueMonitor implements Runnable{
         restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
     }
 
+    /**
+
+     Sends an HTTP POST request to update the leader of the request queue and inform processing servers of the
+     change in the leader.
+     @param IP the IP address of the new leader of the request queue
+     */
     public static void sendRequestQueueLeader(String IP){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -59,6 +65,13 @@ public class RequestQueueMonitor implements Runnable{
                 }
     }
 
+    /**
+     This method sends a ping request to the request queue IPs to get the currently running request queue.
+     It iterates through all the request queue IPs and sends a ping request to each of them. If a response is received from
+     any of them, it returns that IP address, which is the currently running request queue. If none of the request queues
+     responds to the ping request, the method returns null.
+     @return The IP address of the currently running request queue or null if none of the request queues respond.
+     */
     public static String getRunningRequestQueue(){
         for(String requestIP : REQUEST_QUEUE_IPS){
             String ping_uri = NetworkConstants.getRequestQueueURIPing(requestIP);
@@ -73,6 +86,11 @@ public class RequestQueueMonitor implements Runnable{
         return null;
     }
 
+    /**
+     * This code is used to check if the request queue leader is down.
+     * If the request queue leader is down we elect a new leader and send this
+     * information to all the other request queues and the processing servers
+     * */
     @Override
     public void run() {
 
