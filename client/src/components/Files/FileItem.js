@@ -34,7 +34,9 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   const fileExtension = caption.split('.').pop();
   // const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
   const dateParts = file.created.split('/');
+  console.log("HERE IS THE DATE", dateParts)
   const fileDate = `${monthNames[dateParts[1] - 1]} ${parseInt(dateParts[0])}, ${dateParts[2]}`;
+  console.log("HERE IS THE DATE 2", fileDate)
 
   const getReadableFileSizeString = (base64String) => {
     const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -80,7 +82,7 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
           {getIconByExtension(fileExtension)}
           <p>{caption}</p>
         </div>
-        <div className="fileItem--right" onClick={handleFileClick}>
+        <div className="fileItem--right" onDoubleClick={handleFileClick}>
           <p>{file.shared.length == 0 ? "None" : file.shared}</p>
           <p>{file.userName === currentUser ? "me" : file.userName}</p>
           <p>{fileDate}</p>

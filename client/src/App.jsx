@@ -2,10 +2,9 @@ import './App.css';
 import Login from './components/Login/Login';
 import Navbar from "./components/Navbar/Navbar";
 import Files from "./components/Files/Files"
-import Sidebar from "./components/sidebar/Sidebar"
+import Sidebar from "./components/Sidebar/Sidebar"
 import { useState, useEffect, useRef } from 'react';
 import { RESPONSE_QUEUE_IPS, REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT, RESPONSE_QUEUE_PORT, createWebSocket } from './components/WebSocket/WebSocket';
-import { WEBSOCKET_URL } from './components/WebSocket/WebSocket';
 import { CircularProgress } from '@mui/material';
 
 function App() {

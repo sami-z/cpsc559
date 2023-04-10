@@ -48,12 +48,20 @@ function ShareButton({ selectedFiles, currentUser }) {
 
     const handleSharePermission = () => {
 
+        for (const file of selectedFiles) {
+            if (file.userName !== currentUser) {
+              alert('You cannot share files you do not own!');
+              return;
+            }
+          }
+
         createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
         .then((ws) => {
             console.log('WebSocket connection established:', ws);
             const shareWithArr = names.trim().split(",");
             const fileNames = selectedFiles.map(item => item.fileName);
             const payload = { requestType: "SHARE", currentUser: currentUser, filesToShare: fileNames, shared: shareWithArr };
+            console.log("HERE I AM", payload)
             ws.send(JSON.stringify(payload));
             alert('Permission shared successfully!');
             ws.close();
@@ -63,6 +71,10 @@ function ShareButton({ selectedFiles, currentUser }) {
             console.error(`An error occurred while connecting to a WebSocket: ${error}`);
         });
     };
+
+    function handleBlur(event) {
+        event.target.value = null; 
+    }
 
     return (
         <div className='upload'>
@@ -88,7 +100,7 @@ function ShareButton({ selectedFiles, currentUser }) {
                             <p>Sharing...</p>
                         ) : (
                             <>
-                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} />
+                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} onBlur={handleBlur} />
                                 <button onClick={handleSharePermission}>Share File</button>
                                 {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
                                 {/* {fileData && <p>{fileData}</p>} */}

@@ -63,6 +63,7 @@ function Upload(props) {
             let day = String(today.getDate()).padStart(2, '0');
             let year = today.getFullYear();
             let date = month + '/' + day + '/' + year;
+            console.log("JAKE WAKE", date)
             const payload = { requestType: "WRITE", currentUser: props.currentUser, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared, created: date };
             ws.send(JSON.stringify(payload));
 
