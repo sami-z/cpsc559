@@ -22,16 +22,16 @@ import java.util.Collections;
 public class ResponseQueueServerMain {
     public static void main(String[] args) throws UnknownHostException {
 
-        SpringApplication app = new SpringApplication(ResponseQueueServerMain.class);
+        SpringApplication app = new SpringApplication(ResponseQueueServerMain.class);   // Starts a spring boot app
         System.out.println("RESPONSE QUEUE IS RUNNING");
         app.setDefaultProperties(Collections
-                .singletonMap("server.port", Integer.toString(NetworkConstants.RESPONSE_QUEUE_PORT)));
+                .singletonMap("server.port", Integer.toString(NetworkConstants.RESPONSE_QUEUE_PORT))); // Set port
 
         ApplicationContext context = app.run(args);
-        ResponseQueueHandler responseQueueMicroService = context.getBean(ResponseQueueHandler.class);
+        ResponseQueueHandler responseQueueMicroService = context.getBean(ResponseQueueHandler.class);   // Create response queue
 
-        ResponseQueueWebServer responseQueueWebServer = new ResponseQueueWebServer(NetworkConstants.RESPONSE_QUEUE_SERVER_PORT, responseQueueMicroService);
-        Thread responseQueueWebServerThread = new Thread(responseQueueWebServer);
+        ResponseQueueWebServer responseQueueWebServer = new ResponseQueueWebServer(NetworkConstants.RESPONSE_QUEUE_SERVER_PORT, responseQueueMicroService); // run the respone queue web server
+        Thread responseQueueWebServerThread = new Thread(responseQueueWebServer); // Running web server in separate thrread
         responseQueueWebServerThread.start();
         System.out.println("Response queue web server is running...");
     }

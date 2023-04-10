@@ -36,6 +36,13 @@ public class ResponseQueueWebServer extends WebSocketServer {
 
     }
 
+    /**
+     This method is invoked when a new message is received on a WebSocket.
+     It then extracts the current user's name from the message. It then retrieves the next response for the user from the responseQueueHandler.
+     If no response is found for the user, it sends a "noUpdate" message on the WebSocket, otherwise it sends the retrieved response.
+     @param webSocket the WebSocket connection object
+     @param s the message received on the WebSocket
+     */
     @Override
     public void onMessage(WebSocket webSocket, String s) {
         System.out.println(s);

@@ -14,7 +14,14 @@ public class ResponseQueueController {
     public ResponseQueueController(ResponseQueueHandler responseQueueHandler) {
         this.responseQueueHandler = responseQueueHandler;
     }
-    
+
+    /**
+
+     This method is a POST endpoint that receives a JSON request body
+     It then extracts the "currentUser" field from the JSON object and uses it to push the response to the corresponding user's response queue.
+     If the "currentUser" field is not present at the top level of the JSON object, it extracts it from the first object within the array and uses it instead.
+     @param response the JSON request body
+     */
     @PostMapping("/post")
     public void postRequest(@RequestBody JsonNode response) {
         System.out.println(response.toPrettyString());
@@ -24,7 +31,5 @@ public class ResponseQueueController {
         } else {
             responseQueueHandler.push(response.get(0).get("currentUser").asText(), response);
         }
-
-
     }
 }
