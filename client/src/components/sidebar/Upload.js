@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import './styles.css'
-import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
+import { REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT, createWebSocket } from '../WebSocket/WebSocket';
 
 
 import { makeStyles } from '@mui/styles';
@@ -13,10 +13,6 @@ function getModalStyle() {
         left: `50%`,
         transform: `translate(-50%, -50%)`,
     };
-}
-
-function createWebSocket() {
-    return new WebSocket(WEBSOCKET_URL);
 }
 
 const useStyles = makeStyles({
@@ -49,37 +45,26 @@ function Upload(props) {
         }
 
         setUploadStatus('uploading');
-        const newWebSocket = createWebSocket();
-        let shared = []
-        let file = props.files.find(p => p.fileName === fileData.name);
-        let userName = props.currentUser
-        if (file) {
-            console.log("FILE ALREADY EXISTS, KEEPING OLD SHARED ARR");
-            shared = file.shared.split(",");
-            userName = file.userName;
 
-        }
-        let today = new Date();
-        let month = String(today.getMonth() + 1).padStart(2, '0');
-        let day = String(today.getDate()).padStart(2, '0');
-        let year = today.getFullYear();
-        let date = month + '/' + day + '/' + year;
-        const payload = { requestType: "WRITE", currentUser: props.currentUser, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared, created: date };
+        createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
+        .then((ws) => {
+            console.log('WebSocket connection established:', ws);
+            let shared = []
+            let file = props.files.find(p => p.fileName === fileData.name);
+            let userName = props.currentUser
+            if (file) {
+                console.log("FILE ALREADY EXISTS, KEEPING OLD SHARED ARR");
+                shared = file.shared.split(",");
+                userName = file.userName;
 
-        newWebSocket.addEventListener('open', () => {
-            console.log('WebSocket connection established!');
-
-            console.log(newWebSocket);
-
-
-            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
-                newWebSocket.send(JSON.stringify(payload));
             }
-
-
-            else {
-                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-            }
+            let today = new Date();
+            let month = String(today.getMonth() + 1).padStart(2, '0');
+            let day = String(today.getDate()).padStart(2, '0');
+            let year = today.getFullYear();
+            let date = month + '/' + day + '/' + year;
+            const payload = { requestType: "WRITE", currentUser: props.currentUser, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared, created: date };
+            ws.send(JSON.stringify(payload));
 
             setTimeout(() => {
                 setUploadStatus('uploaded');
@@ -88,14 +73,14 @@ function Upload(props) {
                 setFileBytes(null);
                 setUploadStatus('idle');
             }, 2500); // add a 2.5 second delay
+            ws.close();
 
+            
 
-            newWebSocket.close();
-
+        })
+        .catch((error) => {
+            console.error(`An error occurred while connecting to a WebSocket: ${error}`);
         });
-
-
-
     };
 
     const handleOpen = () => {

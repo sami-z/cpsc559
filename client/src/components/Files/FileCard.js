@@ -3,9 +3,7 @@ import './styles.css';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CropOriginalIcon from '@mui/icons-material/CropOriginal';
-import { WEBSOCKET_URL } from '../WebSocket/WebSocket';
-import { RESPONSE_QUEUE_SERVER_PORT } from '../WebSocket/WebSocket';
-import { create } from '@mui/material/styles/createTransitions';
+import { REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT, createWebSocket } from '../WebSocket/WebSocket';
 
 const FileCard = (props) => {
   const fileExtension = props.name.split('.').pop();
@@ -26,85 +24,24 @@ const FileCard = (props) => {
     }
   };
 
-  function createWebSocket(port) {
-    return new WebSocket(port);
-  }
-
-  // const rqstSocket = createWebSocket(WEBSOCKET_URL)
-  // const payload = { requestType: "READ", userName: "manbir", readType: "allFiles" };
-
-
-  // rqstSocket.addEventListener('open', () => {
-  //     console.log('RqstQ connection established!');
-
-  //     console.log(rqstSocket);
-
-  //     if(!flager){
-  //       if (rqstSocket && rqstSocket.readyState === WebSocket.OPEN) {
-  //           rqstSocket.send(JSON.stringify(payload));
-  //           flager = true
-  //       }
-
-  //     }
-
-
-  //     else {
-  //         console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-  //     }
-
-
-  //     rqstSocket.close();
-
-  // });
-
+ 
   const handleCardClick = () => {
-    const socket = createWebSocket(WEBSOCKET_URL);
-    socket.addEventListener('open', () => {
-      console.log('RqstQ connection established!');
+    createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
+        .then((ws) => {
+            console.log('WebSocket connection established:', ws);
+            const payload = { requestType: "DOWNLOAD", ownerName: props.ownerName, fileName: props.name, currentUser: props.currentUser }
+            ws.send(JSON.stringify(payload));
+            ws.close();
 
-      if (socket && socket.readyState === WebSocket.OPEN) {
-
-        // const payload = { requestType: "DOWNLOAD", userName: props.currentUser, fileName: props.name }
-        const payload = { requestType: "DOWNLOAD", ownerName: props.ownerName, fileName: props.name, currentUser: props.currentUser }
-        console.log(payload);
-        socket.send(JSON.stringify(payload));
-      }
-
-    });
-
-    const responseSocket = createWebSocket(RESPONSE_QUEUE_SERVER_PORT);
-    responseSocket.addEventListener('message', (event) => {
-      console.log("Logging event: " + event);
-      console.log("Logging event data: " + event.data);
-      const { responseType, data } = JSON.parse(event.data);
-
-      const blob = event.data;
-      const reader = new FileReader();
-      reader.onload = function () {
-        const message = reader.result;
-        console.log("just receieved msg from rspoonseQ", message);
-
-        if (!message) {
-          return;
-        }
-
-        const newFiles = JSON.parse(message);
-        const bytes = new Uint8Array(data);
-        const blob = new Blob([bytes]);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        a.click();
-        URL.revokeObjectURL(url);
-        console.log("I BE IN HERE");
-      }
-    });
+        })
+        .catch((error) => {
+            console.error(`An error occurred while connecting to a WebSocket: ${error}`);
+        });
   };
 
 
   return (
-    <div className='fileCard' onClick={handleCardClick}>
+    <div className='fileCard' onDoubleClick={handleCardClick}>
       <div className="fileCard--top">
         {getIconByExtension(fileExtension)}
       </div>

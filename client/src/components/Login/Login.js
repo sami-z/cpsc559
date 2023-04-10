@@ -2,15 +2,9 @@ import PersonIcon from '@mui/icons-material/Person';
 import KeyIcon from '@mui/icons-material/Key';
 import { Input, InputAdornment } from '@mui/material';
 import { useState, useEffect, useRef } from 'react';
-import { RESPONSE_QUEUE_SERVER_PORT, WEBSOCKET_URL } from '../../components/WebSocket/WebSocket';
+import { REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT, createWebSocket } from '../../components/WebSocket/WebSocket';
+
 import './index.css';
-
-import { CircularProgress } from '@mui/material';
-
-
-function createWebSocket(port) {
-    return new WebSocket(port);
-}
 
 function Login(props) {
     const [username, setUsername] = useState('');
@@ -25,26 +19,17 @@ function Login(props) {
         console.log("Entered username for login: ", enteredUsername);
         console.log("Entered password for login ", enteredPass);
 
-        const newWebSocket = createWebSocket(WEBSOCKET_URL);
-        const payload = { requestType: "LOGIN", currentUser: enteredUsername, password: enteredPass };
 
-        newWebSocket.addEventListener('open', () => {
-            console.log('WebSocket connection established!');
+        createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
+        .then((ws) => {
+            console.log('WebSocket connection established:', ws);
+            const payload = { requestType: "LOGIN", currentUser: enteredUsername, password: enteredPass };
+            ws.send(JSON.stringify(payload));
+            ws.close();
 
-            console.log(newWebSocket);
-
-
-            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
-                newWebSocket.send(JSON.stringify(payload));
-            }
-
-
-            else {
-                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-            }
-
-            newWebSocket.close();
-
+        })
+        .catch((error) => {
+            console.error(`An error occurred while connecting to a WebSocket: ${error}`);
         });
     };
 
@@ -56,26 +41,16 @@ function Login(props) {
         console.log("Entered username for login: ", enteredUsername);
         console.log("Entered password for login ", enteredPass);
 
-        const newWebSocket = createWebSocket(WEBSOCKET_URL);
-        const payload = { requestType: "REGISTER", currentUser: enteredUsername, password: enteredPass };
+        createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
+        .then((ws) => {
+            console.log('WebSocket connection established:', ws);
+            const payload = { requestType: "REGISTER", currentUser: enteredUsername, password: enteredPass };
+            ws.send(JSON.stringify(payload));
+            ws.close();
 
-        newWebSocket.addEventListener('open', () => {
-            console.log('WebSocket connection established!');
-
-            console.log(newWebSocket);
-
-
-            if (newWebSocket && newWebSocket.readyState === WebSocket.OPEN) {
-                newWebSocket.send(JSON.stringify(payload));
-            }
-
-
-            else {
-                console.log("WEB SOCKET CONNECTION IS NOT OPEN!")
-            }
-
-            newWebSocket.close();
-
+        })
+        .catch((error) => {
+            console.error(`An error occurred while connecting to a WebSocket: ${error}`);
         });
     };
 

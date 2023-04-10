@@ -17,6 +17,12 @@ public class MultiThreadedServer implements Runnable{
         this.isRunning = false;
     }
 
+    /**
+
+     A run method that represents a thread to fetch requests from the request queue and process them.
+
+     This class implements the Runnable interface and overrides the run() method.
+     */
     @Override
     public void run() {
         this.isRunning = true;
