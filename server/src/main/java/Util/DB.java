@@ -37,6 +37,11 @@ public class DB {
 		this.mapper = new ObjectMapper();
 	}
 
+	/**
+	 Creates a new MongoClient with specified settings.
+	 @param shouldGetPrimary if true, the method will create a client to connect to the primary cluster and false if it shoulder connect to a secondary cluster.
+	 @return a MongoClient object created with the specified settings.
+	 */
 	public MongoClient createMongoClient(boolean shouldGetPrimary) {
 		String URI;
 //		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
@@ -55,6 +60,11 @@ public class DB {
 		return MongoClients.create(clientSettings);
 	}
 
+	/**
+
+	 Closes the MongoClient instances associated with this DB instance.
+	 If the MongoClient1 or MongoClient2 is not null, it will be closed.
+	 */
 	public void closeMongoClients() {
 		if (this.mongoClient1 != null) {
 			this.mongoClient1.close();
@@ -65,6 +75,12 @@ public class DB {
 		}
 	}
 
+	/**
+	 Retrieves the MongoClient instance corresponding to the specified cluster,
+	 depending on whether the primary cluster should be used or not.
+	 @param shouldGetPrimary a boolean indicating whether the primary cluster should be used
+	 @return a MongoClient instance corresponding to the specified cluster
+	 */
 	public MongoClient getMongoClient(boolean shouldGetPrimary) {
 //		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
 		if (shouldGetPrimary) {
@@ -90,43 +106,13 @@ public class DB {
 		}
 	}
 
-//	public MongoCollection<Document> getIsFirstClusterPrimaryReplica() {
-//		return getMongoClient(false).getDatabase(DBConstants.DATABASE_NAME).getCollection(DBConstants.PRIMARY_COLLECTION_NAME);
-//	}
+	/**
 
-//	public Document getAdminPrimaryQuery() {
-//		return new Document("userName", "admin");
-//	}
-
-//	public void setIsFirstClusterPrimary() {
-//		MongoCollection<Document> mc = getIsFirstClusterPrimaryReplica();
-//		Document queryResult = mc.find(getAdminPrimaryQuery()).first();
-//
-//		if (queryResult == null) {
-//			Document recordPrimaryDoc = new Document("_id", new ObjectId())
-//					.append("userName", "admin")
-//					.append("isFirstClusterPrimary", true);
-//			mc.insertOne(recordPrimaryDoc);
-//		} else {
-//			DB.isFirstClusterPrimary = queryResult.getBoolean("isFirstClusterPrimary");
-//		}
-//	}
-
-//	public void updateIsFirstClusterPrimary(boolean newIsFirstClusterPrimary) {
-//		MongoCollection<Document> mc = getIsFirstClusterPrimaryReplica();
-//		Document queryResult = mc.find(getAdminPrimaryQuery()).first();
-//
-//		UpdateResult result = mc.updateOne(
-//				queryResult,
-//				Updates.set("isFirstClusterPrimary", newIsFirstClusterPrimary)
-//		);
-//		System.out.println(result);
-//
-//		if (DB.isFirstClusterPrimary) {
-//			DB.isFirstClusterPrimary = newIsFirstClusterPrimary;
-//		}
-//	}
-
+	 This method is responsible for replicating the primary database to the secondary database.
+	 It first retrieves all the documents from the primary replica, and then drops the secondary replica.
+	 After that, it iterates over each document in the primary replica and inserts it into the secondary replica.
+	 Finally, it performs the same operations on the login replica.
+	 */
 	public void replicateDatabase() {
 		List<Document> primaryDocs = getReplica(true).find().into(new ArrayList<>());
 		MongoCollection<Document> secondaryReplica = getReplica(false);
@@ -145,6 +131,17 @@ public class DB {
 		}
 	}
 
+	/**
+
+	 Creates a new MongoDB Document for storing file upload information based on the given parameters.
+	 @param model the client request model containing file upload information.
+	 @param timestamp the timestamp for the file upload.
+	 @param id the object ID for the file upload, or null if creating a new entry.
+	 @param formattedDate the formatted date for the file upload.
+	 @param userName the username of the owner of the file.
+	 @param currentUser the username of the current user uploading the file.
+	 @return a MongoDB Document object containing the file upload information.
+	 */
 	public Document createEntry(ClientRequestModel model, long timestamp, ObjectId id, String formattedDate, String userName, String currentUser) {
 		Document entry;
 		if (id == null) {
@@ -173,6 +170,15 @@ public class DB {
 		}
 	}
 
+	/**
+
+	 Creates a MongoDB query document for retrieving file upload information based on the specified user and file name.
+	 The resulting query will search for documents where the "userName" field matches the given user name, or the "shared" field
+	 contains the given user name as a substring, and where the "fileName" field matches the given file name.
+	 @param userName the name of the user who uploaded or has access to the file
+	 @param fileName the name of the file to retrieve information for
+	 @return a MongoDB query document that can be used to retrieve file upload information
+	 */
 	public Document createUploadQuery(String userName, String fileName) {
 		return new Document("$or",
 				Arrays.asList(
@@ -182,6 +188,15 @@ public class DB {
 				.append("fileName", fileName);
 	}
 
+	/**
+	 *
+	 * Uploads a file to the database and creates a new entry if there is no existing entry
+	 * with the given username and filename, or replaces the existing entry if there is one.
+	 * @param model the ClientRequestModel containing information about the upload request
+	 * @param timestamp the timestamp of the upload request
+	 * @param queryResult the result of the query to check for an existing entry
+	 * @return an ArrayList containing the new entry and a Document indicating
+	 * */
 	public ArrayList<Document> uploadFile(ClientRequestModel model, long timestamp, Document queryResult) {
 		ArrayList<Document> ret = new ArrayList<>();
 		LocalDate currentDate = LocalDate.now();
@@ -223,6 +238,13 @@ public class DB {
 		return ret;
 	}
 
+	/**
+
+	 Uploads a file to the database, replacing an existing entry if the entry's timestamp is greater than or equal to the latest timestamp for the given file.
+	 @param entry The Document containing the information about the file to be uploaded.
+	 @throws IOException if an I/O error occurs.
+	 */
+
 	public void uploadFile(Document entry) throws IOException {
 		String fileName = entry.getString("fileName");
 		String userName = entry.getString("userName");
@@ -254,6 +276,13 @@ public class DB {
 		}
 	}
 
+	/**
+
+	 Registers a user in the system by inserting a new document into the login collection
+	 if the user is not already registered.
+	 @param model a ClientRequestModel object containing the current user's information
+	 @return the newly created login document if registration is successful, otherwise null
+	 */
 	public Document registerUser(ClientRequestModel model) {
 		Document query = new Document("userName", model.currentUser);
 		Document queryResult = getLoginReplica(true).find(query).first();
@@ -277,6 +306,13 @@ public class DB {
 		return loginDoc;
 	}
 
+
+	/**
+
+	 Inserts a new document into the login replica collection to register a new user.
+	 @param entry a document that contains information about the user to be registered, including their username and password
+	 @throws Exception if there is an error when attempting to insert the document into the login replica collection
+	 */
 	public void registerUser(Document entry) {
 		try {
 			getLoginReplica(false).insertOne(entry);
@@ -285,6 +321,16 @@ public class DB {
 		}
 	}
 
+	/**
+
+	 This method searches for files belonging to a given user, either files that the user has created or files that have been shared with the user.
+
+	 @param userName the name of the user whose files are being searched for
+
+	 @return an ArrayNode containing JsonNodes representing the matching documents in the database
+
+	 @throws JsonProcessingException if there is an issue processing the JSON data
+	 */
 	public ArrayNode findFiles(String userName) throws JsonProcessingException {
 		ArrayList<JsonNode> ret = new ArrayList<>();
 
@@ -326,6 +372,14 @@ public class DB {
 		return and(eq("fileName", fileName), eq("userName", userName));
 	}
 
+	/**
+
+	 This method loads the specified file from the database and returns its content as a JsonNode.
+	 @param userName the username of the owner of the file
+	 @param fileName the name of the file to be loaded
+	 @return the content of the file as a JsonNode, or null if the file is not found in the database
+	 @throws IOException if there is an error reading the file content from the database
+	 */
 	public JsonNode loadFile(String userName, String fileName) throws IOException {
 		Document doc;
 		Bson filter = createUploadQuery(userName, fileName);
@@ -359,6 +413,12 @@ public class DB {
 		return set("shared", prevSharedList + "," + shareString);
 	}
 
+	/**
+	 Creates a MongoDB update operation to modify the "shared" field of a document.
+	 @param prevSharedList the current list of users the document is shared with, as a string separated by commas.
+	 @param sharedList the new list of users to share the document with
+	 @return a Bson update operation that can be passed to a MongoDB update method, such as updateOne or updateMany.
+	 */
 	public void editSharedWith(ArrayList<String> filesToShare, String userName, ArrayList<String> sharedList){
 		for(String fileName: filesToShare)
 		{
@@ -379,6 +439,14 @@ public class DB {
 		}
 	}
 
+	/**
+
+	 Edits the list of users that a file is shared with in the database.
+	 @param files An ArrayList of ArrayLists containing the name of the file and the timestamp of the last edit for each file that needs to be updated.
+	 @param userName The username of the user who is making the edit.
+	 @param sharedList An ArrayList of strings containing the usernames of the users that the file will now be shared with.
+	 @param isReplicating A boolean indicating whether or not the database is in replication mode.
+	 */
 	public void editSharedWith(ArrayList<ArrayList<String>> files, String userName, ArrayList<String> sharedList, boolean isReplicating) {
 		if (isReplicating) {
 			for (ArrayList<String> innerTSList : files) {
@@ -406,6 +474,13 @@ public class DB {
 		}
 	}
 
+	/**
+
+	 This method creates a Bson update operation to remove the specified usernames from a shared list.
+	 @param prevSharedList the previous shared list in string format
+	 @param unsharedList the list of usernames to be removed from the shared list
+	 @return a Bson update operation to be executed on a MongoDB collection
+	 */
 	public Bson createUnshareOperation(String prevSharedList, ArrayList<String> unsharedList) {
 
 		String[] shared = prevSharedList.split("\\s*,\\s*");
@@ -420,6 +495,14 @@ public class DB {
 		return set("shared", arrayList.toString());
 	}
 
+	/**
+
+	 Edits the shared list of the specified files to remove the given usernames.
+	 @param filesToUnShare A list of filenames to edit the shared list for.
+	 @param userName The username of the user who is unsharing the files.
+	 @param unshareList A list of usernames to remove from the shared list of the specified files.
+	 @throws IOException If an error occurs while communicating with the database.
+	 */
 	public void editUnsharedWith(ArrayList<String> filesToUnShare, String userName, ArrayList<String> unshareList){
 		for(String fileName: filesToUnShare)
 		{
@@ -440,6 +523,15 @@ public class DB {
 		}
 	}
 
+	/**
+
+	 Edits the list of users with whom a file is unshared, for the given list of files, for the given user.
+	 If isReplicating is true, the changes are made to the secondary cluster, otherwise to the primary cluster.
+	 @param files the list of files to be unshared
+	 @param userName the user for whom the files are to be unshared
+	 @param unsharedList the list of users with whom the files are to be unshared
+	 @param isReplicating a boolean flag indicating whether the changes should be made to the secondary cluster
+	 */
 	public void editUnsharedWith(ArrayList<ArrayList<String>> files, String userName, ArrayList<String> unsharedList, boolean isReplicating) {
 		if (isReplicating) {
 			for (ArrayList<String> innerTSList : files) {
@@ -467,6 +559,13 @@ public class DB {
 		}
 	}
 
+	/**
+
+	 Deletes files with the given file names for the given user from the database.
+	 @param files List of file names to be deleted
+	 @param userName Username of the user whose files are to be deleted
+	 @return String with names of deleted files separated by commas
+	 */
 	public String deleteFile(ArrayList<String> files, String userName) {
 		ArrayList<String> deletedFiles = new ArrayList<>();
 		DeleteResult deleteResult;
@@ -487,6 +586,14 @@ public class DB {
 		return String.join(",", deletedFiles);
 	}
 
+	/**
+
+	 Deletes the specified files for a user.
+	 If isReplicating is true, it will delete the files in both the primary and secondary clusters.
+	 @param files the list of files to be deleted
+	 @param userName the name of the user who owns the files
+	 @param isReplicating specifies whether the deletion should be replicated across both the primary and secondary clusters
+	 */
 	public void deleteFile(ArrayList<ArrayList<String>> files, String userName, boolean isReplicating) {
 		if (isReplicating) {
 			for (ArrayList<String> innerTSList : files) {
