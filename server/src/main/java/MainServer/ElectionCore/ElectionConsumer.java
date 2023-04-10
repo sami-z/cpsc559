@@ -32,6 +32,14 @@ public class ElectionConsumer {
         restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
     }
 
+    /**
+
+     Sends the leader IP to a processing server identified by the provided IP address.
+
+     @param IP the IP address of the processing server to send the leader IP to
+
+     @throws RestClientException if an error occurs during the REST API call
+     */
     public static void sendLeader(String IP){
 
         try {
@@ -49,6 +57,14 @@ public class ElectionConsumer {
         }
     }
 
+    /**
+
+     Sends an election message to the specified IP address.
+
+     @param IP the IP address to send the message to
+
+     @throws RestClientException if there is an error while sending the message
+     */
     public static void sendElection(String IP){
         try {
             String uri = NetworkConstants.getProcessingServerURIElection(IP);
@@ -67,6 +83,12 @@ public class ElectionConsumer {
         }
     }
 
+    /**
+
+     This method initiates the election process in case the current server detects that the leader is down. It sets the current server state to indicate that the election is running and then it checks which servers have IP addresses that are numerically greater than the current server's IP address. It sends an election message to all of the servers with IP addresses greater than its own. If no such servers exist, this server sets itself as the leader. Otherwise, it waits for a response from the servers to which it has sent the election message for a brief period of time. If it receives a positive response, it becomes a follower and waits for the new leader to send heartbeats. If it does not receive a response or is bullied by a server with a higher priority, it initiates a new election.
+     @throws UnknownHostException if there is an error resolving the IP addresses of the servers.
+     @throws InterruptedException if there is an error during the sleep operation.
+     */
     public static void initiateElection() throws UnknownHostException, InterruptedException {
 
         System.out.println("STARTING THE ELECTION");
@@ -105,6 +127,12 @@ public class ElectionConsumer {
 
     }
 
+    /**
+
+     Sets the current server as the leader and updates the leader IP across all servers in the network.
+     Sends the request queue to the new leader for processing.
+     Starts a new thread for monitoring the request queue and a new thread for monitoring the database manager.
+     */
     public static void setLeader(){
         ServerState.leaderIP = ServerState.serverIP;
 

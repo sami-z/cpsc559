@@ -20,6 +20,12 @@ import java.net.UnknownHostException;
 @RestController
 public class ElectionController{
 
+    /**
+
+     Handles the POST request to update the leader server.
+     @param node the JSON data received in the request body containing the new leader's IP address
+     @return void
+     */
     @PostMapping("/leader/server")
     public void leader(@RequestBody JsonNode node) {
         String leaderIP = node.get("leaderIP").asText();
@@ -34,6 +40,17 @@ public class ElectionController{
         return;
     }
 
+    /**
+
+     This method handles HTTP POST requests to the "/election" endpoint.
+     It receives a JSON object from a requesting server containing the IP address of another server.
+     The method checks if the requesting server has a higher IP address than this server. If it does,
+     and if there is no ongoing election, it triggers an election by calling the initiateElection() method of
+     the ElectionConsumer class.
+     @param node a JsonNode object representing the JSON data in the request body
+     @throws InterruptedException if the thread is interrupted while sleeping
+     @throws UnknownHostException if the IP address of this server or the requesting server cannot be resolved
+     */
     @PostMapping("/election")
     @ResponseStatus(value = HttpStatus.OK)
     public void election(@RequestBody JsonNode node) throws InterruptedException, UnknownHostException {
@@ -57,6 +74,12 @@ public class ElectionController{
         ElectionConsumer.response = true;
     }
 
+    /**
+
+     Handles the POST request to set the new request queue leader IP address.
+     The method receives a JsonNode object containing the new leader IP and sets it to ServerState.
+     @param node the JsonNode containing the new leader IP.
+     */
     @PostMapping("leader/requestqueue")
     public void requestLeader(@RequestBody JsonNode node){
         String requestQueueIP = node.get("requestQueueIP").asText();
