@@ -343,6 +343,7 @@ public class DB {
 		Document query = new Document("$or",
 				Arrays.asList(
 						new Document("userName", userName),
+						new Document("currentUser", userName),
 						new Document("shared", new Document("$regex", ".*" + userName + ".*"))
 				));
 		try {
@@ -370,7 +371,7 @@ public class DB {
 	}
 
 	public Bson createUsernameFilenameFilter(String userName, String fileName) {
-		return and(eq("fileName", fileName), eq("userName", userName));
+		return and(eq("fileName", fileName), or(eq("userName", userName), eq("currentUser", userName)));
 	}
 
 	/**
