@@ -182,7 +182,6 @@ public class DB {
 	public Document createUploadQuery(String userName, String fileName) {
 		return new Document("$or",
 				Arrays.asList(
-						new Document("currentUser", userName),
 						new Document("userName", userName),
 						new Document("shared", new Document("$regex", ".*" + userName + ".*"))
 				))
@@ -371,7 +370,7 @@ public class DB {
 	}
 
 	public Bson createUsernameFilenameFilter(String userName, String fileName) {
-		return and(eq("fileName", fileName), or(eq("userName", userName), eq("currentUser", userName)));
+		return and(eq("fileName", fileName), eq("userName", userName));
 	}
 
 	/**
