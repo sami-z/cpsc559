@@ -192,7 +192,8 @@ public class NetworkUtil {
         for(String IP : NetworkConstants.DB_MANAGER_IP){
             try{
                 sendShare(rq,IP);
-                break;
+                System.out.println("AAAA");
+                return;
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -225,7 +226,7 @@ public class NetworkUtil {
         for(String IP : NetworkConstants.DB_MANAGER_IP){
             try{
                 sendUnshare(rq,IP);
-                break;
+                return;
             }catch (Exception e){
                 e.printStackTrace();
             }

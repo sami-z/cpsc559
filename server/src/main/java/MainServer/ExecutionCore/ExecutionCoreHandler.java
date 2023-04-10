@@ -58,7 +58,8 @@ public class ExecutionCoreHandler {
         for (JsonNode file: files) {
             JsonNode response = new ObjectMapper().createObjectNode();
             ((ObjectNode) response).put("responseType", "DELETE");
-            ArrayList<String> shared = new ObjectMapper().convertValue(file.get("shared"), ArrayList.class);
+            String sharedString = new ObjectMapper().convertValue(file.get("shared"), String.class);
+            String[] shared = sharedString.split(",");
             for (String user : shared) {
                 ((ObjectNode) response).put("currentUser", user);
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
