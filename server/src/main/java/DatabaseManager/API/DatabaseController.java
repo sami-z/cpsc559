@@ -38,6 +38,18 @@ public class DatabaseController {
         DBManagerState.DBLeaderIP = "";
     }
 
+    /**
+
+     This method is responsible for handling the HTTP POST request with a path of "/upload".
+
+     It takes in a JSON request body in the form of a ClientRequestModel object and processes it.
+
+     @param requestModel a ClientRequestModel object that contains the details of the uploaded file such as the
+
+     @return a String object indicating the success or failure of the upload operation.
+
+     @throws Exception if there is an error while processing the request.
+     */
     @PostMapping("/upload")
     public String uploadToDatabase(@RequestBody ClientRequestModel requestModel) {
         System.out.println("0");
@@ -70,6 +82,20 @@ public class DatabaseController {
         }
     }
 
+    /**
+
+     This method is responsible for handling the HTTP POST request with a path of "/delete".
+
+     It takes in a JSON request body containing the list of files to be deleted and the name of the user who
+
+     initiated the delete operation.
+
+     @param deleteRequest a JsonNode object representing the JSON request body containing the details of the files
+
+     @return a String object indicating the success or failure of the delete operation.
+
+     @throws Exception if there is an error while processing the request.
+     */
     @PostMapping("/delete")
     public String deleteFromDatabase(@RequestBody JsonNode deleteRequest) {
         DB db = new DB();
@@ -95,6 +121,15 @@ public class DatabaseController {
         return deletedFiles;
     }
 
+    /**
+
+     This method is responsible for handling the HTTP POST request with a path of "/share". It takes in a JSON request
+     body containing the list of files to be shared, the names of the users to share the files with, and the name of the
+     user who initiated the sharing operation.
+     @param shareRequest a JsonNode object representing the JSON request body containing the details of the files
+
+     @throws Exception if there is an error while processing the request.
+     */
     @PostMapping("/share")
     public void editShare(@RequestBody JsonNode shareRequest) {
         DB db = new DB();
@@ -115,6 +150,15 @@ public class DatabaseController {
         db.closeMongoClients();
     }
 
+    /**
+
+     This method is responsible for handling the HTTP POST request with a path of "/unshare". It takes in a JSON request
+     body containing the list of files to be unshared, the names of the users to unshare the files with, and the name of
+     the user who initiated the unsharing operation.
+     @param unshareRequest a JsonNode object representing the JSON request body containing the details of the files
+
+     @throws Exception if there is an error while processing the request.
+     */
     @PostMapping("/unshare")
     public void editUnshare(@RequestBody JsonNode unshareRequest) {
         DB db = new DB();
@@ -135,12 +179,24 @@ public class DatabaseController {
         db.closeMongoClients();
     }
 
+    /**
+
+     Retrieves the timestamp of the given file key from the database.
+     @param key the key representing the file in the database
+     @return the timestamp of the file as a string
+     */
     @GetMapping("/get-head/{key}")
     @ResponseBody
     public String getTimestamp(@PathVariable String key) {
         return Long.toString(databaseHandler.getTimestamp(key));
     }
 
+    /**
+
+     Registers a new user in the system and adds their details to the database.
+     @param requestModel A ClientRequestModel object representing the details of the new user to be registered
+     @return A string representation of a boolean value indicating whether the registration was successful or not.
+     */
    @PostMapping("/register")
    @ResponseBody
    public String registerUser(@RequestBody ClientRequestModel requestModel) {
@@ -160,6 +216,12 @@ public class DatabaseController {
         return;
     }
 
+    /**
+
+     Returns the IP address of the current leader of the database cluster.
+     If the leader is not set, it returns a constant string indicating an empty leader.
+     @return A string representing the IP address of the leader of the database cluster or an empty leader constant.
+     */
     @GetMapping("/get-leader")
     @ResponseBody
     public String getLeader(){
@@ -168,6 +230,12 @@ public class DatabaseController {
         return DBManagerState.DBLeaderIP;
     }
 
+    /**
+
+     This method is used to set the leader IP address in the DBManagerState.
+     @param node a JsonNode object that contains the leader IP address to be set.
+     @return void
+     */
     @PostMapping("/leader")
     @ResponseBody
     public void setLeader(@RequestBody JsonNode node){
@@ -176,6 +244,13 @@ public class DatabaseController {
         return;
     }
 
+    /**
+
+     Handles a GET request to "/notify-leader", which broadcasts the status of the current database cluster to the leader of the cluster.
+     The method creates a new ObjectMapper object, creates a JsonNode object, sets the "isFirstClusterPrimary" field of the JsonNode object to the
+     value of the "isFirstClusterPrimary" field of the DB class, and then broadcasts the JsonNode object to all members of the cluster.
+     This method does not return anything.
+     */
     @GetMapping("/notify-leader")
     @ResponseBody
     public void notifyLeader(){
@@ -188,6 +263,13 @@ public class DatabaseController {
         return;
     }
 
+    /**
+
+     An HTTP POST method used for broadcasting the primary replica state of a database cluster.
+     @param node a JsonNode object that represents the request body sent in the HTTP POST request.
+
+     @return This method returns void. It simply updates the "isFirstClusterPrimary" field in the "DB" class
+     */
     @PostMapping("/broadcast-primary")
     public void broadcastPrimary(@RequestBody JsonNode node) {
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();

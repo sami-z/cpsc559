@@ -1,7 +1,5 @@
 package MainServer.Monitor;
 
-import DatabaseManager.DBManagerState;
-import DatabaseManager.DatabaseClusterMonitor;
 import MainServer.ServerState;
 import Util.NetworkConstants;
 import Util.NetworkUtil;
@@ -29,7 +27,12 @@ public class DBManagerMonitor implements Runnable{
         RestTemplateBuilder builder = new RestTemplateBuilder();
         restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
     }
+    /**
 
+     Sends an HTTP POST request to update the leader of the database manager and informs all the database manager servers  servers of the
+     change in the leader.
+     @param IP the IP address of the new leader of the request queue
+     */
     public static void sendDBManagerLeader(String IP){
         ServerState.DBManagerIP = IP;
         HttpHeaders headers = new HttpHeaders();
@@ -51,6 +54,13 @@ public class DBManagerMonitor implements Runnable{
     }
 
 
+    /**
+     This method sends a ping request to the database managers IPs to get the currently running database managers.
+     It iterates through all the database managers IPs and sends a ping request to each of them. If a response is received from
+     any of them, it returns that IP address, which is the currently running request queue. If none of the database managers
+     responds to the ping request, the method returns null.
+     @return The IP address of the currently running database managers or null if none of the request queues respond.
+     */
     public static String getRunningDBManager(){
 
         for(String DBManagerIP : DB_MANAGER_IP){
@@ -73,6 +83,12 @@ public class DBManagerMonitor implements Runnable{
         }
         return null;
     }
+
+    /**
+     * This code is used to check if the database manager leader is down.
+     * If the database manager leader is down we elect a new leader and send this
+     * information to all the other database manager
+     * */
     @Override
     public void run() {
 

@@ -13,6 +13,13 @@ public class DatabaseClusterMonitor implements Runnable{
         this.DBInstance = new DB();
     }
 
+    /**
+
+     The DBClusterMonitor class is responsible for monitoring the MongoDB Atlas clusters and ensuring their availability.
+     It implements the Runnable interface and runs indefinitely, checking the status of the primary cluster and the need for recovery
+     in case of failure. If the primary cluster is down, it triggers a recovery process to promote a secondary node to the new primary.
+     It also sets the logging levels of MongoDB drivers to WARNING to avoid flooding the console with log messages.
+     */
     @Override
     public void run() {
         Logger mongoLogger = Logger.getLogger("org.mongodb.driver");

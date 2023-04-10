@@ -39,6 +39,14 @@ public class RequestQueueWebServer extends WebSocketServer{
 
     }
 
+    /**
+     This class implements the WebSocketListener's onMessage method to handle incoming messages. It extracts
+     the request information from the incoming message and performs the following actions:
+     (1) Parses the JSON request from the incoming message.
+     (2) If the current server is not the leader, creates a new thread and passes the request to LeaderRunner to send to the leader.
+     (3) If the request type is WRITE, adds the request to the file queue for syncrhonization.
+     (4) Adds the file to the request queue
+     */
     @Override
     public void onMessage(WebSocket webSocket, String s) {
         System.out.println(System.currentTimeMillis());

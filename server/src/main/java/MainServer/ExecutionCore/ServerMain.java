@@ -24,15 +24,15 @@ public class ServerMain {
 
         ServerState.serverIP = "localhost";
 
-        SpringApplication app = new SpringApplication(ElectionController.class);
+        SpringApplication app = new SpringApplication(ElectionController.class); // Starting spring application
         app.setDefaultProperties(Collections
-                .singletonMap("server.port", Integer.toString(NetworkConstants.MAIN_SERVER_PORT)));
+                .singletonMap("server.port", Integer.toString(NetworkConstants.MAIN_SERVER_PORT))); // Setting port
         app.run(args);
 
         System.out.println("MAIN SERVER IS RUNNING");
 
-        new Thread(new LeaderMonitor()).start();
-        new Thread(new MultiThreadedServer()).start();
+        new Thread(new LeaderMonitor()).start();                // Starting the monitor for the leader
+        new Thread(new MultiThreadedServer()).start();          // Starting the multithread server
 
     }
 }

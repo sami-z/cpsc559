@@ -29,6 +29,11 @@ public class LeaderMonitor implements Runnable{
         restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
     }
 
+    /**
+
+     This class represents a background thread that constantly checks the health of the leader server. If the leader is not
+     responding to pings, an election is initiated to elect a new leader.
+     */
     @Override
     public void run() {
 
