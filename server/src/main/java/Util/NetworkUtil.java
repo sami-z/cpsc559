@@ -14,6 +14,7 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 
 import static Util.NetworkConstants.DB_MANAGER_IP;
+import static Util.NetworkConstants.EMPTY_DB_LEADER;
 
 public class NetworkUtil {
 
@@ -350,4 +351,33 @@ public class NetworkUtil {
         restTemplate.getForEntity(removeHeadURI,String.class);
     }
 
+    public static void callReplicaRecovery() {
+        RestTemplate restTemplate = new RestTemplate();
+
+        for (String DBManagerIP : DB_MANAGER_IP) {
+            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
+            String DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
+
+            if (!DBManagerLeaderIP.equals(EMPTY_DB_LEADER)) {
+                String notifyURI = NetworkConstants.notifyDBManagerLeaderPrimaryDownURI(DBManagerLeaderIP);
+                restTemplate.getForEntity(notifyURI,String.class);
+                return;
+            }
+        }
+    }
+
+    public static void callPrimaryReplicaUp() {
+        RestTemplate restTemplate = new RestTemplate();
+
+        for (String DBManagerIP : DB_MANAGER_IP) {
+            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
+            String DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
+
+            if (!DBManagerLeaderIP.equals(EMPTY_DB_LEADER)) {
+                String notifyURI = NetworkConstants.notifyDBManagerLeaderPrimaryUpURI(DBManagerLeaderIP);
+                restTemplate.getForEntity(notifyURI,String.class);
+                return;
+            }
+        }
+    }
 }

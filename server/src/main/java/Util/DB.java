@@ -20,6 +20,7 @@ import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import com.mongodb.client.result.UpdateResult;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -163,11 +164,9 @@ public class DB {
 
 	public void recoverFromDatabaseFailure() {
 		System.out.println("MongoDB Atlas Primary Cluster is down in DB");
-		DB.shouldRecover = true;
-		if (DB.isFirstClusterPrimary) {
-//			NetworkUtil.setIsFirstClusterPrimary(!DB.isFirstClusterPrimary);
-			DB.isFirstClusterPrimary = !DB.isFirstClusterPrimary;
-		}
+
+		NetworkUtil.callReplicaRecovery();
+		while (DB.isFirstClusterPrimary) {}
 	}
 
 	/**
@@ -255,9 +254,20 @@ public class DB {
 		if (entryTimestamp >= latestTimestamp) {
 			Document query = createUploadQuery(userName, fileName);
 
-			Document queryResult = getReplica(false).find(query).first();
+			Document queryResult;
+			try {
+				queryResult = getReplica(false).find(query).first();
+			} catch (Exception e) {
+				System.out.println("Secondary cluster is currently down in DB");
+				return;
+			}
 			if (queryResult == null) {
-				getReplica(false).insertOne(entry);
+				try {
+					getReplica(false).insertOne(entry);
+				} catch (Exception e) {
+					System.out.println("Secondary cluster is currently down in DB");
+					return;
+				}
 			} else {
 				ObjectId existingObjectId = queryResult.getObjectId("_id");
 				Bson deleteFilter = Filters.eq("_id", existingObjectId);
@@ -285,7 +295,13 @@ public class DB {
 	 */
 	public Document registerUser(ClientRequestModel model) {
 		Document query = new Document("userName", model.currentUser);
-		Document queryResult = getLoginReplica(true).find(query).first();
+		Document queryResult;
+		try {
+			queryResult = getLoginReplica(true).find(query).first();
+		} catch (Exception e) {
+			recoverFromDatabaseFailure();
+			queryResult = getLoginReplica(true).find(query).first();
+		}
 		Document loginDoc;
 
 		if (queryResult == null) {
@@ -332,10 +348,6 @@ public class DB {
 	 @throws JsonProcessingException if there is an issue processing the JSON data
 	 */
 	public ArrayNode findFiles(String userName) throws JsonProcessingException {
-		ArrayList<JsonNode> ret = new ArrayList<>();
-
-
-// create a new ArrayNode
 		ArrayNode arrayNode = new ObjectMapper().createArrayNode();
 
 		FindIterable<Document> docs;
@@ -424,7 +436,13 @@ public class DB {
 		for(String fileName: filesToShare)
 		{
 			Bson filter = createUsernameFilenameFilter(userName, fileName);
-			Document queryResult = getReplica(true).find(filter).first();
+			Document queryResult;
+			try {
+				queryResult = getReplica(true).find(filter).first();
+			} catch (Exception e) {
+				recoverFromDatabaseFailure();
+				queryResult = getReplica(true).find(filter).first();
+			}
 			String prevSharedList = queryResult.getString("shared");
 			Bson updateOperation = createShareOperation(prevSharedList, sharedList);
 			UpdateResult updateResult;
@@ -457,19 +475,22 @@ public class DB {
 				long latestTimestamp = NetworkUtil.getTimestamp(key);
 				if (entryTimestamp >= latestTimestamp) {
 					Bson filter = createUsernameFilenameFilter(userName, fileName);
-					Document queryResult = getReplica(false).find(filter).first();
-					String prevSharedList = queryResult.getString("shared");
-					Bson updateOperation = createShareOperation(prevSharedList, sharedList);
-					UpdateResult updateResult;
-
+					Document queryResult;
 					try {
-						updateResult = getReplica(false).updateOne(queryResult, updateOperation);
+						queryResult = getReplica(false).find(filter).first();
 					} catch (Exception e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
 					}
+					String prevSharedList = queryResult.getString("shared");
+					Bson updateOperation = createShareOperation(prevSharedList, sharedList);
 
-					System.out.println(updateResult);
+					try {
+						getReplica(false).updateOne(queryResult, updateOperation);
+					} catch (Exception e) {
+						System.out.println("Secondary cluster is currently down in DB");
+						return;
+					}
 				}
 			}
 		}
@@ -510,19 +531,22 @@ public class DB {
 		for(String fileName: filesToUnShare)
 		{
 			Bson filter = createUsernameFilenameFilter(userName, fileName);
-			Document queryResult = getReplica(true).find(filter).first();
-			String prevSharedList = queryResult.getString("shared");
-			Bson updateOperation = createUnshareOperation(prevSharedList, unshareList);
-			UpdateResult updateResult;
-
+			Document queryResult;
 			try {
-				updateResult = getReplica(true).updateOne(queryResult, updateOperation);
+				queryResult = getReplica(true).find(filter).first();
 			} catch (Exception e) {
 				recoverFromDatabaseFailure();
-				updateResult = getReplica(true).updateOne(queryResult, updateOperation);
+				queryResult = getReplica(true).find(filter).first();
 			}
+			String prevSharedList = queryResult.getString("shared");
+			Bson updateOperation = createUnshareOperation(prevSharedList, unshareList);
 
-			System.out.println(updateResult);
+			try {
+				getReplica(true).updateOne(queryResult, updateOperation);
+			} catch (Exception e) {
+				recoverFromDatabaseFailure();
+				getReplica(true).updateOne(queryResult, updateOperation);
+			}
 		}
 	}
 
@@ -544,19 +568,22 @@ public class DB {
 				long latestTimestamp = NetworkUtil.getTimestamp(key);
 				if (entryTimestamp >= latestTimestamp) {
 					Bson filter = createUsernameFilenameFilter(userName, fileName);
-					Document queryResult = getReplica(false).find(filter).first();
-					String prevSharedList = queryResult.getString("shared");
-					Bson updateOperation = createUnshareOperation(prevSharedList, unsharedList);
-					UpdateResult updateResult;
-
+					Document queryResult;
 					try {
-						updateResult = getReplica(false).updateOne(queryResult, updateOperation);
+						queryResult = getReplica(false).find(filter).first();
 					} catch (Exception e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
 					}
+					String prevSharedList = queryResult.getString("shared");
+					Bson updateOperation = createUnshareOperation(prevSharedList, unsharedList);
 
-					System.out.println(updateResult);
+					try {
+						getReplica(false).updateOne(queryResult, updateOperation);
+					} catch (Exception e) {
+						System.out.println("Secondary cluster is currently down in DB");
+						return;
+					}
 				}
 			}
 		}
