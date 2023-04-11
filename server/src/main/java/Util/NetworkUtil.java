@@ -1,6 +1,8 @@
 package Util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,8 +15,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
 
-import static Util.NetworkConstants.DB_MANAGER_IP;
-import static Util.NetworkConstants.EMPTY_DB_LEADER;
+import static Util.NetworkConstants.*;
 
 public class NetworkUtil {
 
@@ -351,33 +352,44 @@ public class NetworkUtil {
         restTemplate.getForEntity(removeHeadURI,String.class);
     }
 
-    public static void callReplicaRecovery() {
+    public static void DBManagerNotifyPrimaryChange(boolean newIsFirstClusterPrimary, boolean newShouldRecover) {
+        ObjectMapper mapper = new ObjectMapper();
         RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        JsonNode node = mapper.createObjectNode();
+        ((ObjectNode) node).put("isFirstClusterPrimary", newIsFirstClusterPrimary);
+        ((ObjectNode) node).put("shouldRecover", newShouldRecover);
+        HttpEntity<String> primaryUpdate =
+                new HttpEntity<String>(node.toString(), headers);
 
         for (String DBManagerIP : DB_MANAGER_IP) {
             String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
             String DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
 
             if (!DBManagerLeaderIP.equals(EMPTY_DB_LEADER)) {
-                String notifyURI = NetworkConstants.notifyDBManagerLeaderPrimaryDownURI(DBManagerLeaderIP);
-                restTemplate.getForEntity(notifyURI,String.class);
+                String notifyURI = NetworkConstants.notifyDBManagerLeaderPrimaryChangeURI(DBManagerLeaderIP);
+                restTemplate.postForEntity(notifyURI, primaryUpdate, String.class);
                 return;
             }
         }
     }
 
-    public static void callPrimaryReplicaUp() {
+    public static void processingServerNotifyPrimaryChange(boolean newIsFirstClusterPrimary) {
+        ObjectMapper mapper = new ObjectMapper();
         RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        for (String DBManagerIP : DB_MANAGER_IP) {
-            String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
-            String DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
+        JsonNode node = mapper.createObjectNode();
+        ((ObjectNode) node).put("isFirstClusterPrimary", newIsFirstClusterPrimary);
+        HttpEntity<String> primaryUpdate =
+                new HttpEntity<String>(node.toString(), headers);
 
-            if (!DBManagerLeaderIP.equals(EMPTY_DB_LEADER)) {
-                String notifyURI = NetworkConstants.notifyDBManagerLeaderPrimaryUpURI(DBManagerLeaderIP);
-                restTemplate.getForEntity(notifyURI,String.class);
-                return;
-            }
+        for (String processingServerIP: SERVER_IPS) {
+            String notifyURI = NetworkConstants.getProcessingServerURINotifyPrimaryChange(processingServerIP);
+            restTemplate.postForEntity(notifyURI, primaryUpdate, String.class);
         }
     }
 }

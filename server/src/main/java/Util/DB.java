@@ -165,7 +165,8 @@ public class DB {
 	public void recoverFromDatabaseFailure() {
 		System.out.println("MongoDB Atlas Primary Cluster is down in DB");
 
-		NetworkUtil.callReplicaRecovery();
+		NetworkUtil.DBManagerNotifyPrimaryChange(false, true);
+		NetworkUtil.processingServerNotifyPrimaryChange(false);
 		while (DB.isFirstClusterPrimary) {}
 	}
 

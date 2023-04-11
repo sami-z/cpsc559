@@ -269,26 +269,15 @@ public class DatabaseController {
         return;
     }
 
-    @GetMapping("/notify-leader-primary-down")
+    @PostMapping("/notify-leader-primary-change")
     @ResponseBody
-    public void notifyLeaderPrimaryDown(){
+    public void notifyLeaderPrimaryChange(@RequestBody JsonNode node){
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rq = objectMapper.createObjectNode();
-        DB.isFirstClusterPrimary = false;
-        DB.shouldRecover = true;
-        ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
-        NetworkUtil.broadcastPrimaryReplica(rq);
-    }
-
-    @GetMapping("/notify-leader-primary-up")
-    @ResponseBody
-    public void notifyLeaderPrimaryUp(){
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rq = objectMapper.createObjectNode();
-        DB.isFirstClusterPrimary = true;
-        DB.shouldRecover = false;
-        ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
-        NetworkUtil.broadcastPrimaryReplica(rq);
+        JsonNode primaryUpdate = objectMapper.createObjectNode();
+        DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
+        DB.shouldRecover = node.get("shouldRecover").asBoolean();
+        ((ObjectNode) primaryUpdate).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
+        NetworkUtil.broadcastPrimaryReplica(primaryUpdate);
     }
 
     /**

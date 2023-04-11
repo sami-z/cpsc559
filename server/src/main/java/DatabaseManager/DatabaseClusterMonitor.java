@@ -49,7 +49,8 @@ public class DatabaseClusterMonitor implements Runnable{
                                 System.out.println("Detected a change in secondary node's heartbeat");
 
                                 DBInstance.replicateDatabase();
-                                NetworkUtil.callPrimaryReplicaUp();
+                                NetworkUtil.DBManagerNotifyPrimaryChange(true, false);
+                                NetworkUtil.processingServerNotifyPrimaryChange(false);
                                 secondaryMongoClient.close();
                                 secondaryMongoClient = null;
                                 break;
