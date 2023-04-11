@@ -59,13 +59,8 @@ function UnshareButton({ selectedFiles, currentUser }) {
             console.log('WebSocket connection established:', ws);
             const unshareWithArr = names.trim().split(",");
             
-            // for (const name of unshareWithArr){
-            //     names.remove(name)
-            // }
-
             const fileNames = selectedFiles.map(item => item.fileName);
             const payload = { requestType: "UNSHARE", currentUser: currentUser, filesToUnshare: fileNames, unshared: unshareWithArr  };
-            console.log("HERE I AM 2", unshareWithArr)
             ws.send(JSON.stringify(payload));
             alert('Permission unshared successfully!');
             ws.close();
@@ -93,8 +88,6 @@ function UnshareButton({ selectedFiles, currentUser }) {
                 aria-labelledby="simple-modal-title"
                 aria-describedby="simple-modal-description"
             >
-
-                {/* // {classes.paper} */}
                 <div style={modalStyle} className={classes.root}>
                     <center>
                         <p>Enter user(s) to un-share with:</p>
@@ -106,8 +99,6 @@ function UnshareButton({ selectedFiles, currentUser }) {
                             <>
                                 <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} />
                                 <button onClick={handleSharePermission} onBlur={handleBlur}>Unshare File</button>
-                                {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
-                                {/* {fileData && <p>{fileData}</p>} */}
                             </>
                         )
                     }

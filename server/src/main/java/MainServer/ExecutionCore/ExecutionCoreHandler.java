@@ -7,6 +7,7 @@ import Util.DB;
 import Util.NetworkConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import org.bson.Document;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -235,7 +236,7 @@ public class ExecutionCoreHandler {
             FindIterable<Document> entry;
             try {
                 entry = db.getLoginReplica(true).find(eq("userName", request.get("currentUser").asText()));
-            } catch (Exception e) {
+            } catch (MongoException e) {
                 db.recoverFromDatabaseFailure();
                 entry = db.getLoginReplica(true).find(eq("userName", request.get("currentUser").asText()));
             }

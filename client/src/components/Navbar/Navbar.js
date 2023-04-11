@@ -1,13 +1,12 @@
 import React from 'react'
 import './styles.css'
 import DFSLogo from '../../media/FileArc Logo.png'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 import SearchIcon from '@mui/icons-material/Search';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SettingsIcon from '@mui/icons-material/Settings';
-//import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AppsIcon from '@mui/icons-material/Apps';
 
 const Navbar = ({ setSearchTerm }) => {

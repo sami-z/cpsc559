@@ -49,17 +49,12 @@ function Delete(props) {
             }
           }
 
-
-        console.log("IN HANDLE DELETE: ", props.selectedFiles);
-
         setUploadStatus('uploading');
 
         createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
         .then((ws) => {
             console.log('WebSocket connection established:', ws);
             const payload = { requestType: "DELETE", currentUser: props.currentUser, writeType: "DELETE", filesToDelete: props.selectedFiles };
-            console.log("TYPE", typeof filesToDelete)
-            console.log("DELETE PAYLOAD", payload)
             ws.send(JSON.stringify(payload));
             setTimeout(() => {
                 setUploadStatus('uploaded');
@@ -83,25 +78,6 @@ function Delete(props) {
     const handleClose = () => {
         setOpen(false);
     };
-
-    // const handleChange = (e) => {
-    //     // setUploadStatus('uploading');
-    //     if (e.target.files[0]) {
-    //         const file = e.target.files[0];
-    //         const reader = new FileReader();
-    //         reader.onload = (e) => {
-    //             setFileData(file);
-    //             const base64Data = e.target.result.split(",")[1];
-    //             setFileBytes(base64Data);
-    //             console.log("File to upload", file);
-    //             console.log("File bytes", base64Data);
-    //         };
-
-    //         reader.readAsDataURL(file);
-    //     }
-    // }
-
-
     return (
         <div className='upload'>
             <div className='upload__container' onClick={handleOpen}>
@@ -115,8 +91,6 @@ function Delete(props) {
                 aria-labelledby="simple-modal-title"
                 aria-describedby="simple-modal-description"
             >
-
-                {/* // {classes.paper} */}
                 <div style={modalStyle} className={classes.root}>
                     <center>
                         <p>Delete the selected file(s)?:</p>
@@ -133,7 +107,6 @@ function Delete(props) {
 
                         ) : (
                             <>
-                                {/* <input type="select" onChange={handleChange} /> */}
                                 <center>
                                     <button onClick={handleDelete}>Confirm</button>
                                 </center>

@@ -1,31 +1,21 @@
 package DatabaseManager.API;
 
-import DatabaseManager.DBMain;
 import DatabaseManager.DBManagerState;
 import DatabaseManager.DatabaseClusterMonitor;
 import DatabaseManager.ReplicationRunner;
 import DatabaseManager.Service.DatabaseHandler;
 import MainServer.Models.ClientRequestModel;
-import RequestQueue.Leader.LeaderState;
 import Util.DB;
-import Util.DBConstants;
 import Util.NetworkConstants;
 import Util.NetworkUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.MongoException;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 
 @RestController
 @RequestMapping("/api/dbmanager")
@@ -61,7 +51,7 @@ public class DatabaseController {
         Document queryResult;
         try {
             queryResult = db.getReplica(true).find(query).first();
-        } catch (Exception e) {
+        } catch (MongoException e) {
             db.recoverFromDatabaseFailure();
             queryResult = db.getReplica(true).find(query).first();
         }
