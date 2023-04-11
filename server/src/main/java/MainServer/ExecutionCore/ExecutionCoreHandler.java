@@ -19,7 +19,7 @@ import Util.NetworkUtil;
 import static com.mongodb.client.model.Filters.eq;
 
 public class ExecutionCoreHandler {
-    private static DB db;
+    public static DB db;
 
     public static void initDB(){
         db = new DB();
