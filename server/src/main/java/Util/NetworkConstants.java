@@ -45,6 +45,10 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/election",IP,MAIN_SERVER_PORT);
     }
 
+    public static String getProcessingServerURINotifyPrimaryChange(String IP){
+        return String.format("http://%s:%s/notify-primary-change",IP,MAIN_SERVER_PORT);
+    }
+
     public static String getResponseQueueURI(String IP){
         return String.format("http://%s:%s/api/response/post",IP,RESPONSE_QUEUE_PORT);
     }
@@ -93,12 +97,8 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/api/dbmanager/notify-leader",IP, DATABASE_MANAGER_PORT);
     }
 
-    public static String notifyDBManagerLeaderPrimaryDownURI(String IP){
-        return String.format("http://%s:%s/api/dbmanager/notify-leader-primary-down",IP, DATABASE_MANAGER_PORT);
-    }
-
-    public static String notifyDBManagerLeaderPrimaryUpURI(String IP){
-        return String.format("http://%s:%s/api/dbmanager/notify-leader-primary-up",IP, DATABASE_MANAGER_PORT);
+    public static String notifyDBManagerLeaderPrimaryChangeURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/notify-leader-primary-change",IP, DATABASE_MANAGER_PORT);
     }
 
     public static String getDBManagerPingURI(String IP){

@@ -1,31 +1,21 @@
 package DatabaseManager.API;
 
-import DatabaseManager.DBMain;
 import DatabaseManager.DBManagerState;
 import DatabaseManager.DatabaseClusterMonitor;
 import DatabaseManager.ReplicationRunner;
 import DatabaseManager.Service.DatabaseHandler;
 import MainServer.Models.ClientRequestModel;
-import RequestQueue.Leader.LeaderState;
 import Util.DB;
-import Util.DBConstants;
 import Util.NetworkConstants;
 import Util.NetworkUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.MongoException;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 
 @RestController
 @RequestMapping("/api/dbmanager")
@@ -61,7 +51,7 @@ public class DatabaseController {
         Document queryResult;
         try {
             queryResult = db.getReplica(true).find(query).first();
-        } catch (Exception e) {
+        } catch (MongoException e) {
             db.recoverFromDatabaseFailure();
             queryResult = db.getReplica(true).find(query).first();
         }
@@ -269,26 +259,20 @@ public class DatabaseController {
         return;
     }
 
-    @GetMapping("/notify-leader-primary-down")
+    @PostMapping("/notify-leader-primary-change")
     @ResponseBody
-    public void notifyLeaderPrimaryDown(){
+    public void notifyLeaderPrimaryChange(@RequestBody JsonNode node){
+        System.out.println("here in DB controller notify");
         ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rq = objectMapper.createObjectNode();
-        DB.isFirstClusterPrimary = false;
-        DB.shouldRecover = true;
-        ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
-        NetworkUtil.broadcastPrimaryReplica(rq);
-    }
-
-    @GetMapping("/notify-leader-primary-up")
-    @ResponseBody
-    public void notifyLeaderPrimaryUp(){
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rq = objectMapper.createObjectNode();
-        DB.isFirstClusterPrimary = true;
-        DB.shouldRecover = false;
-        ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
-        NetworkUtil.broadcastPrimaryReplica(rq);
+        JsonNode primaryUpdate = objectMapper.createObjectNode();
+        DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
+        DB.shouldRecover = node.get("shouldRecover").asBoolean();
+        DB.createMongoClient(true);
+        DB.createMongoClient(false);
+        ((ObjectNode) primaryUpdate).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
+        System.out.println("In DB notify-leader-primary-change, " + node.get("isFirstClusterPrimary").asText());
+        System.out.println("In DB notify-leader-primary-change, " + node.get("shouldRecover").asText());
+        NetworkUtil.broadcastPrimaryReplica(primaryUpdate);
     }
 
     /**
@@ -300,6 +284,10 @@ public class DatabaseController {
      */
     @PostMapping("/broadcast-primary")
     public void broadcastPrimary(@RequestBody JsonNode node) {
+        System.out.println("here in DB controller broadcast primary");
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
+        DB.createMongoClient(true);
+        DB.createMongoClient(false);
+        System.out.println("In DB broadcast-primary, " + node.get("isFirstClusterPrimary").asText());
     }
 }

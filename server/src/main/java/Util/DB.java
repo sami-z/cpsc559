@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoException;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
@@ -26,8 +27,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class DB {
-	public MongoClient mongoClient1;
-	public MongoClient mongoClient2;
+	public static MongoClient mongoClient1;
+	public static MongoClient mongoClient2;
 	private ObjectMapper mapper;
 	public static Boolean isFirstClusterPrimary = true;
 	public static boolean shouldRecover = false;
@@ -43,9 +44,8 @@ public class DB {
 	 @param shouldGetPrimary if true, the method will create a client to connect to the primary cluster and false if it shoulder connect to a secondary cluster.
 	 @return a MongoClient object created with the specified settings.
 	 */
-	public MongoClient createMongoClient(boolean shouldGetPrimary) {
+	public static MongoClient createMongoClient(boolean shouldGetPrimary) {
 		String URI;
-//		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
 		if (shouldGetPrimary) {
 			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER1 : DBConstants.MONGO_URI_CLUSTER2;
 		} else {
@@ -58,7 +58,32 @@ public class DB {
 				.applyToClusterSettings(builder ->
 						builder.serverSelectionTimeout(3, SECONDS))
 				.build();
-		return MongoClients.create(clientSettings);
+		MongoClient mongoClient;
+		if (shouldGetPrimary) {
+			try {
+				mongoClient = MongoClients.create(clientSettings);
+			} catch (MongoException e) {
+				recoverFromDatabaseFailure();
+				URI = DBConstants.MONGO_URI_CLUSTER2;
+				clientSettings = MongoClientSettings.builder()
+						.applyConnectionString(new ConnectionString(URI))
+						.applyToSocketSettings(builder ->
+								builder.connectTimeout(3, SECONDS))
+						.applyToClusterSettings(builder ->
+								builder.serverSelectionTimeout(3, SECONDS))
+						.build();
+				mongoClient = MongoClients.create(clientSettings);
+			}
+		} else {
+			try {
+				mongoClient = MongoClients.create(clientSettings);
+			} catch (MongoException e) {
+				System.out.println("Secondary cluster is currently down in DB");
+				mongoClient = null;
+			}
+		}
+
+		return mongoClient;
 	}
 
 	/**
@@ -162,10 +187,11 @@ public class DB {
 		return entry;
 	}
 
-	public void recoverFromDatabaseFailure() {
+	public static void recoverFromDatabaseFailure() {
 		System.out.println("MongoDB Atlas Primary Cluster is down in DB");
 
-		NetworkUtil.callReplicaRecovery();
+		NetworkUtil.DBManagerNotifyPrimaryChange(false, true);
+		NetworkUtil.processingServerNotifyPrimaryChange(false);
 		while (DB.isFirstClusterPrimary) {}
 	}
 
@@ -212,7 +238,7 @@ public class DB {
 			Bson deleteFilter = Filters.eq("_id", existingObjectId);
 			try {
 				getReplica(true).deleteOne(deleteFilter);
-			} catch (Exception e) {
+			} catch (MongoException e) {
 				recoverFromDatabaseFailure();
 				getReplica(true).deleteOne(deleteFilter);
 			}
@@ -222,7 +248,7 @@ public class DB {
 
 		try {
 			getReplica(true).insertOne(entry);
-		} catch (Exception e) {
+		} catch (MongoException e) {
 			recoverFromDatabaseFailure();
 			getReplica(true).insertOne(entry);
 		}
@@ -257,14 +283,14 @@ public class DB {
 			Document queryResult;
 			try {
 				queryResult = getReplica(false).find(query).first();
-			} catch (Exception e) {
+			} catch (MongoException e) {
 				System.out.println("Secondary cluster is currently down in DB");
 				return;
 			}
 			if (queryResult == null) {
 				try {
 					getReplica(false).insertOne(entry);
-				} catch (Exception e) {
+				} catch (MongoException e) {
 					System.out.println("Secondary cluster is currently down in DB");
 					return;
 				}
@@ -273,13 +299,13 @@ public class DB {
 				Bson deleteFilter = Filters.eq("_id", existingObjectId);
 				try {
 					getReplica(false).deleteOne(deleteFilter);
-				} catch (Exception e) {
+				} catch (MongoException e) {
 					System.out.println("Secondary cluster is currently down in DB");
 					return;
 				}
 				try {
 					getReplica(false).insertOne(entry);
-				} catch (Exception e) {
+				} catch (MongoException e) {
 					System.out.println("Secondary cluster is currently down in DB");
 				}
 			}
@@ -298,7 +324,7 @@ public class DB {
 		Document queryResult;
 		try {
 			queryResult = getLoginReplica(true).find(query).first();
-		} catch (Exception e) {
+		} catch (MongoException e) {
 			recoverFromDatabaseFailure();
 			queryResult = getLoginReplica(true).find(query).first();
 		}
@@ -314,7 +340,7 @@ public class DB {
 
 		try {
 			getLoginReplica(true).insertOne(loginDoc);
-		} catch (Exception e) {
+		} catch (MongoException e) {
 			recoverFromDatabaseFailure();
 			getLoginReplica(true).insertOne(loginDoc);
 		}
@@ -332,7 +358,7 @@ public class DB {
 	public void registerUser(Document entry) {
 		try {
 			getLoginReplica(false).insertOne(entry);
-		} catch (Exception e) {
+		} catch (MongoException e) {
 			System.out.println("Secondary cluster is currently down in DB");
 		}
 	}
@@ -359,7 +385,7 @@ public class DB {
 				));
 		try {
 			docs = getReplica(true).find(query);
-		} catch (Exception e) {
+		} catch (MongoException e) {
 			recoverFromDatabaseFailure();
 			docs = getReplica(true).find(query);
 		}
@@ -398,7 +424,7 @@ public class DB {
 		Bson filter = createUploadQuery(userName, fileName);
 		try {
 			doc = getReplica(true).find(filter).first();
-		} catch (Exception e) {
+		} catch (MongoException e) {
 			recoverFromDatabaseFailure();
 			doc = getReplica(true).find(filter).first();
 		}
@@ -439,7 +465,7 @@ public class DB {
 			Document queryResult;
 			try {
 				queryResult = getReplica(true).find(filter).first();
-			} catch (Exception e) {
+			} catch (MongoException e) {
 				recoverFromDatabaseFailure();
 				queryResult = getReplica(true).find(filter).first();
 			}
@@ -449,7 +475,7 @@ public class DB {
 
 			try {
 				updateResult = getReplica(true).updateOne(queryResult, updateOperation);
-			} catch (Exception e) {
+			} catch (MongoException e) {
 				recoverFromDatabaseFailure();
 				updateResult = getReplica(true).updateOne(queryResult, updateOperation);
 			}
@@ -478,7 +504,7 @@ public class DB {
 					Document queryResult;
 					try {
 						queryResult = getReplica(false).find(filter).first();
-					} catch (Exception e) {
+					} catch (MongoException e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
 					}
@@ -487,7 +513,7 @@ public class DB {
 
 					try {
 						getReplica(false).updateOne(queryResult, updateOperation);
-					} catch (Exception e) {
+					} catch (MongoException e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
 					}
@@ -534,7 +560,7 @@ public class DB {
 			Document queryResult;
 			try {
 				queryResult = getReplica(true).find(filter).first();
-			} catch (Exception e) {
+			} catch (MongoException e) {
 				recoverFromDatabaseFailure();
 				queryResult = getReplica(true).find(filter).first();
 			}
@@ -543,7 +569,7 @@ public class DB {
 
 			try {
 				getReplica(true).updateOne(queryResult, updateOperation);
-			} catch (Exception e) {
+			} catch (MongoException e) {
 				recoverFromDatabaseFailure();
 				getReplica(true).updateOne(queryResult, updateOperation);
 			}
@@ -571,7 +597,7 @@ public class DB {
 					Document queryResult;
 					try {
 						queryResult = getReplica(false).find(filter).first();
-					} catch (Exception e) {
+					} catch (MongoException e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
 					}
@@ -580,7 +606,7 @@ public class DB {
 
 					try {
 						getReplica(false).updateOne(queryResult, updateOperation);
-					} catch (Exception e) {
+					} catch (MongoException e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
 					}
@@ -603,7 +629,7 @@ public class DB {
 			Bson filter = createUsernameFilenameFilter(userName, fileName);
 			try {
 				deleteResult = getReplica(true).deleteOne(filter);
-			} catch (Exception e) {
+			} catch (MongoException e) {
 				recoverFromDatabaseFailure();
 				deleteResult = getReplica(true).deleteOne(filter);
 			}
@@ -636,7 +662,7 @@ public class DB {
 					Bson filter = createUsernameFilenameFilter(userName, fileName);
 					try {
 						getReplica(false).deleteOne(filter);
-					} catch (Exception e) {
+					} catch (MongoException e) {
 						System.out.println("Secondary cluster is currently down in DB");
 						return;
 					}

@@ -1,8 +1,11 @@
 package MainServer.ElectionCore;
 
 import MainServer.ServerState;
+import Util.DB;
 import Util.NetworkUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
@@ -89,4 +92,13 @@ public class ElectionController{
         ServerState.requestQueueIP = requestQueueIP;
     }
 
+    @PostMapping("/notify-primary-change")
+    @ResponseBody
+    public void notifyPrimaryChange(@RequestBody JsonNode node) {
+        System.out.println("here in processing server notify");
+        DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
+        DB.createMongoClient(true);
+        DB.createMongoClient(false);
+        System.out.println("In Processing server notify-primary-change, " + node.get("isFirstClusterPrimary").asText());
+    }
 }
