@@ -21,7 +21,10 @@ public class DeletionRunner implements Runnable{
             long curr = rh.getHeadTime(currUser);
             long currTime = System.currentTimeMillis();
 
-            if(currTime-curr > timeout) rh.pop(currUser);
+            if(currTime-curr > timeout) {
+                System.out.println("POPPING FROM HEAD");
+                rh.pop(currUser);
+            }
 
             try {
                 Thread.sleep(1000);

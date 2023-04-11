@@ -28,7 +28,8 @@ public class ResponseQueueImpl implements ResponseQueue{
     }
 
     public synchronized long getHeadTime(String uName){
-        return Integer.parseInt(responseQueue.get(uName).peek().get("deletionOrder").asText());
+        if(responseQueue.get(uName).size() == 0) return System.currentTimeMillis();
+        return Long.parseLong(responseQueue.get(uName).peek().get("deletionOrder").asText());
     }
 
     /**

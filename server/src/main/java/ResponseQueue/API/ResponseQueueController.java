@@ -41,6 +41,7 @@ public class ResponseQueueController {
         }
 
         if(!currRunners.contains(currUser)) {
+            System.out.println("starting runner");
             currRunners.add(currUser);
             new Thread(new DeletionRunner(currUser,responseQueueHandler)).start();
         }
