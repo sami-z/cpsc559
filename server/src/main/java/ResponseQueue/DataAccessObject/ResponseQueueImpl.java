@@ -27,6 +27,10 @@ public class ResponseQueueImpl implements ResponseQueue{
         responseQueue.get(uName).add(response);
     }
 
+    public synchronized long getHeadTime(String uName){
+        return Integer.parseInt(responseQueue.get(uName).peek().get("deletionOrder").asText());
+    }
+
     /**
      Pop the response from the front of the response queue for a given username, and remove it from the queue.
      @param uName the username for which to retrieve the response
