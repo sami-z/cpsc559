@@ -366,12 +366,19 @@ public class NetworkUtil {
 
         for (String DBManagerIP : DB_MANAGER_IP) {
             String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
-            String DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
+            String DBManagerLeaderIP;
+            try {
+                DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
+            } catch (RestClientException e) {
+                break;
+            }
 
             if (!DBManagerLeaderIP.equals(EMPTY_DB_LEADER)) {
                 String notifyURI = NetworkConstants.notifyDBManagerLeaderPrimaryChangeURI(DBManagerLeaderIP);
-                restTemplate.postForEntity(notifyURI, primaryUpdate, String.class);
-                return;
+                try {
+                    restTemplate.postForEntity(notifyURI, primaryUpdate, String.class);
+                    return;
+                } catch (RestClientException e) {}
             }
         }
     }
@@ -389,7 +396,10 @@ public class NetworkUtil {
 
         for (String processingServerIP: SERVER_IPS) {
             String notifyURI = NetworkConstants.getProcessingServerURINotifyPrimaryChange(processingServerIP);
-            restTemplate.postForEntity(notifyURI, primaryUpdate, String.class);
+
+            try {
+                restTemplate.postForEntity(notifyURI, primaryUpdate, String.class);
+            } catch (RestClientException e) {}
         }
     }
 }
