@@ -68,7 +68,7 @@ public class DatabaseController {
         long timestamp = System.currentTimeMillis();
         databaseHandler.updateTimestamp(ownerName, requestModel.fileName, timestamp);
         ArrayList<Document> docs = db.uploadFile(requestModel, timestamp, queryResult);
-        db.closeMongoClients();
+//        db.closeMongoClients();
         System.out.println("5");
         new Thread(new ReplicationRunner(docs.get(0), null, null, null, null, null,0,null, true, false, false, false)).start();
         if (docs.get(1) == null) {
@@ -113,7 +113,7 @@ public class DatabaseController {
         }
         String deletedFiles = db.deleteFile(filesToDelete, userName);
         new Thread(new ReplicationRunner(null, null, null, null, null,  userName,0, tsList, false, false, false, false)).start();
-        db.closeMongoClients();
+//        db.closeMongoClients();
         return deletedFiles;
     }
 
@@ -143,7 +143,7 @@ public class DatabaseController {
         }
         db.editSharedWith(filesToShare, userName, shareList);
         new Thread(new ReplicationRunner(null, shareList, filesToShare, null, null, userName,0, tsList, false, false, true, false)).start();
-        db.closeMongoClients();
+//        db.closeMongoClients();
     }
 
     /**
@@ -172,7 +172,7 @@ public class DatabaseController {
         }
         db.editUnsharedWith(filesToUnShare, userName, unshareList);
         new Thread(new ReplicationRunner(null, null, null, unshareList, filesToUnShare, userName,0, tsList, false, false, false, true)).start();
-        db.closeMongoClients();
+//        db.closeMongoClients();
     }
 
     /**
@@ -199,11 +199,11 @@ public class DatabaseController {
         DB db = new DB();
         Document replicatedEntry = db.registerUser(requestModel);
         if (replicatedEntry == null) {
-            db.closeMongoClients();
+//            db.closeMongoClients();
             return Boolean.toString(false);
         }
         new Thread(new ReplicationRunner(replicatedEntry, null, null, null, null, null,0, null,false, true, false, false)).start();
-        db.closeMongoClients();
+//        db.closeMongoClients();
         return Boolean.toString(true);
     }
 
