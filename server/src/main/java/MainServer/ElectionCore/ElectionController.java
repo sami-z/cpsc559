@@ -95,6 +95,10 @@ public class ElectionController{
     @PostMapping("/notify-primary-change")
     @ResponseBody
     public void notifyPrimaryChange(@RequestBody JsonNode node) {
+        System.out.println("here in processing server notify");
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
+        DB.createMongoClient(true);
+        DB.createMongoClient(false);
+        System.out.println("In Processing server notify-primary-change, " + node.get("isFirstClusterPrimary").asText());
     }
 }

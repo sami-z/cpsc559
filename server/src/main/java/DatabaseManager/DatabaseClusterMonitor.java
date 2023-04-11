@@ -32,9 +32,10 @@ public class DatabaseClusterMonitor implements Runnable{
         while (true) {
             if (DB.shouldRecover) {
                 try {
-                    if (secondaryMongoClient == null) {
-                        secondaryMongoClient = DBInstance.createMongoClient(false);
-                    }
+//                    if (secondaryMongoClient == null) {
+//                        secondaryMongoClient = DB.createMongoClient(false);
+//                    }
+                    secondaryMongoClient = DB.createMongoClient(false);
 
                     BsonDocument secondaryReplStatus = secondaryMongoClient.getDatabase("admin").runCommand(new BsonDocument("replSetGetStatus", new BsonInt32(1))).toBsonDocument();
                     BsonArray secondaryMembers = secondaryReplStatus.getArray("members");

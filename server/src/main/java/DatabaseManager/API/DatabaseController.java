@@ -272,11 +272,16 @@ public class DatabaseController {
     @PostMapping("/notify-leader-primary-change")
     @ResponseBody
     public void notifyLeaderPrimaryChange(@RequestBody JsonNode node){
+        System.out.println("here in DB controller notify");
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode primaryUpdate = objectMapper.createObjectNode();
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
         DB.shouldRecover = node.get("shouldRecover").asBoolean();
+        DB.createMongoClient(true);
+        DB.createMongoClient(false);
         ((ObjectNode) primaryUpdate).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
+        System.out.println("In DB notify-leader-primary-change, " + node.get("isFirstClusterPrimary").asText());
+        System.out.println("In DB notify-leader-primary-change, " + node.get("shouldRecover").asText());
         NetworkUtil.broadcastPrimaryReplica(primaryUpdate);
     }
 
@@ -289,6 +294,10 @@ public class DatabaseController {
      */
     @PostMapping("/broadcast-primary")
     public void broadcastPrimary(@RequestBody JsonNode node) {
+        System.out.println("here in DB controller broadcast primary");
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
+        DB.createMongoClient(true);
+        DB.createMongoClient(false);
+        System.out.println("In DB broadcast-primary, " + node.get("isFirstClusterPrimary").asText());
     }
 }

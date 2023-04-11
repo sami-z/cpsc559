@@ -26,8 +26,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class DB {
-	public MongoClient mongoClient1;
-	public MongoClient mongoClient2;
+	public static MongoClient mongoClient1;
+	public static MongoClient mongoClient2;
 	private ObjectMapper mapper;
 	public static Boolean isFirstClusterPrimary = true;
 	public static boolean shouldRecover = false;
@@ -43,9 +43,8 @@ public class DB {
 	 @param shouldGetPrimary if true, the method will create a client to connect to the primary cluster and false if it shoulder connect to a secondary cluster.
 	 @return a MongoClient object created with the specified settings.
 	 */
-	public MongoClient createMongoClient(boolean shouldGetPrimary) {
+	public static MongoClient createMongoClient(boolean shouldGetPrimary) {
 		String URI;
-//		boolean isFirstClusterPrimary = NetworkUtil.getIsFirstClusterPrimary();
 		if (shouldGetPrimary) {
 			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER1 : DBConstants.MONGO_URI_CLUSTER2;
 		} else {
@@ -58,7 +57,32 @@ public class DB {
 				.applyToClusterSettings(builder ->
 						builder.serverSelectionTimeout(3, SECONDS))
 				.build();
-		return MongoClients.create(clientSettings);
+		MongoClient mongoClient;
+		if (shouldGetPrimary) {
+			try {
+				mongoClient = MongoClients.create(clientSettings);
+			} catch (Exception e) {
+				recoverFromDatabaseFailure();
+				URI = DBConstants.MONGO_URI_CLUSTER2;
+				clientSettings = MongoClientSettings.builder()
+						.applyConnectionString(new ConnectionString(URI))
+						.applyToSocketSettings(builder ->
+								builder.connectTimeout(3, SECONDS))
+						.applyToClusterSettings(builder ->
+								builder.serverSelectionTimeout(3, SECONDS))
+						.build();
+				mongoClient = MongoClients.create(clientSettings);
+			}
+		} else {
+			try {
+				mongoClient = MongoClients.create(clientSettings);
+			} catch (Exception e) {
+				System.out.println("Secondary cluster is currently down in DB");
+				mongoClient = null;
+			}
+		}
+
+		return mongoClient;
 	}
 
 	/**
@@ -162,7 +186,7 @@ public class DB {
 		return entry;
 	}
 
-	public void recoverFromDatabaseFailure() {
+	public static void recoverFromDatabaseFailure() {
 		System.out.println("MongoDB Atlas Primary Cluster is down in DB");
 
 		NetworkUtil.DBManagerNotifyPrimaryChange(false, true);
