@@ -1,5 +1,6 @@
 package MainServer.ElectionCore;
 
+import MainServer.ExecutionCore.ExecutionCoreHandler;
 import MainServer.ServerState;
 import Util.DB;
 import Util.NetworkUtil;
@@ -96,9 +97,9 @@ public class ElectionController{
     @ResponseBody
     public void notifyPrimaryChange(@RequestBody JsonNode node) {
         System.out.println("here in processing server notify");
+        ExecutionCoreHandler.db.closeMongoClients();
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
-        DB.createMongoClient(true);
-        DB.createMongoClient(false);
+        ExecutionCoreHandler.initDB();
         System.out.println("In Processing server notify-primary-change, " + node.get("isFirstClusterPrimary").asText());
     }
 }

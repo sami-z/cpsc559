@@ -265,6 +265,7 @@ public class DatabaseController {
         System.out.println("here in DB controller notify");
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode primaryUpdate = objectMapper.createObjectNode();
+        DB.closeMongoClients();
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
         DB.shouldRecover = node.get("shouldRecover").asBoolean();
         DB.createMongoClient(true);
@@ -285,6 +286,7 @@ public class DatabaseController {
     @PostMapping("/broadcast-primary")
     public void broadcastPrimary(@RequestBody JsonNode node) {
         System.out.println("here in DB controller broadcast primary");
+        DB.closeMongoClients();
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
         DB.createMongoClient(true);
         DB.createMongoClient(false);
