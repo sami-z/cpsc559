@@ -83,7 +83,7 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
           <p>{caption}</p>
         </div>
         <div className="fileItem--right" onDoubleClick={handleFileClick}>
-          <p>{file.shared.length == 0 ? "None" : file.shared}</p>
+          <p>{file.shared.length == 0 ? "None" : file.shared.join(", ")}</p>
           <p>{file.userName === currentUser ? "me" : file.userName}</p>
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(file.bytes)}</p>

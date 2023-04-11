@@ -53,7 +53,9 @@ function ShareButton({ selectedFiles, currentUser }) {
               alert('You cannot share files you do not own!');
               return;
             }
-          }
+        }
+
+        
 
         createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
         .then((ws) => {
