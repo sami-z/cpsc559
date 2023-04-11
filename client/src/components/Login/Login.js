@@ -16,9 +16,6 @@ function Login(props) {
         const enteredUsername = username.trim();
         const enteredPass = password.trim()
         props.updateUser(enteredUsername);
-        console.log("Entered username for login: ", enteredUsername);
-        console.log("Entered password for login ", enteredPass);
-
 
         createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
         .then((ws) => {
@@ -38,8 +35,6 @@ function Login(props) {
         const enteredUsername = username.trim();
         const enteredPass = password.trim()
         props.updateUser(enteredUsername);
-        console.log("Entered username for login: ", enteredUsername);
-        console.log("Entered password for login ", enteredPass);
 
         createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
         .then((ws) => {

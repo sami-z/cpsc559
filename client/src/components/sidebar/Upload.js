@@ -53,7 +53,7 @@ function Upload(props) {
             let file = props.files.find(p => p.fileName === fileData.name);
             let userName = props.currentUser
             if (file) {
-                console.log("FILE ALREADY EXISTS, KEEPING OLD SHARED ARR");
+                console.log("File already exists!");
                 shared = file.shared.split(",");
                 userName = file.userName;
 
@@ -63,9 +63,7 @@ function Upload(props) {
             let day = String(today.getDate()).padStart(2, '0');
             let year = today.getFullYear();
             let date = month + '/' + day + '/' + year;
-            console.log("JAKE WAKE", date)
             const payload = { requestType: "WRITE", currentUser: props.currentUser, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared, created: date };
-            console.log("upload request payload", payload)
             ws.send(JSON.stringify(payload));
 
             setTimeout(() => {
@@ -101,17 +99,13 @@ function Upload(props) {
                 setFileData(file);
                 const base64Data = e.target.result.split(",")[1];
                 setFileBytes(base64Data);
-                console.log("File to upload", file);
-                console.log("File bytes", base64Data);
             };
 
             reader.readAsDataURL(file);
         }
-
     }
 
     function handleBlur() {
-        console.log("IN HANDLE BLUR")
         setFileData(null);
         handleClose();
         // reset any other values as needed

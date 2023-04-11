@@ -55,15 +55,12 @@ function ShareButton({ selectedFiles, currentUser }) {
             }
         }
 
-        
-
         createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
         .then((ws) => {
             console.log('WebSocket connection established:', ws);
             const shareWithArr = names.trim().split(",");
             const fileNames = selectedFiles.map(item => item.fileName);
             const payload = { requestType: "SHARE", currentUser: currentUser, filesToShare: fileNames, shared: shareWithArr };
-            console.log("HERE I AM", payload)
             ws.send(JSON.stringify(payload));
             alert('Permission shared successfully!');
             ws.close();
@@ -91,8 +88,6 @@ function ShareButton({ selectedFiles, currentUser }) {
                 aria-labelledby="simple-modal-title"
                 aria-describedby="simple-modal-description"
             >
-
-                {/* // {classes.paper} */}
                 <div style={modalStyle} className={classes.root}>
                     <center>
                         <p>Enter user(s) to share with:</p>
@@ -104,8 +99,6 @@ function ShareButton({ selectedFiles, currentUser }) {
                             <>
                                 <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} />
                                 <button onClick={handleSharePermission} onBlur={handleBlur}>Share File</button>
-                                {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
-                                {/* {fileData && <p>{fileData}</p>} */}
                             </>
                         )
                     }

@@ -11,9 +11,6 @@ const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep
 const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   const [isSelected, setIsSelected] = useState(false);
 
-  console.log("FILE ITEM SHARED", file.shared)
-
-
   const handleFileClick = () => {
 
     createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
@@ -32,13 +29,9 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
 
   let caption = file.fileName
   let fileType = caption.split('.')[1]
-  // let fileUrl = `data:application/${fileType};base64,${fileData}`
   const fileExtension = caption.split('.').pop();
-  // const fileDate = `${timestamp?.toDate().getDate()} ${monthNames[timestamp?.toDate().getMonth() + 1]} ${timestamp?.toDate().getFullYear()}`
   const dateParts = file.created.split('/');
-  console.log("HERE IS THE DATE", dateParts)
   const fileDate = `${monthNames[dateParts[1] - 1]} ${parseInt(dateParts[0])}, ${dateParts[2]}`;
-  console.log("HERE IS THE DATE 2", fileDate)
 
   const getReadableFileSizeString = (base64String) => {
     const byteUnits = [' kB', ' MB', ' GB', ' TB', 'PB', 'EB', 'ZB', 'YB'];
@@ -75,7 +68,6 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   return (
     <div className={isSelected ? 'highlight' : 'fileItem'}>
       <a>
-        {/* <input type="checkbox" checked={isSelected} onChange={() => setIsSelected(!isSelected)} /> */}
         <input type="checkbox" checked={isSelected} onChange={() => {
           setIsSelected(prevState => !prevState);
           onSelectFile(file.fileName, file.userName, file.shared, !isSelected);
@@ -85,7 +77,7 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
           <p>{caption}</p>
         </div>
         <div className="fileItem--right" onDoubleClick={handleFileClick}>
-          <p>{file.shared.length == 0 ? "None" : file.shared.join(", ")}</p>
+          <p>{file.shared.length === 0 ? "None" : file.shared.join(", ")}</p>
           <p>{file.userName === currentUser ? "Me" : file.userName}</p>
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(file.bytes)}</p>

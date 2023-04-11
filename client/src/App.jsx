@@ -18,9 +18,6 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
 
 
-  // Get the current title of the document
-  const currentTitle = document.title;
-
   // Change the title of the document
   if (isLoggedIn){
     document.title = "Welcome to FileArc "+ currentUser + "!";
@@ -35,8 +32,6 @@ function App() {
 
   // Remove an array of files
   const removeFiles = (filesToRemove) => {
-
-    console.log("RAJODE ", filesToRemove);
     setFiles(prevFiles => {
       // Filter out files to remove
       
@@ -47,12 +42,10 @@ function App() {
   }
 
   useEffect(() => {
-    console.log("REMOVED: " + files.fileName);
   }, [files]);
 
 
   const handleSelectFile = (fileName, userName, shared, isSelected) => {
-    console.log("IN IFFFFFFFFFFFFFF", fileName, userName, shared, isSelected);
     let newFile = {fileName: fileName, userName:userName ,shared: shared}
     if (isSelected) {
       setSelectedFiles([...selectedFiles, newFile]);
@@ -64,7 +57,6 @@ function App() {
 
   useEffect(() => {
     if (isLoggedIn){
-      // setIsLoading(true);
       createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
         .then((ws) => {
             console.log('WebSocket connection established:', ws);
@@ -78,14 +70,10 @@ function App() {
         });
       }
     }, [isLoggedIn]);
-  
- 
-
-  const prevSelectedFiles = useRef([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      console.log('Logs every 2 secs');
+      console.log('Logs every 1 secs');
       
       createWebSocket(RESPONSE_QUEUE_IPS, RESPONSE_QUEUE_PORT)
         .then((ws) => {
@@ -139,7 +127,6 @@ function App() {
                       updatedFiles.push(response);
                     }
 
-                    console.log("MY UPDATED FILES:", updatedFiles)
                     return updatedFiles;
                   });
                   
@@ -204,7 +191,7 @@ function App() {
   }, MINUTE_MS);
 
     return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
-  }, useEffect(() => console.log("BLEH",files), [files]));
+  }, useEffect(() => console.log("Files:",files), [files]));
 
   const [searchTerm, setSearchTerm] = useState('');
 
