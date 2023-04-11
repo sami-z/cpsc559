@@ -91,13 +91,13 @@ public class DB {
 	 Closes the MongoClient instances associated with this DB instance.
 	 If the MongoClient1 or MongoClient2 is not null, it will be closed.
 	 */
-	public void closeMongoClients() {
-		if (this.mongoClient1 != null) {
-			this.mongoClient1.close();
+	public static void closeMongoClients() {
+		if (DB.mongoClient1 != null) {
+			DB.mongoClient1.close();
 		}
 
-		if (this.mongoClient2 != null) {
-			this.mongoClient2.close();
+		if (DB.mongoClient2 != null) {
+			DB.mongoClient2.close();
 		}
 	}
 
