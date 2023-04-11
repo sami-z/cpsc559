@@ -58,8 +58,14 @@ function UnshareButton({ selectedFiles, currentUser }) {
         .then((ws) => {
             console.log('WebSocket connection established:', ws);
             const unshareWithArr = names.trim().split(",");
+            
+            // for (const name of unshareWithArr){
+            //     names.remove(name)
+            // }
+
             const fileNames = selectedFiles.map(item => item.fileName);
             const payload = { requestType: "UNSHARE", currentUser: currentUser, filesToUnshare: fileNames, unshared: unshareWithArr  };
+            console.log("HERE I AM 2", unshareWithArr)
             ws.send(JSON.stringify(payload));
             alert('Permission unshared successfully!');
             ws.close();
@@ -70,8 +76,8 @@ function UnshareButton({ selectedFiles, currentUser }) {
         });
     };
 
-    function handleBlur(event) {
-        event.target.value = null; 
+    function handleBlur() {
+        setNames('')
     }
 
     return (
@@ -98,8 +104,8 @@ function UnshareButton({ selectedFiles, currentUser }) {
                             <p>Sharing...</p>
                         ) : (
                             <>
-                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} onBlur={handleBlur} />
-                                <button onClick={handleSharePermission}>Unshare File</button>
+                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} />
+                                <button onClick={handleSharePermission} onBlur={handleBlur}>Unshare File</button>
                                 {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
                                 {/* {fileData && <p>{fileData}</p>} */}
                             </>

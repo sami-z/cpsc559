@@ -74,8 +74,8 @@ function ShareButton({ selectedFiles, currentUser }) {
         });
     };
 
-    function handleBlur(event) {
-        event.target.value = null; 
+    function handleBlur() {
+        setNames('') 
     }
 
     return (
@@ -102,8 +102,8 @@ function ShareButton({ selectedFiles, currentUser }) {
                             <p>Sharing...</p>
                         ) : (
                             <>
-                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} onBlur={handleBlur} />
-                                <button onClick={handleSharePermission}>Share File</button>
+                                <input type="text" placeholder="Enter username(s)" value={names} onChange={handleNameChange} />
+                                <button onClick={handleSharePermission} onBlur={handleBlur}>Share File</button>
                                 {/* <button onClick={handleFileUpload}>Upload to DFS</button> */}
                                 {/* {fileData && <p>{fileData}</p>} */}
                             </>

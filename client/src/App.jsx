@@ -9,7 +9,7 @@ import { CircularProgress } from '@mui/material';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const MINUTE_MS = 5000;
+  const MINUTE_MS = 1000;
   const [files, setFiles] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [currentUser, setCurrentUser] = useState('')
@@ -137,6 +137,8 @@ function App() {
                     if (!prevFiles.some(oldFile => oldFile.fileName === response.fileName)) {
                       updatedFiles.push(response);
                     }
+
+                    console.log("MY UPDATED FILES:", updatedFiles)
                     return updatedFiles;
                   });
                   

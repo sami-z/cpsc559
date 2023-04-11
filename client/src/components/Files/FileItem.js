@@ -11,6 +11,8 @@ const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep
 const FileItem = ({ id, currentUser, onSelectFile, file }) => {
   const [isSelected, setIsSelected] = useState(false);
 
+  console.log("FILE ITEM SHARED", file.shared)
+
 
   const handleFileClick = () => {
 
@@ -84,7 +86,7 @@ const FileItem = ({ id, currentUser, onSelectFile, file }) => {
         </div>
         <div className="fileItem--right" onDoubleClick={handleFileClick}>
           <p>{file.shared.length == 0 ? "None" : file.shared.join(", ")}</p>
-          <p>{file.userName === currentUser ? "me" : file.userName}</p>
+          <p>{file.userName === currentUser ? "Me" : file.userName}</p>
           <p>{fileDate}</p>
           <p>{getReadableFileSizeString(file.bytes)}</p>
         </div>

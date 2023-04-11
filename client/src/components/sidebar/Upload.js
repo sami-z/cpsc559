@@ -65,6 +65,7 @@ function Upload(props) {
             let date = month + '/' + day + '/' + year;
             console.log("JAKE WAKE", date)
             const payload = { requestType: "WRITE", currentUser: props.currentUser, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared, created: date };
+            console.log("upload request payload", payload)
             ws.send(JSON.stringify(payload));
 
             setTimeout(() => {

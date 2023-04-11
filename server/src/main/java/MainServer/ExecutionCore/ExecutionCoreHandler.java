@@ -179,6 +179,14 @@ public class ExecutionCoreHandler {
             if (!files.isEmpty()){
                 //response = objectMapper.valueToTree(files);
                 response = objectMapper.createObjectNode();
+
+                for (JsonNode file : files){
+                    String currShared = file.get("shared").asText();
+                    String[] sharedUsers = currShared.split(",");
+                    List<String> sharedUsersArrayList = Arrays.asList(sharedUsers);
+                    ((ObjectNode) response).put("shared",objectMapper.valueToTree(sharedUsersArrayList));
+                }
+
                 ((ObjectNode)response).put("currentUser", request.get("currentUser").asText());
                 ((ObjectNode)response).put("responseType", "LOADALLFILES");
                 ((ObjectNode)response).set("files", files);
