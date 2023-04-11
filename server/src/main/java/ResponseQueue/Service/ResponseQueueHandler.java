@@ -25,4 +25,8 @@ public class ResponseQueueHandler{
     public JsonNode pop(String uName){
         return responseQueue.pop(uName);
     }
+
+    public long getHeadTime(String uName){
+        return responseQueue.getHeadTime(uName);
+    }
 }

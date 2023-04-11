@@ -104,15 +104,24 @@ public class ExecutionCoreHandler {
      @param updateShare A boolean indicating whether the file(s) are being shared with new user(s) or an existing file is being replaced.
      @throws IOException If there is an error in the input or output.
      */
-    public static void updateShare(JsonNode request, Boolean updateShare) throws IOException {
+    public static <AraryList> void updateShare(JsonNode request, Boolean updateShare) throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+
         if (updateShare) { //file(s) shared with new user(s)
-            ArrayList<String> filesToShare = new ObjectMapper().convertValue(request.get("filesToShare"), ArrayList.class);
+            ArrayList<String> filesToShare = mapper.convertValue(request.get("filesToShare"), ArrayList.class);
             for (String fileName : filesToShare) {
                 System.out.println("inupdateSHARE " + fileName + " " + request.get("currentUser").asText());
                 JsonNode file = db.loadFile(request.get("currentUser").asText(), fileName);
+
+                String currShared = file.get("shared").asText();
+                String[] sharedUsers = currShared.split(",");
+                List<String> sharedUsersArrayList = Arrays.asList(sharedUsers);
+
+                ((ObjectNode) file).put("shared",mapper.valueToTree(sharedUsersArrayList));
                 ((ObjectNode) file).put("responseType", "UPDATE");
 
-                ArrayList<String> users = new ObjectMapper().convertValue(request.get("shared"), ArrayList.class);
+                ArrayList<String> users = mapper.convertValue(request.get("shared"), ArrayList.class);
 
                 users.add(request.get("currentUser").asText());
                 for (String username : users) {
@@ -207,9 +216,7 @@ public class ExecutionCoreHandler {
             }
             System.out.println("DATABASE SINGLE FOR LOOP" + System.currentTimeMillis());
         }
-
         /**
-
          This if block handles the login request from the client by verifying the provided username and password
          against the database. It then sends a response to the response queue with the result of the login attempt.
          @param request the JsonNode representing the login request from the client

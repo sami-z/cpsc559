@@ -1,18 +1,25 @@
 package ResponseQueue.API;
 
+import ResponseQueue.DeletionManager.DeletionRunner;
 import ResponseQueue.Service.ResponseQueueHandler;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashSet;
 
 @RequestMapping("/api/response")
 @RestController
 public class ResponseQueueController {
     private final ResponseQueueHandler responseQueueHandler;
 
+    private HashSet<String> currRunners;
+
     @Autowired
     public ResponseQueueController(ResponseQueueHandler responseQueueHandler) {
         this.responseQueueHandler = responseQueueHandler;
+        this.currRunners = new HashSet<>();
     }
 
     /**
@@ -24,12 +31,19 @@ public class ResponseQueueController {
      */
     @PostMapping("/post")
     public void postRequest(@RequestBody JsonNode response) {
-        System.out.println(response.toPrettyString());
+        String currUser = response.has("currentUser") ? response.get("currentUser").asText() : response.get(0).get("currentUser").asText();
+        ((ObjectNode) response).put("deletionOrder",System.currentTimeMillis());
         if(response.has("currentUser"))
         {
             responseQueueHandler.push(response.get("currentUser").asText(), response);
         } else {
             responseQueueHandler.push(response.get(0).get("currentUser").asText(), response);
+        }
+
+        if(!currRunners.contains(currUser)) {
+            System.out.println("starting runner");
+            currRunners.add(currUser);
+            new Thread(new DeletionRunner(currUser,responseQueueHandler)).start();
         }
     }
 }
