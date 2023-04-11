@@ -17,6 +17,7 @@ function App() {
   const [loginStatus, setLoginStatus] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+
   // Get the current title of the document
   const currentTitle = document.title;
 

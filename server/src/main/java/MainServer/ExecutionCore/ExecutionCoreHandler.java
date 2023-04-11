@@ -184,7 +184,7 @@ public class ExecutionCoreHandler {
                     String currShared = file.get("shared").asText();
                     String[] sharedUsers = currShared.split(",");
                     List<String> sharedUsersArrayList = Arrays.asList(sharedUsers);
-                    ((ObjectNode) response).put("shared",objectMapper.valueToTree(sharedUsersArrayList));
+                    ((ObjectNode) file).set("shared",objectMapper.valueToTree(sharedUsersArrayList));
                 }
 
                 ((ObjectNode)response).put("currentUser", request.get("currentUser").asText());
