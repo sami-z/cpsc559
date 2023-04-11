@@ -56,14 +56,14 @@ public class DatabaseController {
         DB db = new DB();
 
         System.out.println("hello i am here: " + requestModel.fileName);
-        Document query = db.createUploadQuery(requestModel.userName, requestModel.fileName);
+        Document query = db.createUploadQuery(requestModel.currentUser, requestModel.fileName);
 
         Document queryResult = db.getReplica(true).find(query).first();
         String ownerName;
         System.out.println("2");
 
         if (queryResult == null) {
-            ownerName = requestModel.userName;
+            ownerName = requestModel.currentUser;
         } else {
             ownerName = queryResult.getString("userName");
         }
