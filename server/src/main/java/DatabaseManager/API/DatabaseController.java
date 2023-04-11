@@ -58,7 +58,13 @@ public class DatabaseController {
         System.out.println("hello i am here: " + requestModel.fileName);
         Document query = db.createUploadQuery(requestModel.currentUser, requestModel.fileName);
 
-        Document queryResult = db.getReplica(true).find(query).first();
+        Document queryResult;
+        try {
+            queryResult = db.getReplica(true).find(query).first();
+        } catch (Exception e) {
+            db.recoverFromDatabaseFailure();
+            queryResult = db.getReplica(true).find(query).first();
+        }
         String ownerName;
         System.out.println("2");
 
@@ -254,13 +260,35 @@ public class DatabaseController {
     @GetMapping("/notify-leader")
     @ResponseBody
     public void notifyLeader(){
-        //new Thread(new DatabaseClusterMonitor()).start();
+        new Thread(new DatabaseClusterMonitor()).start();
 
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode rq = objectMapper.createObjectNode();
         ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
         NetworkUtil.broadcastPrimaryReplica(rq);
         return;
+    }
+
+    @GetMapping("/notify-leader-primary-down")
+    @ResponseBody
+    public void notifyLeaderPrimaryDown(){
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rq = objectMapper.createObjectNode();
+        DB.isFirstClusterPrimary = false;
+        DB.shouldRecover = true;
+        ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
+        NetworkUtil.broadcastPrimaryReplica(rq);
+    }
+
+    @GetMapping("/notify-leader-primary-up")
+    @ResponseBody
+    public void notifyLeaderPrimaryUp(){
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rq = objectMapper.createObjectNode();
+        DB.isFirstClusterPrimary = true;
+        DB.shouldRecover = false;
+        ((ObjectNode)rq).put("isFirstClusterPrimary", DB.isFirstClusterPrimary);
+        NetworkUtil.broadcastPrimaryReplica(rq);
     }
 
     /**
@@ -274,21 +302,4 @@ public class DatabaseController {
     public void broadcastPrimary(@RequestBody JsonNode node) {
         DB.isFirstClusterPrimary = node.get("isFirstClusterPrimary").asBoolean();
     }
-
-//    @GetMapping("/get-primary")
-//    public String getPrimary() {
-//        DB db = new DB();
-//        if (DB.isFirstClusterPrimary == null) {
-//            db.setIsFirstClusterPrimary();
-//        }
-//
-//        return Boolean.toString(DB.isFirstClusterPrimary);
-//    }
-//
-//    @GetMapping("/set-primary/{newIsFirstClusterPrimary}")
-//    public void setPrimary(@PathVariable String newIsFirstClusterPrimary) {
-//        DB db = new DB();
-//        db.updateIsFirstClusterPrimary(Boolean.parseBoolean(newIsFirstClusterPrimary));
-//    }
-
 }

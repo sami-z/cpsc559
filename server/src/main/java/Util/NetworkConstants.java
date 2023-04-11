@@ -93,6 +93,14 @@ public final class NetworkConstants {
         return String.format("http://%s:%s/api/dbmanager/notify-leader",IP, DATABASE_MANAGER_PORT);
     }
 
+    public static String notifyDBManagerLeaderPrimaryDownURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/notify-leader-primary-down",IP, DATABASE_MANAGER_PORT);
+    }
+
+    public static String notifyDBManagerLeaderPrimaryUpURI(String IP){
+        return String.format("http://%s:%s/api/dbmanager/notify-leader-primary-up",IP, DATABASE_MANAGER_PORT);
+    }
+
     public static String getDBManagerPingURI(String IP){
         return String.format("http://%s:%s/api/dbmanager/ping",IP, DATABASE_MANAGER_PORT);
     }

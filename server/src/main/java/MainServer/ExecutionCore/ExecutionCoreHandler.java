@@ -232,7 +232,13 @@ public class ExecutionCoreHandler {
          */
         else if(requestType.equalsIgnoreCase("LOGIN")){
 
-            FindIterable<Document> entry = db.getLoginReplica(true).find(eq("userName", request.get("currentUser").asText()));
+            FindIterable<Document> entry;
+            try {
+                entry = db.getLoginReplica(true).find(eq("userName", request.get("currentUser").asText()));
+            } catch (Exception e) {
+                db.recoverFromDatabaseFailure();
+                entry = db.getLoginReplica(true).find(eq("userName", request.get("currentUser").asText()));
+            }
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode response = mapper.createObjectNode();
