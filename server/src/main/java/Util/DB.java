@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 public class DB {
 	public static MongoClient mongoClient1;
 	public static MongoClient mongoClient2;
-	public static MongoClient mongoExceptionListener;
+	public static MongoClient mongoExceptionListener = null;
 	private ObjectMapper mapper;
 	public static Boolean isFirstClusterPrimary = true;
 	public static boolean shouldRecover = false;
@@ -36,7 +36,9 @@ public class DB {
 	public DB() {
 		DB.mongoClient1 = createMongoClient(true);
 		DB.mongoClient2 = createMongoClient(false);
-		DB.mongoExceptionListener = createExceptionListener();
+		if (DB.mongoExceptionListener == null) {
+			DB.mongoExceptionListener = createExceptionListener();
+		}
 		this.mapper = new ObjectMapper();
 	}
 
