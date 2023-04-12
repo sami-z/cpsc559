@@ -62,6 +62,7 @@ public class ExecutionCoreHandler {
             ArrayList<String> shared = new ObjectMapper().convertValue(file.get("shared"), ArrayList.class);
             for (String user : shared) {
                 ((ObjectNode) response).put("currentUser", user);
+                ((ObjectNode) response).put("delete", file.get("fileName").asText());
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(response, IP);
                 }
@@ -80,17 +81,40 @@ public class ExecutionCoreHandler {
      @throws IOException If there is an issue with converting the JSON object to the required format.
      */
     public static void updateUnshare(JsonNode request) throws IOException {
-        ArrayList<String> filesToUnshare = new ObjectMapper().convertValue(request.get("filesToUnshare"), ArrayList.class);
-        for (String fileName : filesToUnshare) {
-            JsonNode response = new ObjectMapper().createObjectNode();
-            ((ObjectNode) response).put("responseType", "DELETE");
-            JsonNode file = db.loadFile(request.get("currentUser").asText(), fileName);
-            String shared = new ObjectMapper().convertValue(file.get("shared"), String.class);
-            List<String> bigShared = Arrays.asList(shared.split("\\s*,\\s*"));
+        ObjectMapper mapper = new ObjectMapper();
 
-            for (String user : bigShared) {
+        ArrayList<String> unshared = new ObjectMapper().convertValue(request.get("unshared"), ArrayList.class);
+
+        ArrayList<String> filesToUnshare = new ObjectMapper().convertValue(request.get("filesToUnshare"), ArrayList.class);
+
+        for (String fileName : filesToUnshare) {
+            JsonNode file = db.loadFile(request.get("currentUser").asText(), fileName);
+
+            ArrayList<String> users = mapper.convertValue(request.get("shared"), ArrayList.class);
+            users.add(request.get("currentUser").asText());
+            for (String username : users) {
+                ((ObjectNode) file).put("responseType", "UPDATE");
+                ((ObjectNode) file).put("currentUser", username);
+                String currSharedUser = file.get("shared").asText();
+                String[] sharedUsersUser = currSharedUser.split(",");
+                ArrayList<String> sharedUsersArrayListUser = new ArrayList<>();
+                for (int i = 0; i < sharedUsersUser.length; i++) {
+                    sharedUsersArrayListUser.add(sharedUsersUser[i]);
+                }
+                sharedUsersArrayListUser.removeAll(unshared);
+                ((ObjectNode) file).put("shared",mapper.valueToTree(sharedUsersArrayListUser));
+
+                for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
+                    NetworkUtil.sendToResponseQueue(file, IP);
+                }
+            }
+
+            for (String user : unshared) {
+                JsonNode response = new ObjectMapper().createObjectNode();
+                ((ObjectNode) response).put("responseType", "DELETE");
                 ((ObjectNode) response).put("currentUser", user);
-                ((ObjectNode)response).put("delete", fileName);
+                ((ObjectNode) response).put("delete", fileName);
+
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(response, IP);
                 }
