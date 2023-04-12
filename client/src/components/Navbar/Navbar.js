@@ -20,7 +20,7 @@ const Navbar = ({ setSearchTerm }) => {
     <div className='header'>
       <div className="header__logo">
         <img src={DFSLogo} alt="DFS" />
-        <span className='span'>FileArc              </span> {/*tabs added for searchbar alginment*/}
+        <span className='span' onClick={() => window.location.reload(false)}>FileArc              </span> {/*tabs added for searchbar alginment*/}
       </div>
       <div className="header__searchContainer">
         <div className="header__searchBar">
