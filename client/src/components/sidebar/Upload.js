@@ -47,40 +47,40 @@ function Upload(props) {
         setUploadStatus('uploading');
 
         createWebSocket(REQUEST_QUEUE_IPS, REQUEST_QUEUE_PORT)
-        .then((ws) => {
-            console.log('WebSocket connection established:', ws);
-            let shared = []
-            let file = props.files.find(p => p.fileName === fileData.name);
-            let userName = props.currentUser
-            if (file) {
-                console.log("File already exists!");
-                shared = file.shared.split(",");
-                userName = file.userName;
+            .then((ws) => {
+                console.log('WebSocket connection established:', ws);
+                let shared = []
+                let file = props.files.find(p => p.fileName === fileData.name);
+                let userName = props.currentUser
+                if (file) {
+                    console.log("File already exists!");
+                    shared = file.shared.split(",");
+                    userName = file.userName;
 
-            }
-            let today = new Date();
-            let month = String(today.getMonth() + 1).padStart(2, '0');
-            let day = String(today.getDate()).padStart(2, '0');
-            let year = today.getFullYear();
-            let date = month + '/' + day + '/' + year;
-            const payload = { requestType: "WRITE", currentUser: props.currentUser, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared, created: date };
-            ws.send(JSON.stringify(payload));
+                }
+                let today = new Date();
+                let month = String(today.getMonth() + 1).padStart(2, '0');
+                let day = String(today.getDate()).padStart(2, '0');
+                let year = today.getFullYear();
+                let date = day + '/' + month + '/' + year;
+                const payload = { requestType: "WRITE", currentUser: props.currentUser, userName: userName, fileName: fileData.name, fileType: fileData.type, bytes: fileBytes, shared: shared, created: date };
+                ws.send(JSON.stringify(payload));
 
-            setTimeout(() => {
-                setUploadStatus('uploaded');
-                setOpen(false);
-                setFileData(null);
-                setFileBytes(null);
-                setUploadStatus('idle');
-            }, 2500); // add a 2.5 second delay
-            ws.close();
+                setTimeout(() => {
+                    setUploadStatus('uploaded');
+                    setOpen(false);
+                    setFileData(null);
+                    setFileBytes(null);
+                    setUploadStatus('idle');
+                }, 2500); // add a 2.5 second delay
+                ws.close();
 
-            
 
-        })
-        .catch((error) => {
-            console.error(`An error occurred while connecting to a WebSocket: ${error}`);
-        });
+
+            })
+            .catch((error) => {
+                console.error(`An error occurred while connecting to a WebSocket: ${error}`);
+            });
     };
 
     const handleOpen = () => {
