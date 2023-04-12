@@ -1,10 +1,8 @@
 package MainServer.ExecutionCore;
 
-import MainServer.ElectionCore.ElectionConsumer;
 import MainServer.ElectionCore.ElectionController;
 import MainServer.Monitor.LeaderMonitor;
 import MainServer.ServerState;
-import Util.ClusterExceptionMonitor;
 import Util.NetworkConstants;
 import org.springframework.boot.SpringApplication;
 
@@ -34,6 +32,5 @@ public class ServerMain {
 
         new Thread(new LeaderMonitor()).start();                // Starting the monitor for the leader
         new Thread(new MultiThreadedServer()).start();          // Starting the multithread server
-        Thread.setDefaultUncaughtExceptionHandler(new ClusterExceptionMonitor());
     }
 }

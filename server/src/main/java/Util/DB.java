@@ -1,5 +1,6 @@
 package Util;
 
+import java.beans.ExceptionListener;
 import java.io.*;
 import java.util.*;
 import MainServer.Models.ClientRequestModel;
@@ -14,6 +15,11 @@ import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
+import com.mongodb.event.CommandFailedEvent;
+import com.mongodb.event.CommandListener;
+import com.mongodb.event.CommandStartedEvent;
+import com.mongodb.event.CommandSucceededEvent;
+import com.sun.jdi.event.ExceptionEvent;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
@@ -21,7 +27,6 @@ import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import com.mongodb.client.result.UpdateResult;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -29,13 +34,15 @@ import java.time.format.DateTimeFormatter;
 public class DB {
 	public static MongoClient mongoClient1;
 	public static MongoClient mongoClient2;
+	public static MongoClient mongoExceptionListener;
 	private ObjectMapper mapper;
 	public static Boolean isFirstClusterPrimary = true;
 	public static boolean shouldRecover = false;
 
 	public DB() {
-		this.mongoClient1 = createMongoClient(true);
-		this.mongoClient2 = createMongoClient(false);
+		DB.mongoClient1 = createMongoClient(true);
+		DB.mongoClient2 = createMongoClient(false);
+		DB.mongoExceptionListener = createExceptionListener();
 		this.mapper = new ObjectMapper();
 	}
 
@@ -84,6 +91,33 @@ public class DB {
 		}
 
 		return mongoClient;
+	}
+
+	public MongoClient createExceptionListener() {
+		MongoClientSettings settings = MongoClientSettings.builder()
+				.applyConnectionString(new ConnectionString(DBConstants.MONGO_URI_CLUSTER1))
+				.addCommandListener(new CommandListener() {
+					@Override
+					public void commandStarted(final CommandStartedEvent event) {
+						// Handle command started event
+					}
+
+					@Override
+					public void commandSucceeded(final CommandSucceededEvent event) {
+						// Handle command succeeded event
+					}
+
+					@Override
+					public void commandFailed(final CommandFailedEvent event) {
+						if (event.getThrowable() instanceof MongoException && DB.isFirstClusterPrimary) {
+							recoverFromDatabaseFailure();
+						} else if (DB.isFirstClusterPrimary) {
+							recoverFromDatabaseFailure();
+						}
+					}
+				})
+				.build();
+		return MongoClients.create(settings);
 	}
 
 	/**
@@ -194,11 +228,6 @@ public class DB {
 		NetworkUtil.processingServerNotifyPrimaryChange(false);
 		while (DB.isFirstClusterPrimary) {
 			System.out.println("waiting for broadcast to go thru");
-			try {
-				Thread.sleep(3000);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
 		}
 	}
 
