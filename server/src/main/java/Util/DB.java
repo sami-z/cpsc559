@@ -1,6 +1,5 @@
 package Util;
 
-import java.beans.ExceptionListener;
 import java.io.*;
 import java.util.*;
 import MainServer.Models.ClientRequestModel;
@@ -13,36 +12,32 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoException;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.event.CommandFailedEvent;
-import com.mongodb.event.CommandListener;
-import com.mongodb.event.CommandStartedEvent;
-import com.mongodb.event.CommandSucceededEvent;
-import com.sun.jdi.event.ExceptionEvent;
+import com.mongodb.event.*;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import com.mongodb.client.result.UpdateResult;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class DB {
-	public static MongoClient mongoClient1;
-	public static MongoClient mongoClient2;
-	public static MongoClient mongoExceptionListener;
+	public static MongoClient mongoClient1 = null;
+	public static MongoClient mongoClient2 = null;
 	private ObjectMapper mapper;
 	public static Boolean isFirstClusterPrimary = true;
 	public static boolean shouldRecover = false;
 
 	public DB() {
-		DB.mongoClient1 = createMongoClient(true);
-		DB.mongoClient2 = createMongoClient(false);
-		DB.mongoExceptionListener = createExceptionListener();
+		if (DB.mongoClient1 == null) {
+			DB.mongoClient1 = createMongoClient(true);
+		}
+		if (DB.mongoClient2 == null) {
+			DB.mongoClient2 = createMongoClient(false);
+		}
 		this.mapper = new ObjectMapper();
 	}
 
@@ -58,66 +53,66 @@ public class DB {
 		} else {
 			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER2 : DBConstants.MONGO_URI_CLUSTER1;
 		}
-		MongoClientSettings clientSettings = MongoClientSettings.builder()
-				.applyConnectionString(new ConnectionString(URI))
-				.applyToSocketSettings(builder ->
-						builder.connectTimeout(3, SECONDS))
-				.applyToClusterSettings(builder ->
-						builder.serverSelectionTimeout(3, SECONDS))
-				.build();
-		MongoClient mongoClient;
-		if (shouldGetPrimary) {
-			try {
-				mongoClient = MongoClients.create(clientSettings);
-			} catch (MongoException e) {
-				recoverFromDatabaseFailure();
-				URI = DBConstants.MONGO_URI_CLUSTER2;
-				clientSettings = MongoClientSettings.builder()
-						.applyConnectionString(new ConnectionString(URI))
-						.applyToSocketSettings(builder ->
-								builder.connectTimeout(3, SECONDS))
-						.applyToClusterSettings(builder ->
-								builder.serverSelectionTimeout(3, SECONDS))
-						.build();
-				mongoClient = MongoClients.create(clientSettings);
-			}
+
+		MongoClientSettings clientSettings;
+
+		if (URI.equals(DBConstants.MONGO_URI_CLUSTER1)) {
+			clientSettings = MongoClientSettings.builder()
+					.applyConnectionString(new ConnectionString(URI))
+					.addCommandListener(new CommandListener() {
+						@Override
+						public void commandStarted(final CommandStartedEvent event) {
+							// Handle command started event
+						}
+
+						@Override
+						public void commandSucceeded(final CommandSucceededEvent event) {
+							// Handle command succeeded event
+						}
+
+						@Override
+						public void commandFailed(final CommandFailedEvent event) {
+							if (event.getThrowable() instanceof MongoException && DB.isFirstClusterPrimary) {
+								recoverFromDatabaseFailure();
+							} else if (DB.isFirstClusterPrimary) {
+								recoverFromDatabaseFailure();
+							}
+						}
+					})
+					.applyToServerSettings(builder -> builder.addServerListener(new ServerListener() {
+						@Override
+						public void serverClosed(ServerClosedEvent event) {
+							if (DB.isFirstClusterPrimary) {
+								recoverFromDatabaseFailure();
+							}
+						}
+					}))
+					.applyToServerSettings(builder -> builder.addServerMonitorListener(new ServerMonitorListener() {
+						@Override
+						public void serverHearbeatStarted(ServerHeartbeatStartedEvent event) {
+							// handle server heartbeat started event
+						}
+
+						@Override
+						public void serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent event) {
+							// handle server heartbeat succeeded event
+						}
+
+						@Override
+						public void serverHeartbeatFailed(ServerHeartbeatFailedEvent event) {
+							if (DB.isFirstClusterPrimary) {
+								recoverFromDatabaseFailure();
+							}
+						}
+					}))
+					.build();
 		} else {
-			try {
-				mongoClient = MongoClients.create(clientSettings);
-			} catch (MongoException e) {
-				System.out.println("Secondary cluster is currently down in DB");
-				mongoClient = null;
-			}
+			clientSettings = MongoClientSettings.builder()
+					.applyConnectionString(new ConnectionString(URI))
+					.build();
 		}
 
-		return mongoClient;
-	}
-
-	public MongoClient createExceptionListener() {
-		MongoClientSettings settings = MongoClientSettings.builder()
-				.applyConnectionString(new ConnectionString(DBConstants.MONGO_URI_CLUSTER1))
-				.addCommandListener(new CommandListener() {
-					@Override
-					public void commandStarted(final CommandStartedEvent event) {
-						// Handle command started event
-					}
-
-					@Override
-					public void commandSucceeded(final CommandSucceededEvent event) {
-						// Handle command succeeded event
-					}
-
-					@Override
-					public void commandFailed(final CommandFailedEvent event) {
-						if (event.getThrowable() instanceof MongoException && DB.isFirstClusterPrimary) {
-							recoverFromDatabaseFailure();
-						} else if (DB.isFirstClusterPrimary) {
-							recoverFromDatabaseFailure();
-						}
-					}
-				})
-				.build();
-		return MongoClients.create(settings);
+		return MongoClients.create(clientSettings);
 	}
 
 	/**
