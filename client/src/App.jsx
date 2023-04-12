@@ -114,9 +114,13 @@ function App() {
                     setIsLoading(false);
                 }
                 else if (response.responseType === "DOWNLOAD" || response.responseType === "UPDATE"){
+                  console.log("manbir" + JSON.stringify(response))
                   setFiles(prevFiles => {
                     const updatedFiles = prevFiles.map(oldFile => {
-                      if (oldFile.fileName === response.fileName) {
+                      console.log("sami" + JSON.stringify(oldFile))
+                      
+                      if (oldFile.fileName == response.fileName) {
+                        console.log("HERHEHREHHHER")
                         return response;
                       } else {
                         return oldFile;
@@ -137,6 +141,8 @@ function App() {
                     fileURL.download = response.fileName; //File name Here
                     fileURL.click(); //Downloaded file
                   }
+
+                  setSelectedFiles([])
                 }
                 else if(response.responseType === "DELETE"){
                     if (response.delete !== null){
@@ -201,7 +207,7 @@ function App() {
         <div className='app_main'>
           <Navbar setSearchTerm={setSearchTerm}/>
           <div className='main_content'>
-          <Sidebar selectedFiles={selectedFiles} currentUser={currentUser} files={files}/>
+          <Sidebar selectedFiles={selectedFiles} currentUser={currentUser} files={files} setSelectedFiles={setSelectedFiles}/>
           <Files files={files} searchTerm={searchTerm} handleSelectFile={handleSelectFile} currentUser={currentUser} />
           </div>
         </div>

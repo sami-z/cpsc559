@@ -60,14 +60,16 @@ function ShareButton({ selectedFiles, currentUser }) {
             console.log('WebSocket connection established:', ws);
             const shareWithArr = names.trim().split(",");
             const fileNames = selectedFiles.map(item => item.fileName);
+
             const payload = { requestType: "SHARE", currentUser: currentUser, filesToShare: fileNames, shared: shareWithArr };
             ws.send(JSON.stringify(payload));
             alert('Permission shared successfully!');
             ws.close();
-
+            handleBlur();
         })
         .catch((error) => {
             console.error(`An error occurred while connecting to a WebSocket: ${error}`);
+            handleBlur();
         });
     };
 

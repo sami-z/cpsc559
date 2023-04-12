@@ -65,6 +65,7 @@ function Delete(props) {
             }, 2500); // add a 2.5 second delay
             ws.close();
 
+            props.setSelectedFiles([])
         })
         .catch((error) => {
             console.error(`An error occurred while connecting to a WebSocket: ${error}`);

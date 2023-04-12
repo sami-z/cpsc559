@@ -4,13 +4,13 @@ import Share from './Share'
 import Unshare from './Unshare'
 import Delete from './Delete'
 import './styles.css'
-const Sidebar = ({ selectedFiles, files, currentUser }) => {
+const Sidebar = ({ selectedFiles, files, currentUser,setSelectedFiles }) => {
   return (
     <div className='sidebar'>
       <Upload currentUser={currentUser} files={files} />
-      <Share selectedFiles={selectedFiles} currentUser={currentUser} />
-      <Unshare selectedFiles={selectedFiles} currentUser={currentUser} />
-      <Delete selectedFiles={selectedFiles} currentUser={currentUser} />
+      <Share selectedFiles={selectedFiles} currentUser={currentUser} setSelectedFiles={setSelectedFiles}/>
+      <Unshare selectedFiles={selectedFiles} currentUser={currentUser}  setSelectedFiles={setSelectedFiles}/>
+      <Delete selectedFiles={selectedFiles} currentUser={currentUser}  setSelectedFiles={setSelectedFiles}/>
     </div>
   )
 }

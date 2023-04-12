@@ -54,7 +54,7 @@ function Upload(props) {
                 let userName = props.currentUser
                 if (file) {
                     console.log("File already exists!");
-                    shared = file.shared.split(",");
+                    shared = file.shared;
                     userName = file.userName;
 
                 }
