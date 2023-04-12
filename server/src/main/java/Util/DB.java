@@ -73,8 +73,10 @@ public class DB {
 						@Override
 						public void commandFailed(final CommandFailedEvent event) {
 							if (event.getThrowable() instanceof MongoException && DB.isFirstClusterPrimary) {
+								System.out.println("commandFailed 1");
 								recoverFromDatabaseFailure();
 							} else if (DB.isFirstClusterPrimary) {
+								System.out.println("commandFailed 2");
 								recoverFromDatabaseFailure();
 							}
 						}
@@ -83,6 +85,7 @@ public class DB {
 						@Override
 						public void serverClosed(ServerClosedEvent event) {
 							if (DB.isFirstClusterPrimary) {
+								System.out.println("serverClosed");
 								recoverFromDatabaseFailure();
 							}
 						}
@@ -101,6 +104,7 @@ public class DB {
 						@Override
 						public void serverHeartbeatFailed(ServerHeartbeatFailedEvent event) {
 							if (DB.isFirstClusterPrimary) {
+								System.out.println("serverHeartbeatFailed");
 								recoverFromDatabaseFailure();
 							}
 						}
