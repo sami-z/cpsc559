@@ -71,7 +71,7 @@ public class DBManagerMonitor implements Runnable{
                 System.out.println("PING SUCCEED");
                 String DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
 
-                if ( DBManagerLeaderIP.equals(EMPTY_DB_LEADER)){
+                if ( DBManagerLeaderIP.equals(EMPTY_DB_LEADER) || !NetworkUtil.validIP(DBManagerLeaderIP)){
                     NetworkUtil.notifyDBManagerLeader(DBManagerIP);
                     return DBManagerIP;
                 }

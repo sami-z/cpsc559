@@ -139,7 +139,8 @@ public class NetworkUtil {
      @return True if the document was replaced and false otherwise
      */
     private static boolean sendWrite(JsonNode rq, String IP){
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        RestTemplate restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String uri = NetworkConstants.getDBManagerURI(IP);
@@ -176,7 +177,8 @@ public class NetworkUtil {
      @return returns a list of deleted files
      */
     private static String sendDelete(JsonNode rq, String IP){
-        RestTemplate rt = new RestTemplate();
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        RestTemplate rt = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
         String URI = NetworkConstants.getDBManagerDeleteURI(IP);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -211,7 +213,8 @@ public class NetworkUtil {
      @param IP The IP address of the DBManager to send the write request to.
      */
     private static void sendShare(JsonNode rq, String IP) {
-        RestTemplate rt = new RestTemplate();
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        RestTemplate rt = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
         String URI = NetworkConstants.getDBManagerShareURI(IP);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -244,7 +247,8 @@ public class NetworkUtil {
      @param IP The IP address of the DBManager to send the write request to.
      */
     private static void sendUnshare(JsonNode rq, String IP) {
-        RestTemplate rt = new RestTemplate();
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        RestTemplate rt = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
         String URI = NetworkConstants.getDBManagerUnShareURI(IP);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -276,7 +280,8 @@ public class NetworkUtil {
      @param IP The IP address of the DBManager to send the write request to.
      */
     public static boolean sendRegister(JsonNode rq, String IP){
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplateBuilder builder = new RestTemplateBuilder();
+        RestTemplate restTemplate = builder.setConnectTimeout(Duration.ofMillis(1000)).build();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         String uri = NetworkConstants.getDBManagerRegisterURI(IP);
@@ -400,6 +405,34 @@ public class NetworkUtil {
             try {
                 restTemplate.postForEntity(notifyURI, primaryUpdate, String.class);
             } catch (RestClientException e) {}
+        }
+    }
+
+
+    public static boolean validIP (String ip) {
+        try {
+            if ( ip == null || ip.isEmpty() ) {
+                return false;
+            }
+
+            String[] parts = ip.split( "\\." );
+            if ( parts.length != 4 ) {
+                return false;
+            }
+
+            for ( String s : parts ) {
+                int i = Integer.parseInt( s );
+                if ( (i < 0) || (i > 255) ) {
+                    return false;
+                }
+            }
+            if ( ip.endsWith(".") ) {
+                return false;
+            }
+
+            return true;
+        } catch (NumberFormatException nfe) {
+            return false;
         }
     }
 }
