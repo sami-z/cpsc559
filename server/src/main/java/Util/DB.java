@@ -12,32 +12,30 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoException;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.event.*;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
 import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Updates.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import com.mongodb.client.result.UpdateResult;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class DB {
-	public static MongoClient mongoClient1 = null;
-	public static MongoClient mongoClient2 = null;
+	public static MongoClient mongoClient1;
+	public static MongoClient mongoClient2;
 	private ObjectMapper mapper;
 	public static Boolean isFirstClusterPrimary = true;
 	public static boolean shouldRecover = false;
 
 	public DB() {
-		if (DB.mongoClient1 == null) {
-			DB.mongoClient1 = createMongoClient(true);
-		}
-		if (DB.mongoClient2 == null) {
-			DB.mongoClient2 = createMongoClient(false);
-		}
+		this.mongoClient1 = createMongoClient(true);
+		this.mongoClient2 = createMongoClient(false);
 		this.mapper = new ObjectMapper();
 	}
 
@@ -53,78 +51,42 @@ public class DB {
 		} else {
 			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER2 : DBConstants.MONGO_URI_CLUSTER1;
 		}
-
 		MongoClientSettings clientSettings = MongoClientSettings.builder()
 				.applyConnectionString(new ConnectionString(URI))
+				.applyToSocketSettings(builder ->
+						builder.connectTimeout(3, SECONDS))
+				.applyToClusterSettings(builder ->
+						builder.serverSelectionTimeout(3, SECONDS))
 				.build();
+		MongoClient mongoClient;
+		if (shouldGetPrimary) {
+			try {
+				mongoClient = MongoClients.create(clientSettings);
+			} catch (MongoException e) {
+				recoverFromDatabaseFailure();
+				URI = DBConstants.MONGO_URI_CLUSTER2;
+				clientSettings = MongoClientSettings.builder()
+						.applyConnectionString(new ConnectionString(URI))
+						.applyToSocketSettings(builder ->
+								builder.connectTimeout(3, SECONDS))
+						.applyToClusterSettings(builder ->
+								builder.serverSelectionTimeout(3, SECONDS))
+						.build();
+				mongoClient = MongoClients.create(clientSettings);
+			}
+		} else {
+			try {
+				mongoClient = MongoClients.create(clientSettings);
+			} catch (MongoException e) {
+				System.out.println("Secondary cluster is currently down in DB");
+				mongoClient = null;
+			}
+		}
 
-//		MongoClientSettings clientSettings;
-
-//		if (URI.equals(DBConstants.MONGO_URI_CLUSTER1)) {
-//			clientSettings = MongoClientSettings.builder()
-//					.applyConnectionString(new ConnectionString(URI))
-//					.addCommandListener(new CommandListener() {
-//						@Override
-//						public void commandStarted(final CommandStartedEvent event) {
-//							// Handle command started event
-//						}
-//
-//						@Override
-//						public void commandSucceeded(final CommandSucceededEvent event) {
-//							// Handle command succeeded event
-//						}
-//
-//						@Override
-//						public void commandFailed(final CommandFailedEvent event) {
-//							if (event.getThrowable() instanceof MongoException && DB.isFirstClusterPrimary) {
-//								System.out.println("commandFailed 1");
-//								recoverFromDatabaseFailure();
-//							} else if (DB.isFirstClusterPrimary) {
-//								System.out.println("commandFailed 2");
-//								recoverFromDatabaseFailure();
-//							}
-//						}
-//					})
-//					.applyToServerSettings(builder -> builder.addServerListener(new ServerListener() {
-//						@Override
-//						public void serverClosed(ServerClosedEvent event) {
-//							if (DB.isFirstClusterPrimary) {
-//								System.out.println("serverClosed");
-//								recoverFromDatabaseFailure();
-//							}
-//						}
-//					}))
-//					.applyToServerSettings(builder -> builder.addServerMonitorListener(new ServerMonitorListener() {
-//						@Override
-//						public void serverHearbeatStarted(ServerHeartbeatStartedEvent event) {
-//							// handle server heartbeat started event
-//						}
-//
-//						@Override
-//						public void serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent event) {
-//							// handle server heartbeat succeeded event
-//						}
-//
-//						@Override
-//						public void serverHeartbeatFailed(ServerHeartbeatFailedEvent event) {
-//							if (DB.isFirstClusterPrimary) {
-//								System.out.println("serverHeartbeatFailed");
-//								recoverFromDatabaseFailure();
-//							}
-//						}
-//					}))
-//					.build();
-//		} else {
-//			clientSettings = MongoClientSettings.builder()
-//					.applyConnectionString(new ConnectionString(URI))
-//					.build();
-//		}
-
-		return MongoClients.create(clientSettings);
+		return mongoClient;
 	}
 
 	/**
-
 	 Closes the MongoClient instances associated with this DB instance.
 	 If the MongoClient1 or MongoClient2 is not null, it will be closed.
 	 */
@@ -170,7 +132,6 @@ public class DB {
 	}
 
 	/**
-
 	 This method is responsible for replicating the primary database to the secondary database.
 	 It first retrieves all the documents from the primary replica, and then drops the secondary replica.
 	 After that, it iterates over each document in the primary replica and inserts it into the secondary replica.
@@ -195,7 +156,6 @@ public class DB {
 	}
 
 	/**
-
 	 Creates a new MongoDB Document for storing file upload information based on the given parameters.
 	 @param model the client request model containing file upload information.
 	 @param timestamp the timestamp for the file upload.
@@ -231,11 +191,15 @@ public class DB {
 		NetworkUtil.processingServerNotifyPrimaryChange(false);
 		while (DB.isFirstClusterPrimary) {
 			System.out.println("waiting for broadcast to go thru");
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
 	/**
-
 	 Creates a MongoDB query document for retrieving file upload information based on the specified user and file name.
 	 The resulting query will search for documents where the "userName" field matches the given user name, or the "shared" field
 	 contains the given user name as a substring, and where the "fileName" field matches the given file name.
@@ -303,7 +267,6 @@ public class DB {
 	}
 
 	/**
-
 	 Uploads a file to the database, replacing an existing entry if the entry's timestamp is greater than or equal to the latest timestamp for the given file.
 	 @param entry The Document containing the information about the file to be uploaded.
 	 @throws IOException if an I/O error occurs.
@@ -352,7 +315,6 @@ public class DB {
 	}
 
 	/**
-
 	 Registers a user in the system by inserting a new document into the login collection
 	 if the user is not already registered.
 	 @param model a ClientRequestModel object containing the current user's information
@@ -389,7 +351,6 @@ public class DB {
 
 
 	/**
-
 	 Inserts a new document into the login replica collection to register a new user.
 	 @param entry a document that contains information about the user to be registered, including their username and password
 	 @throws Exception if there is an error when attempting to insert the document into the login replica collection
@@ -403,13 +364,9 @@ public class DB {
 	}
 
 	/**
-
 	 This method searches for files belonging to a given user, either files that the user has created or files that have been shared with the user.
-
 	 @param userName the name of the user whose files are being searched for
-
 	 @return an ArrayNode containing JsonNodes representing the matching documents in the database
-
 	 @throws JsonProcessingException if there is an issue processing the JSON data
 	 */
 	public ArrayNode findFiles(String userName) throws JsonProcessingException {
@@ -451,7 +408,6 @@ public class DB {
 	}
 
 	/**
-
 	 This method loads the specified file from the database and returns its content as a JsonNode.
 	 @param userName the username of the owner of the file
 	 @param fileName the name of the file to be loaded
@@ -475,11 +431,11 @@ public class DB {
 //	        fos.write(fileBytes);
 //	        fos.close();
 //	        System.out.println("Saved file at location: " + dest);
-	        }
-        else {
-            System.out.println("File not found");
-        }
-        return null;
+		}
+		else {
+			System.out.println("File not found");
+		}
+		return null;
 	}
 
 	public Bson createShareOperation(String prevSharedList, ArrayList<String> sharedList) {
@@ -524,7 +480,6 @@ public class DB {
 	}
 
 	/**
-
 	 Edits the list of users that a file is shared with in the database.
 	 @param files An ArrayList of ArrayLists containing the name of the file and the timestamp of the last edit for each file that needs to be updated.
 	 @param userName The username of the user who is making the edit.
@@ -562,7 +517,6 @@ public class DB {
 	}
 
 	/**
-
 	 This method creates a Bson update operation to remove the specified usernames from a shared list.
 	 @param prevSharedList the previous shared list in string format
 	 @param unsharedList the list of usernames to be removed from the shared list
@@ -585,7 +539,6 @@ public class DB {
 	}
 
 	/**
-
 	 Edits the shared list of the specified files to remove the given usernames.
 	 @param filesToUnShare A list of filenames to edit the shared list for.
 	 @param userName The username of the user who is unsharing the files.
@@ -616,7 +569,6 @@ public class DB {
 	}
 
 	/**
-
 	 Edits the list of users with whom a file is unshared, for the given list of files, for the given user.
 	 If isReplicating is true, the changes are made to the secondary cluster, otherwise to the primary cluster.
 	 @param files the list of files to be unshared
@@ -655,7 +607,6 @@ public class DB {
 	}
 
 	/**
-
 	 Deletes files with the given file names for the given user from the database.
 	 @param files List of file names to be deleted
 	 @param userName Username of the user whose files are to be deleted
@@ -682,7 +633,6 @@ public class DB {
 	}
 
 	/**
-
 	 Deletes the specified files for a user.
 	 If isReplicating is true, it will delete the files in both the primary and secondary clusters.
 	 @param files the list of files to be deleted
