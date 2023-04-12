@@ -54,67 +54,71 @@ public class DB {
 			URI = (DB.isFirstClusterPrimary) ? DBConstants.MONGO_URI_CLUSTER2 : DBConstants.MONGO_URI_CLUSTER1;
 		}
 
-		MongoClientSettings clientSettings;
+		MongoClientSettings clientSettings = MongoClientSettings.builder()
+				.applyConnectionString(new ConnectionString(URI))
+				.build();
 
-		if (URI.equals(DBConstants.MONGO_URI_CLUSTER1)) {
-			clientSettings = MongoClientSettings.builder()
-					.applyConnectionString(new ConnectionString(URI))
-					.addCommandListener(new CommandListener() {
-						@Override
-						public void commandStarted(final CommandStartedEvent event) {
-							// Handle command started event
-						}
+//		MongoClientSettings clientSettings;
 
-						@Override
-						public void commandSucceeded(final CommandSucceededEvent event) {
-							// Handle command succeeded event
-						}
-
-						@Override
-						public void commandFailed(final CommandFailedEvent event) {
-							if (event.getThrowable() instanceof MongoException && DB.isFirstClusterPrimary) {
-								System.out.println("commandFailed 1");
-								recoverFromDatabaseFailure();
-							} else if (DB.isFirstClusterPrimary) {
-								System.out.println("commandFailed 2");
-								recoverFromDatabaseFailure();
-							}
-						}
-					})
-					.applyToServerSettings(builder -> builder.addServerListener(new ServerListener() {
-						@Override
-						public void serverClosed(ServerClosedEvent event) {
-							if (DB.isFirstClusterPrimary) {
-								System.out.println("serverClosed");
-								recoverFromDatabaseFailure();
-							}
-						}
-					}))
-					.applyToServerSettings(builder -> builder.addServerMonitorListener(new ServerMonitorListener() {
-						@Override
-						public void serverHearbeatStarted(ServerHeartbeatStartedEvent event) {
-							// handle server heartbeat started event
-						}
-
-						@Override
-						public void serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent event) {
-							// handle server heartbeat succeeded event
-						}
-
-						@Override
-						public void serverHeartbeatFailed(ServerHeartbeatFailedEvent event) {
-							if (DB.isFirstClusterPrimary) {
-								System.out.println("serverHeartbeatFailed");
-								recoverFromDatabaseFailure();
-							}
-						}
-					}))
-					.build();
-		} else {
-			clientSettings = MongoClientSettings.builder()
-					.applyConnectionString(new ConnectionString(URI))
-					.build();
-		}
+//		if (URI.equals(DBConstants.MONGO_URI_CLUSTER1)) {
+//			clientSettings = MongoClientSettings.builder()
+//					.applyConnectionString(new ConnectionString(URI))
+//					.addCommandListener(new CommandListener() {
+//						@Override
+//						public void commandStarted(final CommandStartedEvent event) {
+//							// Handle command started event
+//						}
+//
+//						@Override
+//						public void commandSucceeded(final CommandSucceededEvent event) {
+//							// Handle command succeeded event
+//						}
+//
+//						@Override
+//						public void commandFailed(final CommandFailedEvent event) {
+//							if (event.getThrowable() instanceof MongoException && DB.isFirstClusterPrimary) {
+//								System.out.println("commandFailed 1");
+//								recoverFromDatabaseFailure();
+//							} else if (DB.isFirstClusterPrimary) {
+//								System.out.println("commandFailed 2");
+//								recoverFromDatabaseFailure();
+//							}
+//						}
+//					})
+//					.applyToServerSettings(builder -> builder.addServerListener(new ServerListener() {
+//						@Override
+//						public void serverClosed(ServerClosedEvent event) {
+//							if (DB.isFirstClusterPrimary) {
+//								System.out.println("serverClosed");
+//								recoverFromDatabaseFailure();
+//							}
+//						}
+//					}))
+//					.applyToServerSettings(builder -> builder.addServerMonitorListener(new ServerMonitorListener() {
+//						@Override
+//						public void serverHearbeatStarted(ServerHeartbeatStartedEvent event) {
+//							// handle server heartbeat started event
+//						}
+//
+//						@Override
+//						public void serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent event) {
+//							// handle server heartbeat succeeded event
+//						}
+//
+//						@Override
+//						public void serverHeartbeatFailed(ServerHeartbeatFailedEvent event) {
+//							if (DB.isFirstClusterPrimary) {
+//								System.out.println("serverHeartbeatFailed");
+//								recoverFromDatabaseFailure();
+//							}
+//						}
+//					}))
+//					.build();
+//		} else {
+//			clientSettings = MongoClientSettings.builder()
+//					.applyConnectionString(new ConnectionString(URI))
+//					.build();
+//		}
 
 		return MongoClients.create(clientSettings);
 	}
