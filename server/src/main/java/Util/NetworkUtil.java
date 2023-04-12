@@ -373,6 +373,7 @@ public class NetworkUtil {
             String get_leader_uri = NetworkConstants.getDBManagerLeaderURI(DBManagerIP);
             String DBManagerLeaderIP;
             try {
+                System.out.println("pre notify primary in controller");
                 DBManagerLeaderIP = restTemplate.getForEntity(get_leader_uri,String.class).getBody();
             } catch (RestClientException e) {
                 break;
@@ -403,6 +404,7 @@ public class NetworkUtil {
             String notifyURI = NetworkConstants.getProcessingServerURINotifyPrimaryChange(processingServerIP);
 
             try {
+                System.out.println("pre notify primary in processing server");
                 restTemplate.postForEntity(notifyURI, primaryUpdate, String.class);
             } catch (RestClientException e) {}
         }

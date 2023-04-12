@@ -32,11 +32,11 @@ public class DatabaseClusterMonitor implements Runnable{
         while (true) {
             if (DB.shouldRecover) {
                 try {
+                    System.out.println("In should recover");
                     if (secondaryMongoClient == null) {
                         secondaryMongoClient = DB.createMongoClient(false);
                     }
 //                    secondaryMongoClient = DB.createMongoClient(false);
-
                     BsonDocument secondaryReplStatus = secondaryMongoClient.getDatabase("admin").runCommand(new BsonDocument("replSetGetStatus", new BsonInt32(1))).toBsonDocument();
                     BsonArray secondaryMembers = secondaryReplStatus.getArray("members");
 
@@ -52,6 +52,7 @@ public class DatabaseClusterMonitor implements Runnable{
                                 DBInstance.replicateDatabase();
                                 NetworkUtil.DBManagerNotifyPrimaryChange(true, false);
                                 NetworkUtil.processingServerNotifyPrimaryChange(false);
+                                System.out.println("broadcast primary back up");
                                 secondaryMongoClient.close();
                                 secondaryMongoClient = null;
                                 break;
