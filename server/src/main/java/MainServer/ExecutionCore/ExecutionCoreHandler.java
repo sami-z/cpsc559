@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import Util.NetworkUtil;
@@ -63,6 +64,7 @@ public class ExecutionCoreHandler {
             for (String user : shared) {
                 ((ObjectNode) response).put("currentUser", user);
                 ((ObjectNode) response).put("delete", file.get("fileName").asText());
+                System.out.println(response.toPrettyString());
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
                     NetworkUtil.sendToResponseQueue(response, IP);
                 }
@@ -90,21 +92,32 @@ public class ExecutionCoreHandler {
         for (String fileName : filesToUnshare) {
             JsonNode file = db.loadFile(request.get("currentUser").asText(), fileName);
 
-            ArrayList<String> users = mapper.convertValue(request.get("shared"), ArrayList.class);
+            String[] usersStringArray = file.get("shared").asText().split(",");
+
+            ArrayList<String> users = new ArrayList<>();
+
+            for(String user : usersStringArray){
+                users.add(user);
+            }
+
+
+            String[] sharedUsersUser = file.get("shared").asText().split(",");
+            HashSet<String> unsharedUsersSet = new HashSet<>(unshared);
+            ArrayList<String> sharedUsersArrayListUser = new ArrayList<>();
+            for (String user : users) {
+                if(!unsharedUsersSet.contains(user))
+                    sharedUsersArrayListUser.add(user);
+            }
+
+
             users.add(request.get("currentUser").asText());
             for (String username : users) {
                 ((ObjectNode) file).put("responseType", "UPDATE");
                 ((ObjectNode) file).put("currentUser", username);
-                String currSharedUser = file.get("shared").asText();
-                String[] sharedUsersUser = currSharedUser.split(",");
-                ArrayList<String> sharedUsersArrayListUser = new ArrayList<>();
-                for (int i = 0; i < sharedUsersUser.length; i++) {
-                    sharedUsersArrayListUser.add(sharedUsersUser[i]);
-                }
-                sharedUsersArrayListUser.removeAll(unshared);
                 ((ObjectNode) file).put("shared",mapper.valueToTree(sharedUsersArrayListUser));
 
                 for (String IP : NetworkConstants.RESPONSE_QUEUE_IPS) {
+                    System.out.println(file.toPrettyString());
                     NetworkUtil.sendToResponseQueue(file, IP);
                 }
             }
