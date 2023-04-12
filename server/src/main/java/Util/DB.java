@@ -1,6 +1,5 @@
 package Util;
 
-import java.beans.ExceptionListener;
 import java.io.*;
 import java.util.*;
 import MainServer.Models.ClientRequestModel;
@@ -13,13 +12,8 @@ import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoException;
 import com.mongodb.client.*;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.event.CommandFailedEvent;
-import com.mongodb.event.CommandListener;
-import com.mongodb.event.CommandStartedEvent;
-import com.mongodb.event.CommandSucceededEvent;
-import com.sun.jdi.event.ExceptionEvent;
+import com.mongodb.event.*;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.conversions.Bson;
@@ -116,6 +110,32 @@ public class DB {
 						}
 					}
 				})
+				.applyToServerSettings(builder -> builder.addServerListener(new ServerListener() {
+					@Override
+					public void serverClosed(ServerClosedEvent event) {
+						if (DB.isFirstClusterPrimary) {
+							recoverFromDatabaseFailure();
+						}
+					}
+				}))
+				.applyToServerSettings(builder -> builder.addServerMonitorListener(new ServerMonitorListener() {
+					@Override
+					public void serverHearbeatStarted(ServerHeartbeatStartedEvent event) {
+						// handle server heartbeat started event
+					}
+
+					@Override
+					public void serverHeartbeatSucceeded(ServerHeartbeatSucceededEvent event) {
+						// handle server heartbeat succeeded event
+					}
+
+					@Override
+					public void serverHeartbeatFailed(ServerHeartbeatFailedEvent event) {
+						if (DB.isFirstClusterPrimary) {
+							recoverFromDatabaseFailure();
+						}
+					}
+				}))
 				.build();
 		return MongoClients.create(settings);
 	}
