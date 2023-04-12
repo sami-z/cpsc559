@@ -192,7 +192,14 @@ public class DB {
 
 		NetworkUtil.DBManagerNotifyPrimaryChange(false, true);
 		NetworkUtil.processingServerNotifyPrimaryChange(false);
-		while (DB.isFirstClusterPrimary) {}
+		while (DB.isFirstClusterPrimary) {
+			System.out.println("waiting for broadcast to go thru");
+			try {
+				Thread.sleep(3000);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	/**
