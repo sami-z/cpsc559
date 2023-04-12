@@ -8,6 +8,11 @@ public class ClusterExceptionMonitor implements Thread.UncaughtExceptionHandler 
         if (e instanceof MongoException) {
             NetworkUtil.DBManagerNotifyPrimaryChange(false, true);
             NetworkUtil.processingServerNotifyPrimaryChange(false);
+            try {
+                Thread.sleep(60000);
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
         }
     }
 }
